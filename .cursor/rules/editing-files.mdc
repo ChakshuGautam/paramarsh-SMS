@@ -1,0 +1,39 @@
+---
+description: Safe, consistent file editing and ops in this repository
+---
+# Editing & File Ops Rules
+
+## General
+- Prefer targeted edits; do not reformat unrelated code.
+- Read files before editing to preserve context. Keep edits minimal and scoped.
+- Follow project docs: `[Tech Stack](mdc:docs-cursor/tech-stack.md)`, `[Frontend Architecture](mdc:docs-cursor/frontend-architecture.md)`, `[Backend Architecture](mdc:docs-cursor/backend-architecture.md)`.
+
+## Where to put things
+- Product docs: `docs-cursor/` (PRD, modules, UI, API, security).
+- Cursor rules: `.cursor/rules/*.mdc` (this format, with frontmatter).
+- OpenAPI and schemas: `docs-cursor/api/openapi.yaml`, `docs-cursor/api/schemas/`.
+
+## API-first workflow
+- Update `[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)` and JSON Schemas first.
+- Generate/consume typed clients in FE (`lib/api-client`) after OpenAPI changes.
+- Keep endpoints, errors, and pagination consistent across modules.
+
+## Frontend (Next.js + shadcn/ui + TanStack)
+- Use Server Components by default; Client Components for interactivity.
+- Tables via TanStack headless + shared `DataTable` wrapper.
+- Forms via React Hook Form + Zod. Respect design system in `components/ui`.
+- Auth: Clerk. Use `<ClerkProvider>`, `auth()` (server), `useUser()`/`useAuth()` (client).
+
+## Backend (NestJS, Amplication-style)
+- Modules mirror product domains. Controllers → Services → Repos.
+- DTOs align with OpenAPI; use class-validator/class-transformer.
+- Auth: Clerk JWT guard + `ACGuard` + ACL interceptors; tenant scoping in queries.
+
+## Shell safety (zsh)
+- Avoid mass in-place edits with fragile regex. Prefer direct file edits.
+- If shell is required, use single-quoted heredocs and escape special chars `()[]{}*?`.
+
+## Commits & QA
+- Use descriptive commit messages (`docs:`, `cursor:`, `feat:`, `fix:`).
+- After code changes, run lints/tests where applicable (Jest/Cypress guidance in `[QA Test Plan](mdc:docs-cursor/qa/test-plan.md)`).
+- Do not introduce linter errors; keep formatting consistent.
