@@ -6,7 +6,7 @@ description: NestJS backend conventions (Amplication-inspired controllers/servic
 - Modules mirror product domains (students, attendance, exams, fees, admissions, timetable, hr, transport, library, hostel, comms, analytics, inventory, tenants)
 - Layering: Controllers → Services → Repositories/Prisma; DTOs with class-validator/class-transformer; Guards/Interceptors for authZ and ACL
 - Validation: global ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true })
-- DTOs: annotate with `@ApiProperty`, use `@Type(() => Date)` or nested types where needed; align DTOs to OpenAPI/JSON Schemas `[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)` and `[schemas](mdc:docs-cursor/api/schemas)`
+- DTOs: annotate with `@ApiProperty`, use `@Type(() => Date)` or nested types where needed; align DTOs to OpenAPI/JSON Schemas `[openapi.yaml](mdc:docs/API/openapi.yaml)` and `[schemas](mdc:docs/API/schemas)`
 - Persistence: inject `PrismaService` (or TypeORM repo); no direct client instantiation; wrap multi-entity work in transactions
 - Errors: map Prisma errors P2002 → 409 Conflict; P2025 → 404 Not Found; validation → 422; normalize to `Error` schema
 - Pagination/Filtering: accept `skip`/`take`, `orderBy`, and typed `where` filter DTOs; translate to Prisma findMany args; return `{ data, meta }`

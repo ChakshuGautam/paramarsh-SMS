@@ -43,5 +43,5 @@ description: Amplication-style NestJS patterns for generated-safe layering and A
 - API E2E via Supertest; mock guards for negative/positive role paths; seed minimal data
 
 ## Codegen Alignment
-- Keep OpenAPI as the source of truth; generate client types for Next.js `[api/openapi.yaml](mdc:docs-cursor/api/openapi.yaml)`
+- Keep OpenAPI as the source of truth; generate client types for Next.js `[openapi.yaml](mdc:docs/API/openapi.yaml)`
 - Avoid editing base files; all customizations live in non-base files to allow regeneration

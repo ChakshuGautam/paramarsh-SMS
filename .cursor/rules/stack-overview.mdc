@@ -7,7 +7,7 @@ This project uses:
 - Frontend: Next.js (App Router), shadcn/ui (Radix + Tailwind), TanStack Table/Query, React Hook Form + Zod
 - Backend: NestJS (modular), PostgreSQL + Prisma (or TypeORM), Redis, S3 object storage
 - Auth: Clerk (hosted auth), RBAC/ABAC
-- APIs: REST, OpenAPI-first (`[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)`) with JSON Schemas (`[schemas/](mdc:docs-cursor/api/schemas)`) 
+- APIs: REST, OpenAPI-first (`[openapi.yaml](mdc:docs/API/openapi.yaml)`) with JSON Schemas (`[schemas/](mdc:docs/API/schemas)`) 
 - Testing: Jest (unit + API E2E via Supertest), Cypress (web E2E)
 
 Docs: `[Tech Stack](mdc:docs-cursor/tech-stack.md)`, `[Frontend Architecture](mdc:docs-cursor/frontend-architecture.md)`, `[Backend Architecture](mdc:docs-cursor/backend-architecture.md)`

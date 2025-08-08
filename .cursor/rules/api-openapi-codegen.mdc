@@ -1,11 +1,12 @@
 ---
-description: Generate and use typed API clients from OpenAPI
+alwaysApply: true
 ---
+
 # API Codegen Rules — OpenAPI
 
-- Treat `[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)` as source of truth; update before coding
+- Treat `[openapi.yaml](mdc:docs/API/openapi.yaml)` as source of truth; update before coding
 - Generate TS types/clients (e.g., `openapi-typescript`, `orval`) and use in Next.js `api-client`
 - Responses use `{ data, meta }` for lists; include standard error responses
 - Support pagination (`page`, `pageSize`) and sorting via query params
 - Keep examples in OpenAPI for complex endpoints
-- Reference: `[Tech Stack](mdc:docs-cursor/tech-stack.md)`
+- Reference: `[Tech Stack](mdc:docs/Tech_Stack.md)`
