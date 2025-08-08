@@ -1,0 +1,13 @@
+---
+description: NestJS backend conventions (controllers/services/repos/DTOs/guards)
+---
+# Backend Rules — NestJS
+
+- Modules mirror product domains (students, attendance, exams, fees, admissions, timetable, hr, transport, library, hostel, comms, analytics, inventory, tenants)
+- Structure: Controllers → Services → Repositories; DTOs with class-validator/class-transformer
+- AuthZ: Guards for RBAC/ABAC; avoid checking roles in controllers/services directly
+- Validation: global validation pipe; DTOs must match OpenAPI schemas
+- Errors: normalize to ProblemDetails-like shape; map to 4xx/5xx codes as per OpenAPI
+- Persistence: Prisma (or TypeORM); one repository per aggregate root; transactions for multi-entity ops
+- Observability: interceptors for logging/metrics; correlation IDs
+- Reference: `[Backend Architecture](mdc:docs-cursor/backend-architecture.md)`, `[OpenAPI](mdc:docs-cursor/api/openapi.yaml)`

@@ -1,0 +1,10 @@
+---
+description: Security, privacy, and compliance guardrails
+---
+# Security & Compliance Rules
+
+- Enforce least-privilege RBAC/ABAC; sensitive modules require explicit checks
+- PII segregation and data minimization; audit access to student/staff records
+- Use signed webhooks; validate request signatures and replay protection
+- Apply rate limits for public endpoints and per-tenant quotas
+- Follow checklists: `[Security](mdc:docs-cursor/checklists/security.md)`, `[Privacy](mdc:docs-cursor/checklists/privacy.md)`

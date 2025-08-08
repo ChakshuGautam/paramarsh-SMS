@@ -1,0 +1,11 @@
+---
+description: Testing standards for Jest and Cypress
+---
+# Testing Rules — Jest & Cypress
+
+- Unit tests (Jest) for services, utilities, and React components; aim for ≥70% coverage on critical paths
+- API E2E (Jest + Supertest) bootstrapping Nest app; use test containers or in-memory DB where feasible
+- UI E2E (Cypress) for core flows: attendance mark, fee payment, report card publish, admissions offer
+- Test data via factories/fixtures; isolate by module; parallel-safe
+- CI must run lint, typecheck, unit, API E2E, and Cypress smoke on PRs
+- Reference: `[QA Test Plan](mdc:docs-cursor/qa/test-plan.md)`, acceptance tests in `[qa/acceptance](mdc:docs-cursor/qa/acceptance)`

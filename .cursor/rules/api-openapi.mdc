@@ -1,0 +1,11 @@
+---
+description: OpenAPI-first development guidance
+---
+# API Rules — OpenAPI
+
+- Define/extend endpoints in `[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)` before implementing
+- Use components for Error and Meta; standardize pagination (page/pageSize) and sorting
+- Schemas must have explicit types/formats; reuse JSON Schemas in `[schemas](mdc:docs-cursor/api/schemas)`
+- Document error responses: 400/401/403/404/409/422/429/500 with `components.responses`
+- Provide request/response examples for complex endpoints
+- Version endpoints under `/api/v1`; maintain deprecation notes in docs

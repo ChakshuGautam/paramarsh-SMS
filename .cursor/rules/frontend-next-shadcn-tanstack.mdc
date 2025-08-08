@@ -1,0 +1,14 @@
+---
+globs: *.ts,*.tsx
+---
+# Frontend Rules — Next.js + shadcn/ui + TanStack
+
+- Use App Router. Server Components by default; Client Components only when interactivity is required
+- UI primitives from shadcn/ui; do not bring ad-hoc component libs
+- Tables built with TanStack Table headless core; use a shared `DataTable` wrapper (columns, sorting, filtering, pagination, row selection, toolbar)
+- Forms: React Hook Form + Zod schemas colocated; use shadcn Form controls
+- Data fetching: TanStack Query; cache keys by module/entity; handle loading with skeletons
+- Routing & access: protect routes via middleware; show feature-gated UI based on role/tenant
+- Styling: Tailwind; avoid custom CSS unless necessary; stick to design tokens
+- Performance: stream/SSR where useful; lazy-load heavy client components
+- Reference: `[Design System](mdc:docs-cursor/ui/design-system.md)`, `[UI Flows](mdc:docs-cursor/ui/flows.md)`, wireframes in `[ui/wireframes](mdc:docs-cursor/ui/wireframes)`
