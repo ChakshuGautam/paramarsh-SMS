@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Paramarsh SMS API
+  version: 0.1.0
+servers:
+  - url: https://api.paramarsh.example
+paths:
+  /api/v1/students:
+    post:
+      summary: Create student
+      responses:
+        '201': { description: Created }
+  /api/v1/attendance/sections/{sectionId}/periods/{periodId}:
+    post:
+      summary: Mark attendance for a period
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: periodId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/v1/fees/invoices/{invoiceId}/pay:
+    post:
+      summary: Initiate payment
+      parameters:
+        - in: path
+          name: invoiceId
+          required: true
+          schema: { type: string }
+      responses:
+        '202': { description: Accepted }
