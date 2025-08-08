@@ -1,0 +1,29 @@
+{
+    "name": "@sms/mock-api",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/server.ts",
+        "start": "node dist/server.js",
+        "build": "tsup src/server.ts --format esm,cjs --out-dir dist --clean",
+        "prisma": "prisma",
+        "db:generate": "prisma generate",
+        "db:migrate": "prisma migrate dev --name init",
+    "db:seed": "tsx prisma/seed.ts",
+    "csv:generate": "tsx scripts/generate-csv.ts"
+    },
+    "dependencies": {
+        "@prisma/client": "^5.17.0",
+        "cors": "^2.8.5",
+        "express": "^4.19.2",
+        "morgan": "^1.10.0",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "prisma": "^5.17.0",
+        "tsup": "^8.1.0",
+        "tsx": "^4.16.2",
+        "typescript": "^5.6.2"
+    }
+}
