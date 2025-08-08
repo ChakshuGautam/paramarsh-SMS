@@ -11,7 +11,8 @@
         "db:generate": "prisma generate",
         "db:migrate": "prisma migrate dev --name init",
     "db:seed": "tsx prisma/seed.ts",
-    "csv:generate": "tsx scripts/generate-csv.ts"
+    "csv:generate": "tsx scripts/generate-csv.ts",
+    "db:seed:csv": "tsx prisma/seed-csv.ts"
     },
     "dependencies": {
         "@prisma/client": "^5.17.0",

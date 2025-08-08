@@ -130,13 +130,13 @@ function main() {
       `ADM-${1000 + i},father,Raj ${fn1},parent${i}@example.com,+9199${pad(
         100000 + i,
         6
-      )},Apartment 12, Lakeside Colony`
+      )},Apartment 12 - Lakeside Colony`
     );
     guardians.push(
       `ADM-${1000 + i},mother,Meera ${fn2},parent2_${i}@example.com,+9188${pad(
         100000 + i,
         6
-      )},Apartment 12, Lakeside Colony`
+      )},Apartment 12 - Lakeside Colony`
     );
   });
   writeCsv(
@@ -250,7 +250,8 @@ function main() {
 
   // Applications (100)
   const applications = range(100).map((i) => {
-    const sub = `demo-${(i % 100) + 1}`;
+    const base = pick(SCHOOL_NAMES, i).replace(/[^a-zA-Z ]/g, "");
+    const sub = base.toLowerCase().replace(/\s+/g, "-") + "-" + (i + 1);
     const programId = `p${(i % 10) + 1}`;
     const profile = `profile-${i + 1}`;
     const status = [
