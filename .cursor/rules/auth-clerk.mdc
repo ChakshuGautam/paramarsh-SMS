@@ -1,0 +1,17 @@
+---
+description: Frontend and backend authentication using Clerk
+---
+# Authentication — Clerk Rules
+
+## Frontend (Next.js)
+- Wrap the app with `<ClerkProvider>` in `app/layout.tsx`
+- Use `auth()` in Server Components; `useUser()` / `useAuth()` in Client Components
+- Protect routes via Clerk middleware and Next.js route groups
+- Map Clerk Organization (orgId) to tenant when applicable; attach `orgId` on API calls
+- Reference: `[Frontend Architecture](mdc:docs-cursor/frontend-architecture.md)`
+
+## Backend (NestJS)
+- Implement `ClerkAuthGuard` that verifies Bearer JWT via Clerk (JWKS or SDK)
+- Extract `userId` and `orgId` (tenant) from token; set on request context
+- Combine `ClerkAuthGuard` with `ACGuard` and ACL interceptors
+- Reference: `[Backend Architecture](mdc:docs-cursor/backend-architecture.md)`, `[RBAC Design](mdc:docs-cursor/security/rbac.md)`

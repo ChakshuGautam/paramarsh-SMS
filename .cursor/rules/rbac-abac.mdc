@@ -1,0 +1,11 @@
+---
+description: RBAC/ABAC policy enforcement across modules
+---
+# RBAC/ABAC Rules
+
+- Roles: student, parent, teacher, homeroom_teacher, hod, admin, finance, hr, transport_manager, librarian, nurse, counselor, discipline_officer, super_admin
+- Always scope queries by `tenantId` (orgId)
+- Use `ACGuard` + `AclValidateRequestInterceptor` (create/update) + `AclFilterResponseInterceptor` (read)
+- Compute ABAC constraints in services (e.g., taughtSectionIds); apply to `where`
+- Standardize denials (403) with Error schema; audit decisions
+- Reference: `[RBAC/ABAC Design](mdc:docs-cursor/security/rbac.md)`
