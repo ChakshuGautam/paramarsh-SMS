@@ -1,0 +1,77 @@
+paths:
+  /students:
+    get:
+      tags: [Students]
+      summary: List students
+      parameters:
+        - $ref: ../fragments/common.yaml#/components/parameters/PageParam
+        - $ref: ../fragments/common.yaml#/components/parameters/PageSizeParam
+        - $ref: ../fragments/common.yaml#/components/parameters/SortParam
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: #/components/schemas/Student }
+                  meta: { $ref: #/components/schemas/Meta }
+        401: { $ref: ../fragments/common.yaml#/components/responses/UnauthorizedError }
+        403: { $ref: ../fragments/common.yaml#/components/responses/ForbiddenError }
+    post:
+      tags: [Students]
+      summary: Create student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Student }
+      responses:
+        201: { description: Created }
+        422: { $ref: ../fragments/common.yaml#/components/responses/UnprocessableError }
+  /students/{id}:
+    get:
+      tags: [Students]
+      summary: Get student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: #/components/schemas/Student }
+        404: { $ref: ../fragments/common.yaml#/components/responses/NotFoundError }
+    patch:
+      tags: [Students]
+      summary: Update student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Student }
+      responses:
+        200: { description: OK }
+        422: { $ref: ../fragments/common.yaml#/components/responses/UnprocessableError }
+    delete:
+      tags: [Students]
+      summary: Delete student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        204: { description: No Content }
+        404: { $ref: ../fragments/common.yaml#/components/responses/NotFoundError }

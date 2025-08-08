@@ -1,0 +1,46 @@
+paths:
+  /admissions/applications:
+    get:
+      tags: [Admissions]
+      summary: List applications
+      parameters:
+        - $ref: ../fragments/common.yaml#/components/parameters/PageParam
+        - $ref: ../fragments/common.yaml#/components/parameters/PageSizeParam
+      responses:
+        200: { description: OK }
+    post:
+      tags: [Admissions]
+      summary: Create application
+      responses:
+        201: { description: Created }
+  /admissions/applications/{id}:
+    get:
+      tags: [Admissions]
+      summary: Get application
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: OK }
+    patch:
+      tags: [Admissions]
+      summary: Update application
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: OK }
+    delete:
+      tags: [Admissions]
+      summary: Delete application
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        204: { description: No Content }

@@ -1,0 +1,56 @@
+paths:
+  /exams:
+    get:
+      tags: [Exams]
+      summary: List exams
+      parameters:
+        - $ref: ../fragments/common.yaml#/components/parameters/PageParam
+        - $ref: ../fragments/common.yaml#/components/parameters/PageSizeParam
+      responses:
+        200: { description: OK }
+    post:
+      tags: [Exams]
+      summary: Create exam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Exam }
+      responses:
+        201: { description: Created }
+  /exams/{id}:
+    get:
+      tags: [Exams]
+      summary: Get exam
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: OK }
+    patch:
+      tags: [Exams]
+      summary: Update exam
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Exam }
+      responses:
+        200: { description: OK }
+    delete:
+      tags: [Exams]
+      summary: Delete exam
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        204: { description: No Content }

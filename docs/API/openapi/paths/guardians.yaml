@@ -1,0 +1,57 @@
+paths:
+  /guardians:
+    get:
+      tags: [Guardians]
+      summary: List guardians
+      parameters:
+        - $ref: ../fragments/common.yaml#/components/parameters/PageParam
+        - $ref: ../fragments/common.yaml#/components/parameters/PageSizeParam
+      responses:
+        200: { description: OK }
+    post:
+      tags: [Guardians]
+      summary: Create guardian
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Guardian }
+      responses:
+        201: { description: Created }
+  /guardians/{id}:
+    get:
+      tags: [Guardians]
+      summary: Get guardian
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: OK }
+        404: { $ref: ../fragments/common.yaml#/components/responses/NotFoundError }
+    patch:
+      tags: [Guardians]
+      summary: Update guardian
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Guardian }
+      responses:
+        200: { description: OK }
+    delete:
+      tags: [Guardians]
+      summary: Delete guardian
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        204: { description: No Content }

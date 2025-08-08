@@ -1,0 +1,57 @@
+paths:
+  /fees/structures:
+    get:
+      tags: [Fees]
+      summary: List fee structures
+      parameters:
+        - $ref: ../fragments/common.yaml#/components/parameters/PageParam
+        - $ref: ../fragments/common.yaml#/components/parameters/PageSizeParam
+      responses:
+        200: { description: OK }
+    post:
+      tags: [Fees]
+      summary: Create fee structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/FeeStructure }
+      responses:
+        201: { description: Created }
+  /fees/structures/{id}:
+    get:
+      tags: [Fees]
+      summary: Get fee structure
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: OK }
+        404: { $ref: ../fragments/common.yaml#/components/responses/NotFoundError }
+    patch:
+      tags: [Fees]
+      summary: Update fee structure
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/FeeStructure }
+      responses:
+        200: { description: OK }
+    delete:
+      tags: [Fees]
+      summary: Delete fee structure
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        204: { description: No Content }

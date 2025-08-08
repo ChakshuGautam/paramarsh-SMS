@@ -1,0 +1,51 @@
+paths:
+  /fees/invoices:
+    get:
+      tags: [Fees]
+      summary: List invoices
+      parameters:
+        - $ref: ../fragments/common.yaml#/components/parameters/PageParam
+        - $ref: ../fragments/common.yaml#/components/parameters/PageSizeParam
+      responses:
+        200: { description: OK }
+    post:
+      tags: [Fees]
+      summary: Create invoices
+      responses:
+        200: { description: OK }
+  /fees/invoices/{id}:
+    get:
+      tags: [Fees]
+      summary: Get invoice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        200: { description: OK }
+    patch:
+      tags: [Fees]
+      summary: Update invoice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: #/components/schemas/Invoice }
+      responses:
+        200: { description: OK }
+    delete:
+      tags: [Fees]
+      summary: Delete invoice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        204: { description: No Content }
