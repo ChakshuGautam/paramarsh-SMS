@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Paramarsh SMS API
-  version: 0.2.0
+  version: 0.3.0
 servers:
   - url: https://api.paramarsh.example
 tags:
@@ -11,6 +11,14 @@ tags:
   - name: Fees
   - name: Admissions
   - name: Timetable
+  - name: HR
+  - name: Transport
+  - name: Library
+  - name: Hostel
+  - name: Communications
+  - name: Analytics
+  - name: Inventory
+  - name: Tenants
 paths:
   /api/v1/students:
     get:
@@ -20,14 +28,23 @@ paths:
         - in: query
           name: sectionId
           schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: '#/components/schemas/Student' }
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Student' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '403': { $ref: '#/components/responses/ForbiddenError' }
     post:
       tags: [Students]
       summary: Create student
@@ -38,6 +55,8 @@ paths:
             schema: { $ref: '#/components/schemas/Student' }
       responses:
         '201': { description: Created }
+        '409': { $ref: '#/components/responses/ConflictError' }
+        '422': { $ref: '#/components/responses/UnprocessableError' }
   /api/v1/students/{id}:
     get:
       tags: [Students]
@@ -53,6 +72,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Student' }
+        '404': { $ref: '#/components/responses/NotFoundError' }
     patch:
       tags: [Students]
       summary: Update student
@@ -68,6 +88,7 @@ paths:
             schema: { $ref: '#/components/schemas/Student' }
       responses:
         '200': { description: OK }
+        '422': { $ref: '#/components/responses/UnprocessableError' }
   /api/v1/students/{id}/guardians:
     post:
       tags: [Students]
@@ -109,6 +130,7 @@ paths:
                   items: { $ref: '#/components/schemas/AttendanceRecord' }
       responses:
         '200': { description: OK }
+        '422': { $ref: '#/components/responses/UnprocessableError' }
   /api/v1/attendance/students/{studentId}:
     get:
       tags: [Attendance]
@@ -146,14 +168,21 @@ paths:
     get:
       tags: [Exams]
       summary: List exams
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: '#/components/schemas/Exam' }
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Exam' }
+                  meta: { $ref: '#/components/schemas/Meta' }
   /api/v1/exams/{examId}/sessions:
     post:
       tags: [Exams]
@@ -202,6 +231,9 @@ paths:
     get:
       tags: [Fees]
       summary: List fee structures
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
       responses:
         '200':
           description: OK
@@ -318,8 +350,175 @@ paths:
           schema: { type: string }
       responses:
         '200': { description: OK }
+  /api/v1/timetable/constraints:
+    post:
+      tags: [Timetable]
+      summary: Define constraint
+      responses:
+        '201': { description: Created }
+  /api/v1/timetable/auto-generate:
+    post:
+      tags: [Timetable]
+      summary: Auto-generate timetable
+      responses:
+        '202': { description: Accepted }
+  /api/v1/timetable/sections/{sectionId}:
+    get:
+      tags: [Timetable]
+      summary: Get timetable for section
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/v1/hr/staff:
+    get:
+      tags: [HR]
+      summary: List staff
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [HR]
+      summary: Create staff
+      responses:
+        '201': { description: Created }
+  /api/v1/hr/payroll/runs:
+    post:
+      tags: [HR]
+      summary: Start payroll run
+      responses:
+        '202': { description: Accepted }
+  /api/v1/transport/routes:
+    get:
+      tags: [Transport]
+      summary: List routes
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Transport]
+      summary: Create route
+      responses:
+        '201': { description: Created }
+  /api/v1/library/books:
+    get:
+      tags: [Library]
+      summary: List books
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Library]
+      summary: Add book
+      responses:
+        '201': { description: Created }
+  /api/v1/hostel/rooms:
+    get:
+      tags: [Hostel]
+      summary: List rooms
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Hostel]
+      summary: Create room
+      responses:
+        '201': { description: Created }
+  /api/v1/comms/messages:
+    post:
+      tags: [Communications]
+      summary: Send message
+      responses:
+        '202': { description: Accepted }
+  /api/v1/analytics/dashboards:
+    get:
+      tags: [Analytics]
+      summary: List dashboards
+      responses:
+        '200': { description: OK }
+  /api/v1/inventory/items:
+    get:
+      tags: [Inventory]
+      summary: List items
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Inventory]
+      summary: Create item
+      responses:
+        '201': { description: Created }
+  /api/v1/tenants:
+    post:
+      tags: [Tenants]
+      summary: Provision tenant
+      responses:
+        '201': { description: Created }
 components:
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSizeParam:
+      in: query
+      name: pageSize
+      schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
+    SortParam:
+      in: query
+      name: sort
+      schema: { type: string }
+  responses:
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ForbiddenError:
+      description: Forbidden
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFoundError:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ConflictError:
+      description: Conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    UnprocessableError:
+      description: Unprocessable Entity
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimitError:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ServerError:
+      description: Server Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object }
+    Meta:
+      type: object
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        hasNext: { type: boolean }
     Student:
       type: object
       properties:
