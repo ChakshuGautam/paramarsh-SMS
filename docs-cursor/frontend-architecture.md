@@ -37,3 +37,9 @@ styles/
 ## Performance
 - Server Components where possible; client components for interactive lists/tables/forms
 - ISR/SSR policies per page; skeletons for loading states
+
+## RBAC in FE
+- NextAuth session holds roles/tenant; usePermission hook gates UI
+- All data security enforced server-side; FE gating is UX only
+- /me endpoint hydrates derived claims (taughtSectionIds, ownedStudentIds)
+

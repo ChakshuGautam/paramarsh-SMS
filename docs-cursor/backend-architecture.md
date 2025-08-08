@@ -37,3 +37,9 @@ src/
 ## Testing
 - Unit: Jest with testing module
 - E2E: Nest testing + Supertest (spin up app with in-memory DB or test container)
+
+## RBAC/ABAC
+- Guards: DefaultAuthGuard + ACGuard; Interceptors: AclValidateRequestInterceptor/AclFilterResponseInterceptor
+- Multi-tenant scoping by tenantId in all queries
+- RolesBuilder base + optional tenant overrides
+
