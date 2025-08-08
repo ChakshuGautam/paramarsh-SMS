@@ -1,13 +1,18 @@
 ---
-description: NestJS backend conventions (controllers/services/repos/DTOs/guards)
+description: NestJS backend conventions (Amplication-inspired controllers/services/repos/DTOs/guards)
 ---
-# Backend Rules — NestJS
+# Backend Rules — NestJS (Amplication-inspired)
 
 - Modules mirror product domains (students, attendance, exams, fees, admissions, timetable, hr, transport, library, hostel, comms, analytics, inventory, tenants)
-- Structure: Controllers → Services → Repositories; DTOs with class-validator/class-transformer
-- AuthZ: Guards for RBAC/ABAC; avoid checking roles in controllers/services directly
-- Validation: global validation pipe; DTOs must match OpenAPI schemas
-- Errors: normalize to ProblemDetails-like shape; map to 4xx/5xx codes as per OpenAPI
-- Persistence: Prisma (or TypeORM); one repository per aggregate root; transactions for multi-entity ops
-- Observability: interceptors for logging/metrics; correlation IDs
-- Reference: `[Backend Architecture](mdc:docs-cursor/backend-architecture.md)`, `[OpenAPI](mdc:docs-cursor/api/openapi.yaml)`
+- Layering: Controllers → Services → Repositories/Prisma; DTOs with class-validator/class-transformer; Guards/Interceptors for authZ and ACL
+- Validation: global ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true })
+- DTOs: annotate with `@ApiProperty`, use `@Type(() => Date)` or nested types where needed; align DTOs to OpenAPI/JSON Schemas `[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)` and `[schemas](mdc:docs-cursor/api/schemas)`
+- Persistence: inject `PrismaService` (or TypeORM repo); no direct client instantiation; wrap multi-entity work in transactions
+- Errors: map Prisma errors P2002 → 409 Conflict; P2025 → 404 Not Found; validation → 422; normalize to `Error` schema
+- Pagination/Filtering: accept `skip`/`take`, `orderBy`, and typed `where` filter DTOs; translate to Prisma findMany args; return `{ data, meta }`
+- AuthN/Z: Passport JWT/OIDC; use `DefaultAuthGuard`, `ACGuard` (nest-access-control/CASL); avoid role checks inside services
+- ACL Interceptors: request validation (`AclValidateRequestInterceptor`) and response filtering (`AclFilterResponseInterceptor`) on create/update/read
+- Multi-tenant: resolve tenant from request context (header/domain); always scope queries by `tenantId`
+- Swagger: `@ApiTags`, `@ApiOkResponse`, `@ApiForbiddenResponse`, etc.; tag modules and document errors/pagination
+- Testing: Jest unit for services; Jest + Supertest API E2E per module; use test containers or isolated DB; seed factories
+- Observability: logging and tracing interceptors; correlation IDs via middleware

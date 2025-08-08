@@ -1,0 +1,47 @@
+---
+description: Amplication-style NestJS patterns for generated-safe layering and ACL
+---
+# Amplication-style Backend Patterns
+
+## File/Module Structure
+- Per module use a generated-safe layering:
+  - `resource.base.controller.ts`, `resource.base.service.ts`, `resource.base.module.ts` contain generated CRUD and relation endpoints
+  - `resource.controller.ts`, `resource.service.ts`, `resource.module.ts` extend/compose base files for custom logic
+  - DTOs live in `base/` (generated) and can be extended in non-base files when needed
+
+## Controllers (REST)
+- Endpoints per resource:
+  - `POST /resources`
+  - `GET /resources` (supports `skip`, `take`, `orderBy`, `where`)
+  - `GET /resources/:id`
+  - `PATCH /resources/:id`
+  - `DELETE /resources/:id`
+  - Relations: `GET /resources/:id/<relation>`, `POST /resources/:id/<relation>`, connect/disconnect endpoints
+- Decorate with `@ApiTags`, response decorators, and guard decorators
+
+## Services
+- Use `PrismaService` delegates: `this.prisma.resource.findMany({ where, select, skip, take, orderBy })`
+- Map Prisma errors to HTTP exceptions: P2002 → ConflictException; P2025 → NotFoundException
+- For multi-tenant, merge `{ tenantId }` into `where`
+
+## DTOs
+- Request DTOs: `CreateResourceDto`, `UpdateResourceDto`, `ResourceWhereInput`, `ResourceOrderByInput`, `ResourceListArgs { skip, take, orderBy, where }`
+- Validation via class-validator (e.g., `@IsString()`, `@IsOptional()`); class-transformer `@Type(() => ...)`
+- Swagger: `@ApiProperty({ required: true, enum, format })`
+
+## Guards & ACL
+- `DefaultAuthGuard` for JWT/OIDC
+- `ACGuard` (nest-access-control) with `RolesBuilder`
+- `@UseInterceptors(AclValidateRequestInterceptor)` on create/update, `AclFilterResponseInterceptor` on read
+
+## Error Model & Responses
+- Standardize responses to `{ data, meta }` on lists; errors conform to `Error` schema in OpenAPI
+- 400/401/403/404/409/422/429/500 documented and thrown via HttpException subclasses
+
+## Testing
+- Unit tests stub Prisma and assert service logic
+- API E2E via Supertest; mock guards for negative/positive role paths; seed minimal data
+
+## Codegen Alignment
+- Keep OpenAPI as the source of truth; generate client types for Next.js `[api/openapi.yaml](mdc:docs-cursor/api/openapi.yaml)`
+- Avoid editing base files; all customizations live in non-base files to allow regeneration
