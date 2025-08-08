@@ -1,0 +1,613 @@
+openapi: 3.1.0
+info:
+  title: School Management System API
+  version: 1.1.0
+  description: API for multi-tenant School Management System
+servers:
+  - url: https://api.example.com/api/v1
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  headers:
+    X-RateLimit-Limit:
+      description: The number of allowed requests in the current period
+      schema: { type: integer }
+    X-RateLimit-Remaining:
+      description: The number of remaining requests in the current period
+      schema: { type: integer }
+    X-RateLimit-Reset:
+      description: Time at which the current rate limit window resets in UTC epoch seconds
+      schema: { type: integer }
+  schemas:
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+    Student:
+      type: object
+      required: [firstName, lastName]
+      properties:
+        id: { type: string, format: uuid }
+        admissionNo: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        dob: { type: string, format: date }
+        gender: { type: string, enum: [male, female, other] }
+        classId: { type: string, format: uuid }
+        sectionId: { type: string, format: uuid }
+    Guardian:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        relation: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        address: { type: string }
+    Class:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        gradeLevel: { type: integer }
+    Section:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        classId: { type: string, format: uuid }
+        name: { type: string }
+        capacity: { type: integer }
+    Homework:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        subjectId: { type: string, format: uuid }
+        sectionIds:
+          type: array
+          items: { type: string, format: uuid }
+        dueAt: { type: string, format: date-time }
+    Exam:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        sessionId: { type: string, format: uuid }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+    Invoice:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        period: { type: string }
+        dueDate: { type: string, format: date }
+        amount: { type: integer, description: Amount in minor units }
+        status: { type: string, enum: [draft, issued, paid, partial, overdue, void] }
+paths:
+  /auth/login:
+    post:
+      summary: Log in and obtain tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/X-RateLimit-Limit' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  refreshToken: { type: string }
+                  expiresIn: { type: integer }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /students:
+    get:
+      summary: List students
+      parameters:
+        - in: query
+          name: classId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: sectionId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: cursor
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 200 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Student' }
+                  nextCursor: { type: string, nullable: true }
+        '401':
+          description: Unauthorized
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+    post:
+      summary: Create student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+        '422':
+          description: Validation error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /guardians:
+    post:
+      summary: Create guardian
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Guardian' }
+      responses:
+        '201': { description: Created }
+  /attendance/daily:
+    post:
+      summary: Post daily attendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [classId, date, entries]
+              properties:
+                classId: { type: string, format: uuid }
+                date: { type: string, format: date }
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    required: [studentId, status]
+                    properties:
+                      studentId: { type: string, format: uuid }
+                      status: { type: string, enum: [present, absent, late, excused] }
+                      reason: { type: string }
+      responses:
+        '200': { description: Saved }
+        '422':
+          description: Validation error
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+  /homework:
+    post:
+      summary: Create homework
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Homework' }
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List homework
+      responses:
+        '200': { description: OK }
+  /exams:
+    post:
+      summary: Create exam term
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Exam' }
+      responses:
+        '201': { description: Created }
+    get:
+      summary: List exams
+      responses:
+        '200': { description: OK }
+  /exams/{id}/compute:
+    post:
+      summary: Compute results for exam
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '202': { description: Accepted }
+  /exams/{id}/publish:
+    post:
+      summary: Publish results for exam
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: OK }
+  /fees/invoices:
+    post:
+      summary: Create invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [studentIds, period, dueDate, lines]
+              properties:
+                studentIds:
+                  type: array
+                  items: { type: string, format: uuid }
+                period: { type: string }
+                dueDate: { type: string, format: date }
+                lines:
+                  type: array
+                  items:
+                    type: object
+                    required: [feeHeadId, amount]
+                    properties:
+                      feeHeadId: { type: string, format: uuid }
+                      amount: { type: integer }
+      responses:
+        '200': { description: OK }
+  /fees/invoices/{id}/pay:
+    post:
+      summary: Initiate payment for invoice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: OK }
+  /comm/broadcasts:
+    post:
+      summary: Send broadcast
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                audience: { type: object }
+                templateId: { type: string, format: uuid }
+                scheduleAt: { type: string, format: date-time, nullable: true }
+      responses:
+        '202': { description: Accepted }
+  /students/{id}:
+    get:
+      summary: Get student by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Student' }
+    patch:
+      summary: Update student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '200': { description: OK }
+  /students/{id}/guardians:
+    post:
+      summary: Link guardian to student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Guardian' }
+      responses:
+        '201': { description: Created }
+  /attendance/students/{studentId}:
+    get:
+      summary: Get attendance by student
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttendanceRecord' }
+  /timetable/constraints:
+    post:
+      summary: Define timetable constraint
+      responses:
+        '201': { description: Created }
+  /timetable/auto-generate:
+    post:
+      summary: Auto-generate timetable
+      responses:
+        '202': { description: Accepted }
+  /timetable/sections/{sectionId}:
+    get:
+      summary: Get timetable for section
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /exams/{examId}/sessions:
+    post:
+      summary: Create exam session
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExamSession' }
+      responses:
+        '201': { description: Created }
+  /exams/sessions/{sessionId}/marks:
+    post:
+      summary: Submit marks for session
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/MarksEntry' }
+      responses:
+        '202': { description: Accepted }
+  /fees/invoices/generate:
+    post:
+      summary: Generate invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                period: { type: string }
+                gradeId: { type: string }
+      responses:
+        '202': { description: Accepted }
+  /fees/invoices/{id}:
+    get:
+      summary: Get invoice by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+  /fees/invoices/{id}/pay:
+    post:
+      summary: Initiate payment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '202': { description: Accepted }
+  /fees/webhooks/gateway:
+    post:
+      summary: Payment gateway webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: OK }
+  /admissions/applications:
+    post:
+      summary: Create application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Application' }
+      responses:
+        '201': { description: Created }
+  /admissions/applications/{id}:
+    get:
+      summary: Get application
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /admissions/applications/{id}/documents:
+    post:
+      summary: Upload document
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '201': { description: Created }
+  /admissions/applications/{id}/offer:
+    post:
+      summary: Create offer for application
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '201': { description: Created }
+  /admissions/offers/{offerId}/accept:
+    post:
+      summary: Accept offer
+      parameters:
+        - in: path
+          name: offerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /hr/staff:
+    get:
+      summary: List staff
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create staff
+      responses:
+        '201': { description: Created }
+  /hr/payroll/runs:
+    post:
+      summary: Start payroll run
+      responses:
+        '202': { description: Accepted }
+  /transport/routes:
+    get:
+      summary: List routes
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create route
+      responses:
+        '201': { description: Created }
+  /library/books:
+    get:
+      summary: List books
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Add book
+      responses:
+        '201': { description: Created }
+  /hostel/rooms:
+    get:
+      summary: List rooms
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create room
+      responses:
+        '201': { description: Created }
+  /comms/messages:
+    post:
+      summary: Send message
+      responses:
+        '202': { description: Accepted }
+  /analytics/dashboards:
+    get:
+      summary: List dashboards
+      responses:
+        '200': { description: OK }
+  /inventory/items:
+    get:
+      summary: List items
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create item
+      responses:
+        '201': { description: Created }
+  /tenants:
+    post:
+      summary: Provision tenant
+      responses:
+        '201': { description: Created }
+

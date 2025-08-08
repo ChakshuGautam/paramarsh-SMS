@@ -8,7 +8,7 @@ globs: *.ts,*.tsx
 - Tables built with TanStack Table headless core; use a shared `DataTable` wrapper (columns, sorting, filtering, pagination, row selection, toolbar)
 - Forms: React Hook Form + Zod schemas colocated; use shadcn Form controls
 - Data fetching: TanStack Query; cache keys by module/entity; handle loading with skeletons
-- Routing & access: protect routes via middleware; show feature-gated UI based on role/tenant
+- Routing & access: protect routes via Clerk middleware; use `useUser`/`useAuth` for UX gating; show feature-gated UI based on role/tenant
 - Styling: Tailwind; avoid custom CSS unless necessary; stick to design tokens
 - Performance: stream/SSR where useful; lazy-load heavy client components
 - Reference: `[Design System](mdc:docs-cursor/ui/design-system.md)`, `[UI Flows](mdc:docs-cursor/ui/flows.md)`, wireframes in `[ui/wireframes](mdc:docs-cursor/ui/wireframes)`

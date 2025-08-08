@@ -1,0 +1,8 @@
+name,permissions
+Principal,"reports.view;exams.publish;students.view"
+Admin,"admissions.manage;students.manage;attendance.mark;fees.configure;fees.invoice.manage;roles.manage"
+Teacher,"attendance.mark;exams.marks.enter"
+Accountant,"fees.configure;fees.invoice.manage;payments.reconcile;reports.view"
+Parent,""
+Student,""
+

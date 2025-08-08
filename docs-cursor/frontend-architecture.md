@@ -39,7 +39,7 @@ styles/
 - ISR/SSR policies per page; skeletons for loading states
 
 ## RBAC in FE
-- NextAuth session holds roles/tenant; usePermission hook gates UI
+- Clerk session holds roles/tenant; usePermission hook gates UI
 - All data security enforced server-side; FE gating is UX only
 - /me endpoint hydrates derived claims (taughtSectionIds, ownedStudentIds)
 

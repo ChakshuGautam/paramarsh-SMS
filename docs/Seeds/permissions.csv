@@ -1,0 +1,16 @@
+key,description
+admissions.manage,Manage admissions forms and applications
+students.view,View students directory and profiles
+students.manage,Create/Edit student records
+attendance.mark,Mark attendance for assigned sections
+exams.manage,Configure exams and components
+exams.marks.enter,Enter marks for assigned subjects
+exams.publish,Publish results
+fees.configure,Configure fee heads and structures
+fees.invoice.manage,Manage invoices
+payments.reconcile,Reconcile payments
+comm.broadcast.send,Send broadcast messages
+reports.view,View reports and dashboards
+settings.manage,Manage global settings
+roles.manage,Manage roles and permissions
+

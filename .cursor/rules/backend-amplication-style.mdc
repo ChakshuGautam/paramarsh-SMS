@@ -30,7 +30,7 @@ description: Amplication-style NestJS patterns for generated-safe layering and A
 - Swagger: `@ApiProperty({ required: true, enum, format })`
 
 ## Guards & ACL
-- `DefaultAuthGuard` for JWT/OIDC
+- `ClerkAuthGuard` (or DefaultAuthGuard backed by Clerk) for JWT
 - `ACGuard` (nest-access-control) with `RolesBuilder`
 - `@UseInterceptors(AclValidateRequestInterceptor)` on create/update, `AclFilterResponseInterceptor` on read
 

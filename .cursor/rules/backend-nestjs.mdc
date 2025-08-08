@@ -10,7 +10,7 @@ description: NestJS backend conventions (Amplication-inspired controllers/servic
 - Persistence: inject `PrismaService` (or TypeORM repo); no direct client instantiation; wrap multi-entity work in transactions
 - Errors: map Prisma errors P2002 → 409 Conflict; P2025 → 404 Not Found; validation → 422; normalize to `Error` schema
 - Pagination/Filtering: accept `skip`/`take`, `orderBy`, and typed `where` filter DTOs; translate to Prisma findMany args; return `{ data, meta }`
-- AuthN/Z: Passport JWT/OIDC; use `DefaultAuthGuard`, `ACGuard` (nest-access-control/CASL); avoid role checks inside services
+- AuthN/Z: Clerk JWT (Bearer) via verification SDK or JWKS; use `ClerkAuthGuard`, `ACGuard` (nest-access-control/CASL); avoid role checks inside services
 - ACL Interceptors: request validation (`AclValidateRequestInterceptor`) and response filtering (`AclFilterResponseInterceptor`) on create/update/read
 - Multi-tenant: resolve tenant from request context (header/domain); always scope queries by `tenantId`
 - Swagger: `@ApiTags`, `@ApiOkResponse`, `@ApiForbiddenResponse`, etc.; tag modules and document errors/pagination

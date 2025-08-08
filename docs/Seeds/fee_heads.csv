@@ -1,0 +1,6 @@
+name,tax_rate,refundable
+Tuition,0,false
+Library,0,false
+Transport,0,false
+Lab,0,false
+

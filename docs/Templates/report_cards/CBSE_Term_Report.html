@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CBSE Report Card — {{term}} {{session}}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; }
+    .meta { margin-top: 12px; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #333; padding: 6px; font-size: 12px; }
+    .remark { margin-top: 16px; }
+    footer { margin-top: 24px; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>{{school.name}}</h2>
+    <div>{{school.address}}</div>
+    <div><strong>CBSE Report Card</strong> — {{term}} ({{session}})</div>
+  </header>
+  <section class="meta">
+    <div><strong>Student:</strong> {{student.name}} | <strong>Adm No:</strong> {{student.admissionNo}} | <strong>Class/Section:</strong> {{class.name}}/{{section.name}}</div>
+    <div><strong>DOB:</strong> {{student.dob}} | <strong>Roll No:</strong> {{student.rollNo}}</div>
+  </section>
+  <table>
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Max</th>
+        <th>Marks</th>
+        <th>Grade</th>
+        <th>Teacher Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each subjects}}
+      <tr>
+        <td>{{name}}</td>
+        <td>{{max}}</td>
+        <td>{{marks}}</td>
+        <td>{{grade}}</td>
+        <td>{{remarks}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <section class="remark">
+    <div><strong>Attendance:</strong> {{attendance.present}} / {{attendance.total}} days</div>
+    <div><strong>Overall Result:</strong> {{overall.result}} | <strong>Rank:</strong> {{overall.rank}}</div>
+    <div><strong>Class Teacher Remarks:</strong> {{overall.remarks}}</div>
+  </section>
+  <footer>
+    <div>Class Teacher Signature</div>
+    <div>Principal Signature</div>
+  </footer>
+</body>
+</html>
+

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Transfer Certificate</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    h2 { text-align: center; }
+    .block { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h2>{{school.name}} — Transfer Certificate</h2>
+  <div class="block"><strong>TC No:</strong> {{tc.number}} | <strong>Date:</strong> {{date}}</div>
+  <div class="block"><strong>Student:</strong> {{student.name}} (Adm No: {{student.admissionNo}})</div>
+  <div class="block"><strong>Father/Guardian:</strong> {{guardian.name}}</div>
+  <div class="block"><strong>Class/Section:</strong> {{class.name}}/{{section.name}} | <strong>DOB:</strong> {{student.dob}}</div>
+  <div class="block"><strong>Last Attended:</strong> {{last_attended}}</div>
+  <div class="block"><strong>Reason for Leaving:</strong> {{reason}}</div>
+  <div class="block"><strong>Conduct:</strong> {{conduct}}</div>
+  <div class="block"><strong>Promotion Eligible:</strong> {{promotion_eligible}}</div>
+  <div class="block" style="margin-top:24px; display:flex; justify-content:space-between;">
+    <div>Class Teacher</div>
+    <div>Principal</div>
+    <div>Seal</div>
+  </div>
+</body>
+</html>
+

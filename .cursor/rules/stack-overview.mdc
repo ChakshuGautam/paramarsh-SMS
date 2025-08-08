@@ -6,7 +6,7 @@ alwaysApply: true
 This project uses:
 - Frontend: Next.js (App Router), shadcn/ui (Radix + Tailwind), TanStack Table/Query, React Hook Form + Zod
 - Backend: NestJS (modular), PostgreSQL + Prisma (or TypeORM), Redis, S3 object storage
-- Auth: OIDC/OAuth2, NextAuth.js (FE), Passport (BE), RBAC/ABAC
+- Auth: Clerk (hosted auth), RBAC/ABAC
 - APIs: REST, OpenAPI-first (`[openapi.yaml](mdc:docs-cursor/api/openapi.yaml)`) with JSON Schemas (`[schemas/](mdc:docs-cursor/api/schemas)`) 
 - Testing: Jest (unit + API E2E via Supertest), Cypress (web E2E)
 

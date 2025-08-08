@@ -20,7 +20,7 @@
 - tenantId (always required), schoolId, sectionId, subjectId, userId, ownedStudentIds (for parents), taughtSectionIds (for teachers), timeWindow, status
 
 ## Backend Enforcement (NestJS)
-- AuthN: Passport (JWT/OIDC). Token contains `sub`, `tenantId`, `roles[]`. Request context augments with computed claims (e.g., taughtSectionIds)
+- AuthN: Clerk (hosted JWT sessions). Token contains `sub`, `tenantId` (orgId), `roles[]`. Request context augments with computed claims (e.g., taughtSectionIds)
 - AuthZ: Amplication-style stack:
   - Guards: `DefaultAuthGuard` + `ACGuard` (nest-access-control) per route
   - Interceptors: `AclValidateRequestInterceptor` on create/update; `AclFilterResponseInterceptor` on read to strip forbidden fields/records
@@ -48,7 +48,7 @@
 - API E2E: positive/negative role tests per endpoint (Jest + Supertest)
 
 ## Frontend Enforcement (Next.js)
-- Session via NextAuth OIDC; include `tenantId`, `roles[]`, and minimal claims cache
+- Session via Clerk; include `tenantId`, `roles[]`, and minimal claims cache
 - Hooks:
   - `usePermission(resource, action, context?)` → returns boolean based on roles/claims (UX only)
   - `withPermission` HOC for components/route segments

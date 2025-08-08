@@ -1,0 +1,4 @@
+admission_no,first_name,last_name,dob,gender,class,section,guardian1_name,guardian1_phone,guardian1_email
+S-001,Aarav,Sharma,2013-05-12,male,Class 6,A,Raj Sharma,+919999999999,raj@example.com
+S-002,Diya,Patel,2014-08-23,female,Class 5,B,Meera Patel,+919888888888,meera@example.com
+

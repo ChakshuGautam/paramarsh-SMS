@@ -1,0 +1,620 @@
+openapi: 3.0.3
+info:
+  title: Paramarsh SMS API
+  version: 0.3.0
+servers:
+  - url: https://api.paramarsh.example
+tags:
+  - name: Students
+  - name: Attendance
+  - name: Exams
+  - name: Fees
+  - name: Admissions
+  - name: Timetable
+  - name: HR
+  - name: Transport
+  - name: Library
+  - name: Hostel
+  - name: Communications
+  - name: Analytics
+  - name: Inventory
+  - name: Tenants
+paths:
+  /api/v1/students:
+    get:
+      tags: [Students]
+      summary: List students
+      parameters:
+        - in: query
+          name: sectionId
+          schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Student' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+        '401': { $ref: '#/components/responses/UnauthorizedError' }
+        '403': { $ref: '#/components/responses/ForbiddenError' }
+    post:
+      tags: [Students]
+      summary: Create student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '201': { description: Created }
+        '409': { $ref: '#/components/responses/ConflictError' }
+        '422': { $ref: '#/components/responses/UnprocessableError' }
+  /api/v1/students/{id}:
+    get:
+      tags: [Students]
+      summary: Get student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Student' }
+        '404': { $ref: '#/components/responses/NotFoundError' }
+    patch:
+      tags: [Students]
+      summary: Update student
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '200': { description: OK }
+        '422': { $ref: '#/components/responses/UnprocessableError' }
+  /api/v1/students/{id}/guardians:
+    post:
+      tags: [Students]
+      summary: Link guardian
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Guardian' }
+      responses:
+        '201': { description: Created }
+  /api/v1/attendance/sections/{sectionId}/periods/{periodId}:
+    post:
+      tags: [Attendance]
+      summary: Mark attendance for a period
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema: { type: string }
+        - in: path
+          name: periodId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                records:
+                  type: array
+                  items: { $ref: '#/components/schemas/AttendanceRecord' }
+      responses:
+        '200': { description: OK }
+        '422': { $ref: '#/components/responses/UnprocessableError' }
+  /api/v1/attendance/students/{studentId}:
+    get:
+      tags: [Attendance]
+      summary: Get attendance by student
+      parameters:
+        - in: path
+          name: studentId
+          required: true
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttendanceRecord' }
+  /api/v1/exams:
+    post:
+      tags: [Exams]
+      summary: Create exam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Exam' }
+      responses:
+        '201': { description: Created }
+    get:
+      tags: [Exams]
+      summary: List exams
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Exam' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+  /api/v1/exams/{examId}/sessions:
+    post:
+      tags: [Exams]
+      summary: Create exam session
+      parameters:
+        - in: path
+          name: examId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExamSession' }
+      responses:
+        '201': { description: Created }
+  /api/v1/exams/sessions/{sessionId}/marks:
+    post:
+      tags: [Exams]
+      summary: Submit marks
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/MarksEntry' }
+      responses:
+        '202': { description: Accepted }
+  /api/v1/fees/structures:
+    post:
+      tags: [Fees]
+      summary: Create fee structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FeeStructure' }
+      responses:
+        '201': { description: Created }
+    get:
+      tags: [Fees]
+      summary: List fee structures
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: OK
+  /api/v1/fees/invoices/generate:
+    post:
+      tags: [Fees]
+      summary: Generate invoices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                period: { type: string }
+                gradeId: { type: string }
+      responses:
+        '202': { description: Accepted }
+  /api/v1/fees/invoices/{id}:
+    get:
+      tags: [Fees]
+      summary: Get invoice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invoice' }
+  /api/v1/fees/invoices/{id}/pay:
+    post:
+      tags: [Fees]
+      summary: Initiate payment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '202': { description: Accepted }
+  /api/v1/fees/webhooks/gateway:
+    post:
+      tags: [Fees]
+      summary: Payment gateway webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200': { description: OK }
+  /api/v1/admissions/applications:
+    post:
+      tags: [Admissions]
+      summary: Create application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Application' }
+      responses:
+        '201': { description: Created }
+  /api/v1/admissions/applications/{id}:
+    get:
+      tags: [Admissions]
+      summary: Get application
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+  /api/v1/admissions/applications/{id}/documents:
+    post:
+      tags: [Admissions]
+      summary: Upload document
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '201': { description: Created }
+  /api/v1/admissions/applications/{id}/offer:
+    post:
+      tags: [Admissions]
+      summary: Create offer
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '201': { description: Created }
+  /api/v1/admissions/offers/{offerId}/accept:
+    post:
+      tags: [Admissions]
+      summary: Accept offer
+      parameters:
+        - in: path
+          name: offerId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/v1/timetable/constraints:
+    post:
+      tags: [Timetable]
+      summary: Define constraint
+      responses:
+        '201': { description: Created }
+  /api/v1/timetable/auto-generate:
+    post:
+      tags: [Timetable]
+      summary: Auto-generate timetable
+      responses:
+        '202': { description: Accepted }
+  /api/v1/timetable/sections/{sectionId}:
+    get:
+      tags: [Timetable]
+      summary: Get timetable for section
+      parameters:
+        - in: path
+          name: sectionId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/v1/hr/staff:
+    get:
+      tags: [HR]
+      summary: List staff
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [HR]
+      summary: Create staff
+      responses:
+        '201': { description: Created }
+  /api/v1/hr/payroll/runs:
+    post:
+      tags: [HR]
+      summary: Start payroll run
+      responses:
+        '202': { description: Accepted }
+  /api/v1/transport/routes:
+    get:
+      tags: [Transport]
+      summary: List routes
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Transport]
+      summary: Create route
+      responses:
+        '201': { description: Created }
+  /api/v1/library/books:
+    get:
+      tags: [Library]
+    summary: List books
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Library]
+      summary: Add book
+      responses:
+        '201': { description: Created }
+  /api/v1/hostel/rooms:
+    get:
+      tags: [Hostel]
+      summary: List rooms
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Hostel]
+      summary: Create room
+      responses:
+        '201': { description: Created }
+  /api/v1/comms/messages:
+    post:
+      tags: [Communications]
+      summary: Send message
+      responses:
+        '202': { description: Accepted }
+  /api/v1/analytics/dashboards:
+    get:
+      tags: [Analytics]
+      summary: List dashboards
+      responses:
+        '200': { description: OK }
+  /api/v1/inventory/items:
+    get:
+      tags: [Inventory]
+      summary: List items
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Inventory]
+      summary: Create item
+      responses:
+        '201': { description: Created }
+  /api/v1/tenants:
+    post:
+      tags: [Tenants]
+      summary: Provision tenant
+      responses:
+        '201': { description: Created }
+components:
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSizeParam:
+      in: query
+      name: pageSize
+      schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
+    SortParam:
+      in: query
+      name: sort
+      schema: { type: string }
+  responses:
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ForbiddenError:
+      description: Forbidden
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFoundError:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ConflictError:
+      description: Conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    UnprocessableError:
+      description: Unprocessable Entity
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimitError:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ServerError:
+      description: Server Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details: { type: object }
+    Meta:
+      type: object
+      properties:
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        hasNext: { type: boolean }
+    Student:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        firstName: { type: string }
+        lastName: { type: string }
+        dateOfBirth: { type: string, format: date }
+        gender: { type: string }
+        rollNumber: { type: string }
+      required: [firstName, lastName]
+    Guardian:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        relation: { type: string }
+        phone: { type: string }
+        email: { type: string, format: email }
+    Enrollment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        sectionId: { type: string }
+        status: { type: string }
+    AttendanceRecord:
+      type: object
+      properties:
+        studentId: { type: string }
+        date: { type: string, format: date }
+        periodId: { type: string }
+        status: { type: string, enum: [P, A, L, E] }
+        reason: { type: string }
+    Exam:
+      type: object
+      properties:
+        id: { type: string }
+        termId: { type: string }
+        type: { type: string }
+        name: { type: string }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+    ExamSession:
+      type: object
+      properties:
+        id: { type: string }
+        examId: { type: string }
+        subjectId: { type: string }
+        roomId: { type: string }
+    MarksEntry:
+      type: object
+      properties:
+        studentId: { type: string }
+        sessionId: { type: string }
+        rawMarks: { type: number }
+        grade: { type: string }
+    FeeStructure:
+      type: object
+      properties:
+        id: { type: string }
+        gradeId: { type: string }
+        components:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              amount: { type: number }
+    Invoice:
+      type: object
+      properties:
+        id: { type: string }
+        studentId: { type: string }
+        period: { type: string }
+        dueDate: { type: string, format: date }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              amount: { type: number }
+        status: { type: string }
+    Payment:
+      type: object
+      properties:
+        id: { type: string }
+        invoiceId: { type: string }
+        gateway: { type: string }
+        amount: { type: number }
+        status: { type: string }
+    Application:
+      type: object
+      properties:
+        id: { type: string }
+        programId: { type: string }
+        status: { type: string }
+        score: { type: number }
+
