@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paramarsh.example/schemas/enrollment.schema.json",
+  "title": "Enrollment",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "studentId": { "type": "string", "format": "uuid" },
+    "sectionId": { "type": "string" },
+    "status": { "type": "string" }
+  },
+  "required": ["studentId", "sectionId", "status"]
+}

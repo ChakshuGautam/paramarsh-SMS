@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paramarsh.example/schemas/invoice.schema.json",
+  "title": "Invoice",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "studentId": { "type": "string" },
+    "period": { "type": "string" },
+    "dueDate": { "type": "string", "format": "date" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "amount": { "type": "number" }
+        },
+        "required": ["name", "amount"]
+      }
+    },
+    "status": { "type": "string" }
+  },
+  "required": ["studentId", "period", "dueDate", "items"]
+}

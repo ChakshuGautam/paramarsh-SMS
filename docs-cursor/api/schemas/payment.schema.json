@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paramarsh.example/schemas/payment.schema.json",
+  "title": "Payment",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "invoiceId": { "type": "string" },
+    "gateway": { "type": "string" },
+    "amount": { "type": "number" },
+    "status": { "type": "string" },
+    "reference": { "type": "string" },
+    "method": { "type": "string" }
+  },
+  "required": ["invoiceId", "gateway", "amount", "status"]
+}
