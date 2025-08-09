@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import fs from 'fs';
-import path from 'path';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export type Attendance = {
-  studentAdmissionNo: string;
+  id?: string;
+  studentId: string;
   date: string;
   status?: string;
   reason?: string;
@@ -13,49 +13,55 @@ export type Attendance = {
 
 @Injectable()
 export class AttendanceService {
-  private rows: Attendance[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor() {
-    const root = path.resolve(__dirname, '../../../../..');
-    const csvPath = path.join(root, 'docs/Seeds/attendance_records.csv');
-    if (fs.existsSync(csvPath)) {
-      const lines = fs
-        .readFileSync(csvPath, 'utf-8')
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .slice(1);
-      this.rows = lines.map((l) => {
-        const [studentAdmissionNo, date, status, reason, markedBy, source] = l.split(',');
-        return { studentAdmissionNo, date, status, reason, markedBy, source } as Attendance;
-      });
-    }
-  }
-
-  list(params: { page?: number; pageSize?: number; sort?: string; studentAdmissionNo?: string }) {
+  async list(params: { page?: number; pageSize?: number; sort?: string; studentId?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
-    let data = [...this.rows];
-    if (params.studentAdmissionNo) data = data.filter((r) => r.studentAdmissionNo === params.studentAdmissionNo);
+    const where: any = {};
+    if (params.studentId) where.studentId = params.studentId;
+    const orderBy: any = params.sort
+      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
+      : [{ date: 'desc' }];
 
-    if (params.sort) {
-      const fields = params.sort.split(',');
-      data.sort((a, b) => {
-        for (const f of fields) {
-          const desc = f.startsWith('-');
-          const key = desc ? f.slice(1) : f;
-          const av = (a as any)[key];
-          const bv = (b as any)[key];
-          if (av === bv) continue;
-          return (av > bv ? 1 : -1) * (desc ? -1 : 1);
-        }
-        return 0;
-      });
+    const [data, total] = await Promise.all([
+      this.prisma.attendanceRecord.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.attendanceRecord.count({ where }),
+    ]);
+    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  }
+
+  async create(input: Attendance) {
+    const created = await this.prisma.attendanceRecord.create({ data: {
+      studentId: input.studentId,
+      date: input.date,
+      status: input.status ?? null,
+      reason: input.reason ?? null,
+      markedBy: input.markedBy ?? null,
+      source: input.source ?? null,
+    }});
+    return { data: created };
+  }
+
+  async update(id: string, input: Partial<Attendance>) {
+    const updated = await this.prisma.attendanceRecord.update({ where: { id }, data: {
+      date: input.date ?? undefined,
+      status: input.status ?? undefined,
+      reason: input.reason ?? undefined,
+      markedBy: input.markedBy ?? undefined,
+      source: input.source ?? undefined,
+    }});
+    return { data: updated };
+  }
+
+  async remove(id: string) {
+    try {
+      await this.prisma.attendanceRecord.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Attendance record not found');
     }
-
-    const total = data.length;
-    const pageData = data.slice(skip, skip + pageSize);
-    return { data: pageData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { success: true };
   }
 }

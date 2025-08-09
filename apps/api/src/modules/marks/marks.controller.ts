@@ -1,5 +1,22 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { MarksService } from './marks.service';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
+
+class UpsertMarkDto {
+  @IsString()
+  studentId!: string;
+  @IsString()
+  sessionId!: string;
+  @IsOptional()
+  @IsNumber()
+  rawMarks?: number;
+  @IsOptional()
+  @IsString()
+  grade?: string;
+  @IsOptional()
+  @IsString()
+  comments?: string;
+}
 
 @Controller('marks')
 export class MarksController {
@@ -10,10 +27,24 @@ export class MarksController {
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
-    @Query('studentAdmissionNo') studentAdmissionNo?: string,
-    @Query('examName') examName?: string,
-    @Query('subjectId') subjectId?: string,
+    @Query('studentId') studentId?: string,
+    @Query('sessionId') sessionId?: string,
   ) {
-    return this.service.list({ page, pageSize, sort, studentAdmissionNo, examName, subjectId });
+    return this.service.list({ page, pageSize, sort, studentId, sessionId });
+  }
+
+  @Post()
+  create(@Body() body: UpsertMarkDto) {
+    return this.service.create(body);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: Partial<UpsertMarkDto>) {
+    return this.service.update(id, body);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }

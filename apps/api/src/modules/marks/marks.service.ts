@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import fs from 'fs';
-import path from 'path';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export type Mark = {
-  studentAdmissionNo: string;
-  examName: string;
-  subjectId: string;
+  id?: string;
+  studentId: string;
+  sessionId: string;
   rawMarks?: number;
   grade?: string;
   comments?: string;
@@ -13,58 +12,53 @@ export type Mark = {
 
 @Injectable()
 export class MarksService {
-  private marks: Mark[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor() {
-    const root = path.resolve(__dirname, '../../../../..');
-    const csvPath = path.join(root, 'docs/Seeds/marks.csv');
-    if (fs.existsSync(csvPath)) {
-      const lines = fs
-        .readFileSync(csvPath, 'utf-8')
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .slice(1);
-      this.marks = lines.map((l) => {
-        const [studentAdmissionNo, examName, subjectId, rawMarks, grade, comments] = l.split(',');
-        return {
-          studentAdmissionNo,
-          examName,
-          subjectId,
-          rawMarks: rawMarks ? Number(rawMarks) : undefined,
-          grade,
-          comments,
-        } as Mark;
-      });
-    }
-  }
-
-  list(params: { page?: number; pageSize?: number; sort?: string; studentAdmissionNo?: string; examName?: string; subjectId?: string }) {
+  async list(params: { page?: number; pageSize?: number; sort?: string; studentId?: string; sessionId?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
-    let data = [...this.marks];
-    if (params.studentAdmissionNo) data = data.filter((m) => m.studentAdmissionNo === params.studentAdmissionNo);
-    if (params.examName) data = data.filter((m) => m.examName === params.examName);
-    if (params.subjectId) data = data.filter((m) => m.subjectId === params.subjectId);
+    const where: any = {};
+    if (params.studentId) where.studentId = params.studentId;
+    if (params.sessionId) where.sessionId = params.sessionId;
+    const orderBy: any = params.sort
+      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
+      : [{ id: 'asc' }];
 
-    if (params.sort) {
-      const fields = params.sort.split(',');
-      data.sort((a, b) => {
-        for (const f of fields) {
-          const desc = f.startsWith('-');
-          const key = desc ? f.slice(1) : f;
-          const av = (a as any)[key];
-          const bv = (b as any)[key];
-          if (av === bv) continue;
-          return (av > bv ? 1 : -1) * (desc ? -1 : 1);
-        }
-        return 0;
-      });
+    const [data, total] = await Promise.all([
+      this.prisma.marksEntry.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.marksEntry.count({ where }),
+    ]);
+    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  }
+
+  async create(input: Mark) {
+    const created = await this.prisma.marksEntry.create({ data: {
+      studentId: input.studentId,
+      sessionId: input.sessionId,
+      rawMarks: input.rawMarks ?? null,
+      grade: input.grade ?? null,
+      comments: input.comments ?? null,
+    }});
+    return { data: created };
+  }
+
+  async update(id: string, input: Partial<Mark>) {
+    const updated = await this.prisma.marksEntry.update({ where: { id }, data: {
+      rawMarks: input.rawMarks ?? undefined,
+      grade: input.grade ?? undefined,
+      comments: input.comments ?? undefined,
+    }});
+    return { data: updated };
+  }
+
+  async remove(id: string) {
+    try {
+      await this.prisma.marksEntry.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Marks entry not found');
     }
-
-    const total = data.length;
-    const pageData = data.slice(skip, skip + pageSize);
-    return { data: pageData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { success: true };
   }
 }
