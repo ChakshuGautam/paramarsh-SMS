@@ -17,9 +17,12 @@ export class FeeStructuresService {
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
       : [{ id: 'asc' }];
 
+    const { branchId } = PrismaService.getScope();
+    const where: any = {};
+    if (branchId) where.branchId = branchId;
     const [data, total] = await Promise.all([
-      this.prisma.feeStructure.findMany({ skip, take: pageSize, orderBy, include: { components: true } }),
-      this.prisma.feeStructure.count(),
+      this.prisma.feeStructure.findMany({ where, skip, take: pageSize, orderBy, include: { components: true } }),
+      this.prisma.feeStructure.count({ where }),
     ]);
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
   }

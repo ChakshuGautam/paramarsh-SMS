@@ -37,13 +37,24 @@ export class EnrollmentsService {
   }
 
   async create(input: { studentId: string; sectionId: string; status?: string; startDate?: string; endDate?: string }) {
-    const created = await this.prisma.enrollment.create({ data: {
-      studentId: input.studentId,
-      sectionId: input.sectionId,
-      status: input.status ?? null,
-      startDate: input.startDate ?? null,
-      endDate: input.endDate ?? null,
-    }});
+    const created = await this.prisma.$transaction(async (tx) => {
+      // Close any active enrollment
+      await tx.enrollment.updateMany({ where: { studentId: input.studentId, endDate: null }, data: { endDate: input.startDate ?? new Date().toISOString().slice(0, 10), status: 'transferred' } });
+      // Create new enrollment
+      const enr = await tx.enrollment.create({ data: {
+        studentId: input.studentId,
+        sectionId: input.sectionId,
+        status: input.status ?? 'active',
+        startDate: input.startDate ?? new Date().toISOString().slice(0, 10),
+        endDate: input.endDate ?? null,
+      }});
+      // Update student's current section/class from section
+      const section = await tx.section.findUnique({ where: { id: input.sectionId } });
+      if (section) {
+        await tx.student.update({ where: { id: input.studentId }, data: { sectionId: section.id, classId: section.classId } });
+      }
+      return enr;
+    });
     return { data: created };
   }
 

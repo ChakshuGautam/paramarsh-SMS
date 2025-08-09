@@ -24,6 +24,8 @@ export class PaymentsService {
     if (params.status) where.status = params.status;
     if (params.method) where.method = params.method;
     if (params.invoiceId) where.invoiceId = params.invoiceId;
+    const { branchId } = PrismaService.getScope();
+    if (branchId) where.branchId = branchId;
 
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
@@ -37,14 +39,25 @@ export class PaymentsService {
   }
 
   async create(input: { invoiceId: string; amount?: number; status?: string; method?: string; gateway?: string; reference?: string }) {
-    const created = await this.prisma.payment.create({ data: {
-      invoiceId: input.invoiceId,
-      amount: input.amount ?? null,
-      status: input.status ?? null,
-      method: input.method ?? null,
-      gateway: input.gateway ?? null,
-      reference: input.reference ?? null,
-    }});
+    const created = await this.prisma.$transaction(async (tx) => {
+      const pay = await tx.payment.create({ data: {
+        invoiceId: input.invoiceId,
+        amount: input.amount ?? null,
+        status: input.status ?? 'success',
+        method: input.method ?? 'upi',
+        gateway: input.gateway ?? 'mock',
+        reference: input.reference ?? undefined,
+      }});
+      // Recompute invoice status by summing successful payments
+      const invoice = await tx.invoice.findUnique({ where: { id: input.invoiceId } });
+      if (invoice) {
+        const payments = await tx.payment.findMany({ where: { invoiceId: invoice.id, status: 'success' } });
+        const paid = payments.reduce((s, p) => s + (p.amount ?? 0), 0);
+        const nextStatus = !invoice.amount || paid === 0 ? invoice.status ?? 'issued' : paid >= (invoice.amount ?? 0) ? 'paid' : 'partial';
+        await tx.invoice.update({ where: { id: invoice.id }, data: { status: nextStatus } });
+      }
+      return pay;
+    });
     return { data: created };
   }
 
