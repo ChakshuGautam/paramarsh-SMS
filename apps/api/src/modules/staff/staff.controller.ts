@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { StaffService } from './staff.service';
+import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { IsOptional, IsString } from 'class-validator';
 
 class UpsertStaffDto {
@@ -37,6 +38,7 @@ export class StaffController {
   constructor(private readonly service: StaffService) {}
 
   @Get()
+  @ListDocs('List staff')
   @ApiQuery({ name: 'department', required: false })
   @ApiQuery({ name: 'status', required: false })
   list(
@@ -50,16 +52,19 @@ export class StaffController {
   }
 
   @Post()
+  @CreateDocs('Create staff')
   create(@Body() body: UpsertStaffDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
+  @UpdateDocs('Update staff')
   update(@Param('id') id: string, @Body() body: Partial<UpsertStaffDto>) {
     return this.service.update(id, body);
   }
 
   @Delete(':id')
+  @DeleteDocs('Delete staff')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

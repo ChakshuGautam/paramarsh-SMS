@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { GuardiansService } from './guardians.service';
+import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { IsOptional, IsString } from 'class-validator';
 
 class CreateGuardianDto {
@@ -28,6 +29,7 @@ export class GuardiansController {
   constructor(private readonly service: GuardiansService) {}
 
   @Get()
+  @ListDocs('List guardians')
   @ApiQuery({ name: 'studentId', required: false })
   list(
     @Query('page') page?: number,
@@ -39,16 +41,19 @@ export class GuardiansController {
   }
 
   @Post()
+  @CreateDocs('Create guardian')
   create(@Body() body: CreateGuardianDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
+  @UpdateDocs('Update guardian')
   update(@Param('id') id: string, @Body() body: Partial<CreateGuardianDto>) {
     return this.service.update(id, body);
   }
 
   @Delete(':id')
+  @DeleteDocs('Delete guardian')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

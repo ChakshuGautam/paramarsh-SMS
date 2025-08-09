@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ProblemDto } from '../../common/problem.dto';
+import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './types/create-student.dto';
 import { UpdateStudentDto } from './types/update-student.dto';
@@ -11,8 +12,7 @@ export class StudentsController {
   constructor(private readonly service: StudentsService) {}
 
   @Get()
-  @ApiOkResponse({ description: 'List students' })
-  @ApiBadRequestResponse({ description: 'Invalid query', type: ProblemDto })
+  @ListDocs('List students')
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'sort', required: false })
@@ -31,18 +31,19 @@ export class StudentsController {
   }
 
   @Post()
-  @ApiCreatedResponse({ description: 'Create student' })
-  @ApiUnprocessableEntityResponse({ description: 'Validation error', type: ProblemDto })
+  @CreateDocs('Create student')
   create(@Body() body: CreateStudentDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
+  @UpdateDocs('Update student')
   update(@Param('id') id: string, @Body() body: UpdateStudentDto) {
     return this.service.update(id, body);
   }
 
   @Delete(':id')
+  @DeleteDocs('Delete student')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
