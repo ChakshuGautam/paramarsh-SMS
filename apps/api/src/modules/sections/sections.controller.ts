@@ -1,5 +1,16 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { SectionsService } from './sections.service';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
+
+class UpsertSectionDto {
+  @IsString()
+  classId!: string;
+  @IsString()
+  name!: string;
+  @IsOptional()
+  @IsNumber()
+  capacity?: number;
+}
 
 @Controller('sections')
 export class SectionsController {
@@ -10,8 +21,23 @@ export class SectionsController {
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
-    @Query('className') className?: string,
+    @Query('classId') classId?: string,
   ) {
-    return this.service.list({ page, pageSize, sort, className });
+    return this.service.list({ page, pageSize, sort, classId });
+  }
+
+  @Post()
+  create(@Body() body: UpsertSectionDto) {
+    return this.service.create(body);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: Partial<UpsertSectionDto>) {
+    return this.service.update(id, body);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 }
