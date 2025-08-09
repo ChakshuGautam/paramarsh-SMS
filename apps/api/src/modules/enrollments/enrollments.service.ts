@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import fs from 'fs';
-import path from 'path';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export type Enrollment = {
   studentAdmissionNo: string;
@@ -13,51 +12,55 @@ export type Enrollment = {
 
 @Injectable()
 export class EnrollmentsService {
-  private enrollments: Enrollment[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor() {
-    const root = path.resolve(__dirname, '../../../../..');
-    const csvPath = path.join(root, 'docs/Seeds/enrollments.csv');
-    if (fs.existsSync(csvPath)) {
-      const lines = fs
-        .readFileSync(csvPath, 'utf-8')
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .slice(1);
-      this.enrollments = lines.map((l) => {
-        const [studentAdmissionNo, className, sectionName, status, startDate, endDate] = l.split(',');
-        return { studentAdmissionNo, className, sectionName, status, startDate, endDate } as Enrollment;
-      });
-    }
-  }
-
-  list(params: { page?: number; pageSize?: number; sort?: string; className?: string; sectionName?: string; status?: string }) {
+  async list(params: { page?: number; pageSize?: number; sort?: string; sectionId?: string; status?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
-    let data = [...this.enrollments];
-    if (params.className) data = data.filter((e) => e.className === params.className);
-    if (params.sectionName) data = data.filter((e) => e.sectionName === params.sectionName);
-    if (params.status) data = data.filter((e) => e.status === params.status);
+    const where: any = {};
+    if (params.sectionId) where.sectionId = params.sectionId;
+    if (params.status) where.status = params.status;
 
-    if (params.sort) {
-      const fields = params.sort.split(',');
-      data.sort((a, b) => {
-        for (const f of fields) {
-          const desc = f.startsWith('-');
-          const key = desc ? f.slice(1) : f;
-          const av = (a as any)[key];
-          const bv = (b as any)[key];
-          if (av === bv) continue;
-          return (av > bv ? 1 : -1) * (desc ? -1 : 1);
-        }
-        return 0;
-      });
+    const orderBy: any = params.sort
+      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
+      : [{ id: 'asc' }];
+
+    const [data, total] = await Promise.all([
+      this.prisma.enrollment.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.enrollment.count({ where }),
+    ]);
+    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  }
+
+  async create(input: { studentId: string; sectionId: string; status?: string; startDate?: string; endDate?: string }) {
+    const created = await this.prisma.enrollment.create({ data: {
+      studentId: input.studentId,
+      sectionId: input.sectionId,
+      status: input.status ?? null,
+      startDate: input.startDate ?? null,
+      endDate: input.endDate ?? null,
+    }});
+    return { data: created };
+  }
+
+  async update(id: string, input: Partial<{ sectionId: string; status: string; startDate: string; endDate: string }>) {
+    const updated = await this.prisma.enrollment.update({ where: { id }, data: {
+      sectionId: input.sectionId ?? undefined,
+      status: input.status ?? undefined,
+      startDate: input.startDate ?? undefined,
+      endDate: input.endDate ?? undefined,
+    }});
+    return { data: updated };
+  }
+
+  async remove(id: string) {
+    try {
+      await this.prisma.enrollment.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Enrollment not found');
     }
-
-    const total = data.length;
-    const pageData = data.slice(skip, skip + pageSize);
-    return { data: pageData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { success: true };
   }
 }

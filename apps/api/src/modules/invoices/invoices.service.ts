@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import fs from 'fs';
-import path from 'path';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export type Invoice = {
   studentAdmissionNo: string;
@@ -12,50 +11,63 @@ export type Invoice = {
 
 @Injectable()
 export class InvoicesService {
-  private invoices: Invoice[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor() {
-    const root = path.resolve(__dirname, '../../../../..');
-    const csvPath = path.join(root, 'docs/Seeds/invoices.csv');
-    if (fs.existsSync(csvPath)) {
-      const lines = fs
-        .readFileSync(csvPath, 'utf-8')
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .slice(1);
-      this.invoices = lines.map((l) => {
-        const [studentAdmissionNo, period, dueDate, amount, status] = l.split(',');
-        return { studentAdmissionNo, period, dueDate, amount: amount ? Number(amount) : undefined, status } as Invoice;
-      });
-    }
-  }
-
-  list(params: { page?: number; pageSize?: number; sort?: string; studentAdmissionNo?: string; status?: string }) {
+  async list(params: { page?: number; pageSize?: number; sort?: string; studentId?: string; status?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
-    let data = [...this.invoices];
-    if (params.studentAdmissionNo) data = data.filter((i) => i.studentAdmissionNo === params.studentAdmissionNo);
-    if (params.status) data = data.filter((i) => i.status === params.status);
+    const where: any = {};
+    if (params.studentId) where.studentId = params.studentId;
+    if (params.status) where.status = params.status;
+    const orderBy: any = params.sort
+      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
+      : [{ id: 'asc' }];
 
-    if (params.sort) {
-      const fields = params.sort.split(',');
-      data.sort((a, b) => {
-        for (const f of fields) {
-          const desc = f.startsWith('-');
-          const key = desc ? f.slice(1) : f;
-          const av = (a as any)[key];
-          const bv = (b as any)[key];
-          if (av === bv) continue;
-          return (av > bv ? 1 : -1) * (desc ? -1 : 1);
-        }
-        return 0;
-      });
+    const [data, total] = await Promise.all([
+      this.prisma.invoice.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.invoice.count({ where }),
+    ]);
+    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  }
+
+  async create(input: { studentId: string; period?: string; dueDate?: string; amount?: number; status?: string; withPayment?: boolean }) {
+    const inv = await this.prisma.invoice.create({ data: {
+      studentId: input.studentId,
+      period: input.period ?? null,
+      dueDate: input.dueDate ?? null,
+      amount: input.amount ?? null,
+      status: input.status ?? null,
+    }});
+    if (input.withPayment && inv.amount) {
+      await this.prisma.payment.create({ data: {
+        invoiceId: inv.id,
+        amount: inv.amount,
+        status: 'success',
+        method: 'upi',
+        gateway: 'mock',
+      }});
     }
+    return { data: inv };
+  }
 
-    const total = data.length;
-    const pageData = data.slice(skip, skip + pageSize);
-    return { data: pageData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  async update(id: string, input: Partial<{ period: string; dueDate: string; amount: number; status: string }>) {
+    const updated = await this.prisma.invoice.update({ where: { id }, data: {
+      period: input.period ?? undefined,
+      dueDate: input.dueDate ?? undefined,
+      amount: input.amount ?? undefined,
+      status: input.status ?? undefined,
+    }});
+    return { data: updated };
+  }
+
+  async remove(id: string) {
+    try {
+      await this.prisma.invoice.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Invoice not found');
+    }
+    return { success: true };
   }
 }

@@ -26,7 +26,15 @@ export class ApplicationsService {
         .filter(Boolean)
         .slice(1);
       this.apps = lines.map((l) => {
-        const [tenantSubdomain, programId, studentProfileRef, status, score, priorityTag, createdAt] = l.split(',');
+        const [
+          tenantSubdomain,
+          programId,
+          studentProfileRef,
+          status,
+          score,
+          priorityTag,
+          createdAt,
+        ] = l.split(',');
         return {
           tenantSubdomain,
           programId,
@@ -40,14 +48,21 @@ export class ApplicationsService {
     }
   }
 
-  list(params: { page?: number; pageSize?: number; sort?: string; status?: string; tenantSubdomain?: string }) {
+  list(params: {
+    page?: number;
+    pageSize?: number;
+    sort?: string;
+    status?: string;
+    tenantSubdomain?: string;
+  }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     let data = [...this.apps];
     if (params.status) data = data.filter((a) => a.status === params.status);
-    if (params.tenantSubdomain) data = data.filter((a) => a.tenantSubdomain === params.tenantSubdomain);
+    if (params.tenantSubdomain)
+      data = data.filter((a) => a.tenantSubdomain === params.tenantSubdomain);
 
     if (params.sort) {
       const fields = params.sort.split(',');
@@ -66,6 +81,9 @@ export class ApplicationsService {
 
     const total = data.length;
     const pageData = data.slice(skip, skip + pageSize);
-    return { data: pageData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return {
+      data: pageData,
+      meta: { page, pageSize, total, hasNext: skip + pageSize < total },
+    };
   }
 }
