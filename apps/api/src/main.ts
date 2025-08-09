@@ -5,7 +5,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { v4 as uuidv4 } from 'uuid';
 
-function problemJsonFactory(message: string, status: number, code?: string, detail?: any) {
+function problemJsonFactory(
+  message: string,
+  status: number,
+  code?: string,
+  detail?: any,
+) {
   return {
     type: 'about:blank',
     title: message,
@@ -35,7 +40,12 @@ async function bootstrap() {
           acc[e.property] = Object.values(e.constraints ?? {});
           return acc;
         }, {});
-        const body = problemJsonFactory('Unprocessable Entity', 422, 'validation_error', details);
+        const body = problemJsonFactory(
+          'Unprocessable Entity',
+          422,
+          'validation_error',
+          details,
+        );
         const err: any = new Error(body.title);
         err.status = 422;
         (err as any).response = body;
