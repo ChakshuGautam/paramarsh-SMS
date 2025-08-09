@@ -59,6 +59,7 @@ async function bootstrap() {
     .setTitle('Paramarsh SMS API (Mock/Nest)')
     .setDescription('Dev API aligned with OpenAPI-first approach')
     .setVersion('0.1.0')
+    .addServer('/api/v1')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

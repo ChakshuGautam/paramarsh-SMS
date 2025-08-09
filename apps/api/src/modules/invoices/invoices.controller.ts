@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
+import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 import { FilesService } from '../files/files.service';
 
@@ -30,6 +31,7 @@ export class InvoicesController {
   constructor(private readonly service: InvoicesService, private readonly files: FilesService) {}
 
   @Get()
+  @ListDocs('List invoices')
   @ApiQuery({ name: 'studentId', required: false })
   @ApiQuery({ name: 'status', required: false })
   list(
@@ -43,16 +45,19 @@ export class InvoicesController {
   }
 
   @Post()
+  @CreateDocs('Create invoice')
   create(@Body() body: UpsertInvoiceDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
+  @UpdateDocs('Update invoice')
   update(@Param('id') id: string, @Body() body: Partial<UpsertInvoiceDto>) {
     return this.service.update(id, body);
   }
 
   @Delete(':id')
+  @DeleteDocs('Delete invoice')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
+import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 class UpsertPaymentDto {
@@ -29,6 +30,7 @@ export class PaymentsController {
   constructor(private readonly service: PaymentsService) {}
 
   @Get()
+  @ListDocs('List payments')
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'method', required: false })
   @ApiQuery({ name: 'invoiceId', required: false })
@@ -44,16 +46,19 @@ export class PaymentsController {
   }
 
   @Post()
+  @CreateDocs('Create payment')
   create(@Body() body: UpsertPaymentDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
+  @UpdateDocs('Update payment')
   update(@Param('id') id: string, @Body() body: Partial<UpsertPaymentDto>) {
     return this.service.update(id, body);
   }
 
   @Delete(':id')
+  @DeleteDocs('Delete payment')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
+import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { IsOptional, IsString } from 'class-validator';
 
 class UpsertEnrollmentDto {
@@ -25,6 +26,7 @@ export class EnrollmentsController {
   constructor(private readonly service: EnrollmentsService) {}
 
   @Get()
+  @ListDocs('List enrollments')
   @ApiQuery({ name: 'sectionId', required: false })
   @ApiQuery({ name: 'status', required: false })
   list(
@@ -38,16 +40,19 @@ export class EnrollmentsController {
   }
 
   @Post()
+  @CreateDocs('Create enrollment')
   create(@Body() body: UpsertEnrollmentDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
+  @UpdateDocs('Update enrollment')
   update(@Param('id') id: string, @Body() body: Partial<UpsertEnrollmentDto>) {
     return this.service.update(id, body);
   }
 
   @Delete(':id')
+  @DeleteDocs('Delete enrollment')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }

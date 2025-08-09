@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -21,6 +21,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { FilesModule } from './modules/files/files.module';
 import { ProblemJsonFilter } from './common/problem.filter';
 import { PrismaService } from './prisma/prisma.service';
+import { RequestLoggingMiddleware } from './common/request-logging.middleware';
 
 @Module({
   imports: [
@@ -49,4 +50,8 @@ import { PrismaService } from './prisma/prisma.service';
     { provide: APP_FILTER, useClass: ProblemJsonFilter },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLoggingMiddleware).forRoutes('*');
+  }
+}
