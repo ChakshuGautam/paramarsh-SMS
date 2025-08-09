@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 import { IsOptional, IsString } from 'class-validator';
 
@@ -21,11 +22,13 @@ class UpsertAttendanceDto {
   source?: string;
 }
 
+@ApiTags('Attendance')
 @Controller('attendance/records')
 export class AttendanceController {
   constructor(private readonly service: AttendanceService) {}
 
   @Get()
+  @ApiQuery({ name: 'studentId', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,

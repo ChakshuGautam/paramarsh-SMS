@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { GuardiansService } from './guardians.service';
 import { IsOptional, IsString } from 'class-validator';
 
@@ -21,11 +22,13 @@ class CreateGuardianDto {
   address?: string;
 }
 
+@ApiTags('Guardians')
 @Controller('guardians')
 export class GuardiansController {
   constructor(private readonly service: GuardiansService) {}
 
   @Get()
+  @ApiQuery({ name: 'studentId', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,

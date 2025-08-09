@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { ClassesService } from './classes.service';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
@@ -10,11 +11,13 @@ class UpsertClassDto {
   gradeLevel?: number;
 }
 
+@ApiTags('Classes')
 @Controller('classes')
 export class ClassesController {
   constructor(private readonly service: ClassesService) {}
 
   @Get()
+  @ApiQuery({ name: 'q', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
