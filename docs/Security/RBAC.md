@@ -6,7 +6,7 @@
 - Consistent enforcement on backend; frontend only gates UX
 
 ## Roles (base)
-- student, parent, teacher, homeroom_teacher, hod, admin, finance, hr, transport_manager, librarian, nurse, counselor, discipline_officer, super_admin
+- student, parent, teacher, homeroom_teacher, hod, principal, admin, finance, hr, transport_manager, librarian, nurse, counselor, discipline_officer, super_admin
 
 ## Resources & Actions (examples)
 - attendance: read, mark, import
@@ -29,13 +29,14 @@
   - Code-first `RolesBuilder` for base RBAC
   - Optional tenant overrides from DB; merge at boot into RolesBuilder
 - Multi-tenant:
-  - Resolve tenant from domain/header; inject `tenantId` into Prisma `where` for all queries
+  - Resolve tenant from domain/header; inject `tenantId` and `branchId` into Prisma `where` for all queries
 - ABAC Options:
   - For complex conditions (e.g., teacher can mark attendance only for scheduled periods), compute condition DTOs in service and apply to `where`
   - For dynamic row filtering, use response interceptor or query scoping by attributes
 
 ### Sample Policy Concepts (pseudocode)
 - teacher: attendance.mark if `sectionId in taughtSectionIds` and `periodId in scheduledPeriods`
+- homeroom_teacher: sections.update if `sectionId == homeroomSectionId`
 - parent: students.read if `studentId in ownedStudentIds`
 - finance: fees.refund if invoice.status = Paid
 - admin: `*` on tenant

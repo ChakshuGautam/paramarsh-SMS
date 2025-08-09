@@ -97,6 +97,8 @@ model Section {
   classId     String
   name        String
   capacity    Int?
+  homeroomTeacherId String?
+  homeroomTeacher   Teacher?    @relation(fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
   class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
 }
@@ -166,4 +168,14 @@ model Staff {
   employmentType String?
   joinDate       String?
   status         String?
+  Teacher        Teacher?
+}
+
+model Teacher {
+  id              String  @id @default(uuid())
+  staffId         String
+  subjects        String?
+  qualifications  String?
+  experienceYears Int?
+  staff           Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
 }

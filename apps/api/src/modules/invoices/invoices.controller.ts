@@ -64,11 +64,7 @@ export class InvoicesController {
 
   @Post(':id/export')
   async export(@Param('id') id: string) {
-    // In a real app, render a PDF and upload. Here, just allocate a key for the future PDF
-    const filename = `invoice-${id}.pdf`;
-    const prefix = `invoices/${id}`;
-    const key = `${prefix}/${filename}`;
-    const { uploadUrl, url } = await this.files.presignUpload({ key, contentType: 'application/pdf' });
-    return { data: { key, uploadUrl, url } };
+    const { key } = await this.service.exportPdfAndUpload(id);
+    return { data: { key } };
   }
 }

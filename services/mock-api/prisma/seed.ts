@@ -341,6 +341,22 @@ async function main() {
       status: i % 17 === 0 ? "inactive" : "active",
     })),
   });
+
+  // Teachers (link subset of staff with designation Teacher)
+  const allStaff = await prisma.staff.findMany();
+  const teacherStaff = allStaff.filter((s) => (s.designation || "").toLowerCase().includes("teacher"));
+  await prisma.$transaction(
+    teacherStaff.slice(0, TARGET).map((s, idx) =>
+      prisma.teacher.create({
+        data: {
+          staffId: s.id,
+          subjects: JSON.stringify(idx % 2 === 0 ? ["math", "science"] : ["english", "history"]),
+          qualifications: idx % 3 === 0 ? "B.Ed" : idx % 3 === 1 ? "M.Ed" : "B.Sc",
+          experienceYears: (idx % 15) + 1,
+        },
+      })
+    )
+  );
 }
 
 main()

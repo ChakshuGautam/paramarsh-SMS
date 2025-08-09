@@ -14,6 +14,8 @@ ERD (Key Relationships — textual)
 - Organization 1..* Branch; Branch 1..* AcademicSession.
 - Branch 1..* Class; Class 1..* Section; Section *..* Student (through enrolments with session context).
 - Student 1..* Guardian; Student *..* Subject (enrolments for electives).
+- Staff 1..0..1 Teacher (Teacher is a specialization of Staff).
+- Section 0..1 HomeroomTeacher (via homeroomTeacherId → Teacher).
 - Teacher *..* Subject; Teacher *..* Section (assignments via timetable).
 - Exam 1..* ExamComponent; ExamComponent 1..* Mark (per Student).
 - FeeStructure 1..* Invoice (per Student per schedule); Invoice 1..* Payment.

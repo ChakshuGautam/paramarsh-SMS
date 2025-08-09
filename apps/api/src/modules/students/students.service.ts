@@ -48,17 +48,63 @@ export class StudentsService {
     };
   }
 
-  async create(input: Partial<Student>) {
-    const created = await this.prisma.student.create({
-      data: {
-        admissionNo: input.admissionNo ?? null,
-        firstName: input.firstName!,
-        lastName: input.lastName!,
-        dob: input.dob ?? null,
-        gender: input.gender ?? null,
-        classId: (input.className as any) ?? null,
-        sectionId: (input.sectionName as any) ?? null,
-      },
+  async create(
+    input: Partial<Student> & {
+      guardians?: Array<{
+        relation?: string;
+        name: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+      }>;
+      enrollment?: {
+        sectionId: string;
+        status?: string;
+        startDate?: string;
+        endDate?: string;
+      };
+    },
+  ) {
+    const created = await this.prisma.$transaction(async (tx) => {
+      const student = await tx.student.create({
+        data: {
+          admissionNo: input.admissionNo ?? null,
+          firstName: input.firstName!,
+          lastName: input.lastName!,
+          dob: input.dob ?? null,
+          gender: input.gender ?? null,
+          classId: (input.className as any) ?? null,
+          sectionId: (input.sectionName as any) ?? null,
+        },
+      });
+      if (input.guardians?.length) {
+        await Promise.all(
+          input.guardians.map((g) =>
+            tx.guardian.create({
+              data: {
+                studentId: student.id,
+                relation: g.relation ?? null,
+                name: g.name,
+                email: g.email ?? null,
+                phone: g.phone ?? null,
+                address: g.address ?? null,
+              },
+            }),
+          ),
+        );
+      }
+      if (input.enrollment?.sectionId) {
+        await tx.enrollment.create({
+          data: {
+            studentId: student.id,
+            sectionId: input.enrollment.sectionId,
+            status: input.enrollment.status ?? null,
+            startDate: input.enrollment.startDate ?? null,
+            endDate: input.enrollment.endDate ?? null,
+          },
+        });
+      }
+      return student;
     });
     return { data: created };
   }

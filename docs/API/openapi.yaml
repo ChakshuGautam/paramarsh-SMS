@@ -42,6 +42,7 @@ components:
     PageParam:
       in: query
       name: page
+      description: Page number (1-based)
       schema:
         type: integer
         minimum: 1
@@ -49,6 +50,7 @@ components:
     PageSizeParam:
       in: query
       name: pageSize
+      description: Page size
       schema:
         type: integer
         minimum: 1
@@ -57,6 +59,7 @@ components:
     SortParam:
       in: query
       name: sort
+      description: Sort expression (e.g., "name,-createdAt")
       schema:
         type: string
   responses:
@@ -104,6 +107,19 @@ components:
             $ref: '#/components/schemas/Error'
   schemas:
     Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
     Error:
       type: object
       properties:
@@ -124,9 +140,6 @@ components:
           type: integer
         hasNext:
           type: boolean
-      type: object
-      properties:
-        type: { type: string }
         title: { type: string }
         status: { type: integer }
         detail: { type: string }
@@ -172,6 +185,7 @@ components:
         classId: { type: string, format: uuid }
         name: { type: string }
         capacity: { type: integer }
+        homeroomTeacherId: { type: string, format: uuid, nullable: true }
     Homework:
       type: object
       properties:
@@ -200,6 +214,388 @@ components:
         dueDate: { type: string, format: date }
         amount: { type: integer, description: Amount in minor units }
         status: { type: string, enum: [draft, issued, paid, partial, overdue, void] }
+    AttendanceRecord:
+      type: object
+      properties:
+        studentId: { type: string }
+        date: { type: string, format: date }
+        periodId: { type: string }
+        status: { type: string, enum: [P, A, L, E] }
+        reason: { type: string }
+        markedBy: { type: string }
+        source: { type: string, enum: [manual, rfid, biometric, import] }
+    ExamSession:
+      type: object
+      properties:
+        id: { type: string }
+        examId: { type: string }
+        subjectId: { type: string }
+        roomId: { type: string }
+        schedule: { type: string, format: date-time }
+    MarksEntry:
+      type: object
+      properties:
+        studentId: { type: string }
+        sessionId: { type: string }
+        rawMarks: { type: number }
+        grade: { type: string }
+        moderatedMarks: { type: number, nullable: true }
+        comments: { type: string, nullable: true }
+    GradeScale:
+      type: object
+      properties:
+        name: { type: string }
+        bands:
+          type: array
+          items:
+            type: object
+            properties:
+              min: { type: number }
+              max: { type: number }
+              grade: { type: string }
+    FeeComponent:
+      type: object
+      properties:
+        name: { type: string }
+        type: { type: string, enum: [tuition, transport, library, lab, other] }
+        amount: { type: number }
+    FeeStructure:
+      type: object
+      properties:
+        id: { type: string }
+        gradeId: { type: string }
+        components:
+          type: array
+          items: { $ref: '#/components/schemas/FeeComponent' }
+        concessions: { type: array, items: { type: object } }
+    Payment:
+      type: object
+      properties:
+        id: { type: string }
+        invoiceId: { type: string }
+        gateway: { type: string }
+        amount: { type: number }
+        status: { type: string, enum: [pending, success, failed, refunded] }
+        reference: { type: string }
+        method: { type: string, enum: [upi, card, netbanking, cash, cheque, dd] }
+    FileObject:
+      type: object
+      properties:
+        key: { type: string }
+        bucket: { type: string }
+        url: { type: string }
+        contentType: { type: string }
+        size: { type: integer }
+        createdAt: { type: string, format: date-time }
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+    Application:
+      type: object
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        programId: { type: string }
+        studentProfileRef: { type: string }
+        status: { type: string, enum: [pending, verified, offered, accepted, waitlisted, rejected, withdrawn] }
+        score: { type: number, nullable: true }
+        priorityTag: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    Enrollment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        studentId: { type: string, format: uuid }
+        sectionId: { type: string, format: uuid }
+        status: { type: string, enum: [active, transferred, alumni] }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+    GuardianLink:
+      type: object
+      properties:
+        studentId: { type: string, format: uuid }
+        guardianId: { type: string, format: uuid }
+        custodyType: { type: string, enum: [joint, sole, other] }
+    DocumentVault:
+      type: object
+      properties:
+        ownerType: { type: string, enum: [student, staff, application] }
+        ownerId: { type: string }
+        type: { type: string }
+        url: { type: string }
+        status: { type: string, enum: [pending, verified, rejected] }
+    AttendancePolicy:
+      type: object
+      properties:
+        branchId: { type: string }
+        threshold: { type: integer }
+        alertRules: { type: object }
+    TimetableConstraint:
+      type: object
+      properties:
+        branchId: { type: string }
+        type: { type: string }
+        value: { type: object }
+    ClassPeriod:
+      type: object
+      properties:
+        timetableId: { type: string }
+        subjectId: { type: string }
+        teacherId: { type: string }
+        roomId: { type: string }
+        dayOfWeek: { type: string }
+        startTime: { type: string }
+        endTime: { type: string }
+    Substitution:
+      type: object
+      properties:
+        classPeriodId: { type: string }
+        reason: { type: string }
+        substituteTeacherId: { type: string }
+        approvedBy: { type: string }
+    DunningRule:
+      type: object
+      properties:
+        cadence: { type: string, enum: [daily, weekly] }
+        channels: { type: object }
+        thresholds: { type: object }
+    Item:
+      type: object
+      properties:
+        sku: { type: string }
+        name: { type: string }
+        category: { type: string }
+        unit: { type: string }
+        minStock: { type: integer }
+    Supplier:
+      type: object
+      properties:
+        name: { type: string }
+        contact: { type: object }
+    PurchaseRequest:
+      type: object
+      properties:
+        requesterId: { type: string }
+        items: { type: array, items: { type: object } }
+        status: { type: string, enum: [draft, submitted, approved, rejected] }
+    PurchaseOrder:
+      type: object
+      properties:
+        prId: { type: string }
+        supplierId: { type: string }
+        items: { type: array, items: { type: object } }
+        status: { type: string, enum: [created, issued, received, closed] }
+    GRN:
+      type: object
+      properties:
+        poId: { type: string }
+        items: { type: array, items: { type: object } }
+        receivedAt: { type: string, format: date-time }
+    StockLedger:
+      type: object
+      properties:
+        itemId: { type: string }
+        qtyDelta: { type: integer }
+        reason: { type: string }
+        ts: { type: string, format: date-time }
+    Hostel:
+      type: object
+      properties:
+        name: { type: string }
+        address: { type: string }
+    Room:
+      type: object
+      properties:
+        hostelId: { type: string }
+        number: { type: string }
+        capacity: { type: integer }
+    HostelAllocation:
+      type: object
+      properties:
+        studentId: { type: string }
+        roomId: { type: string }
+        start: { type: string, format: date }
+        end: { type: string, format: date }
+    ClinicVisit:
+      type: object
+      properties:
+        studentId: { type: string }
+        complaint: { type: string }
+        diagnosis: { type: string }
+        treatment: { type: string }
+        referred: { type: boolean }
+        visitAt: { type: string, format: date-time }
+    Immunization:
+      type: object
+      properties:
+        studentId: { type: string }
+        vaccine: { type: string }
+        dueAt: { type: string, format: date }
+        completedAt: { type: string, format: date, nullable: true }
+    CaseNote:
+      type: object
+      properties:
+        studentId: { type: string }
+        counselorId: { type: string }
+        summary: { type: string }
+        privacyLevel: { type: string, enum: [normal, sealed] }
+        createdAt: { type: string, format: date-time }
+    Incident:
+      type: object
+      properties:
+        studentId: { type: string }
+        type: { type: string }
+        severity: { type: string }
+        action: { type: string }
+        recordedAt: { type: string, format: date-time }
+    Template:
+      type: object
+      properties:
+        orgId: { type: string }
+        channel: { type: string, enum: [sms, email, push, whatsapp, inapp] }
+        name: { type: string }
+        locale: { type: string }
+        content: { type: string }
+        variables: { type: array, items: { type: string } }
+    Campaign:
+      type: object
+      properties:
+        orgId: { type: string }
+        name: { type: string }
+        audienceQuery: { type: object }
+        schedule: { type: string }
+        status: { type: string, enum: [draft, scheduled, running, paused, completed] }
+    Preference:
+      type: object
+      properties:
+        ownerType: { type: string, enum: [student, guardian, staff] }
+        ownerId: { type: string }
+        channel: { type: string }
+        consent: { type: boolean }
+        quietHours: { type: object }
+    Message:
+      type: object
+      properties:
+        channel: { type: string }
+        to: { type: object }
+        templateId: { type: string }
+        payload: { type: object }
+        status: { type: string, enum: [queued, sent, delivered, failed] }
+        providerId: { type: string }
+        error: { type: string }
+        sentAt: { type: string, format: date-time }
+    InvoiceGenerateRequest:
+      type: object
+      properties:
+        period: { type: string }
+        gradeId: { type: string }
+      required: [period, gradeId]
+    Staff:
+      type: object
+      properties:
+        id: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string }
+        designation: { type: string }
+        department: { type: string }
+        employmentType: { type: string, enum: [full-time, part-time, contract] }
+        joinDate: { type: string, format: date }
+        status: { type: string, enum: [active, inactive] }
+      required: [firstName, lastName, email]
+    Teacher:
+      type: object
+      description: First-class teacher entity linked to Staff
+      properties:
+        id: { type: string, format: uuid }
+        staffId: { type: string, format: uuid }
+        subjects:
+          type: array
+          items: { type: string }
+        qualifications: { type: string, nullable: true }
+        experienceYears: { type: integer, nullable: true }
+      required: [staffId]
+    Route:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        stops:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              time: { type: string, format: time }
+      required: [name]
+    Book:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        author: { type: string }
+        isbn: { type: string }
+        publishedYear: { type: integer }
+        copiesAvailable: { type: integer }
+        tags:
+          type: array
+          items: { type: string }
+      required: [title, author]
+    HostelRoom:
+      type: object
+      properties:
+        id: { type: string }
+        hostelId: { type: string }
+        roomNumber: { type: string }
+        capacity: { type: integer }
+        occupancy: { type: integer }
+      required: [hostelId, roomNumber, capacity]
+    InventoryItem:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        sku: { type: string }
+        quantity: { type: integer }
+        location: { type: string }
+        category: { type: string }
+      required: [name]
+    MessageRequest:
+      type: object
+      properties:
+        channel: { type: string, enum: [sms, email, push] }
+        to:
+          oneOf:
+            - type: string
+            - type: array
+              items: { type: string }
+        templateId: { type: string }
+        content: { type: string }
+        variables: { type: object, additionalProperties: { type: string } }
+      required: [channel, to]
+    Dashboard:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+      required: [name]
+    Tenant:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        subdomain: { type: string }
+        status: { type: string, enum: [provisioning, active, failed] }
+      required: [name, subdomain]
+    TenantProvisionRequest:
+      type: object
+      properties:
+        name: { type: string }
+        subdomain: { type: string }
+        adminEmail: { type: string, format: email }
+      required: [name, subdomain, adminEmail]
 paths:
   /students:
     get:
@@ -326,6 +722,7 @@ paths:
   /students:
     get:
       summary: List students
+      operationId: listStudents
       parameters:
         - in: query
           name: classId
@@ -358,6 +755,7 @@ paths:
               schema: { $ref: '#/components/schemas/Problem' }
     post:
       summary: Create student
+      operationId: createStudent
       requestBody:
         required: true
         content:
@@ -378,6 +776,25 @@ paths:
             application/problem+json:
               schema: { $ref: '#/components/schemas/Problem' }
   /guardians:
+    get:
+      summary: List guardians
+      tags: [Guardians]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Guardian' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create guardian
       requestBody:
@@ -389,6 +806,7 @@ paths:
         '201': { description: Created }
   /attendance/daily:
     post:
+      tags: [Attendance]
       summary: Post daily attendance
       requestBody:
         required: true
@@ -431,6 +849,25 @@ paths:
       responses:
         '200': { description: OK }
   /exams:
+    get:
+      summary: List exams
+      tags: [Exams]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Exam' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create exam term
       requestBody:
@@ -465,6 +902,25 @@ paths:
       responses:
         '200': { description: OK }
   /fees/invoices:
+    get:
+      summary: List invoices
+      tags: [Fees]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Invoice' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create invoices
       requestBody:
@@ -500,6 +956,26 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '202': { description: Accepted }
+  /fees/structures:
+    get:
+      summary: List fee structures
+      tags: [Fees]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeeStructure' }
+                  meta: { $ref: '#/components/schemas/Meta' }
   /comm/broadcasts:
     post:
       summary: Send broadcast
@@ -518,6 +994,7 @@ paths:
   /students/{id}:
     get:
       summary: Get student by id
+      operationId: getStudent
       parameters:
         - in: path
           name: id
@@ -531,6 +1008,7 @@ paths:
               schema: { $ref: '#/components/schemas/Student' }
     patch:
       summary: Update student
+      operationId: updateStudent
       parameters:
         - in: path
           name: id
@@ -546,6 +1024,7 @@ paths:
   /students/{id}/guardians:
     post:
       summary: Link guardian to student
+      operationId: linkGuardianToStudent
       parameters:
         - in: path
           name: id
@@ -663,20 +1142,18 @@ paths:
   /fees/invoices/generate:
     post:
       summary: Generate invoices
+      operationId: generateInvoices
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                period: { type: string }
-                gradeId: { type: string }
+            schema: { $ref: '#/components/schemas/InvoiceGenerateRequest' }
       responses:
         '202': { description: Accepted }
   /fees/invoices/{id}:
     get:
       summary: Get invoice by id
+      operationId: getInvoice
       parameters:
         - in: path
           name: id
@@ -698,9 +1175,113 @@ paths:
           schema: { type: string }
       responses:
         '202': { description: Accepted }
+  /files/presign-upload:
+    post:
+      summary: Get a presigned URL to upload a file
+      operationId: presignUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [filename, contentType]
+              properties:
+                filename: { type: string }
+                contentType: { type: string }
+                prefix: { type: string, description: "Optional S3 key prefix (e.g., invoices/, students/{id}/)" }
+                metadata:
+                  type: object
+                  additionalProperties: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: { type: string }
+                  uploadUrl: { type: string }
+                  url: { type: string, description: "Public or signed URL to access object after upload (if applicable)" }
+                  headers:
+                    type: object
+                    additionalProperties: { type: string }
+  /files/{key}/presign-download:
+    get:
+      summary: Get a presigned URL to download a file
+      operationId: presignDownload
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+                  expiresIn: { type: integer }
+  /files:
+    get:
+      summary: List files by prefix
+      operationId: listFiles
+      parameters:
+        - in: query
+          name: prefix
+          schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FileObject' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+  /files/{key}:
+    delete:
+      summary: Delete a file by key
+      operationId: deleteFile
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Deleted }
+  /fees/invoices/{id}/export:
+    post:
+      summary: Export invoice as PDF and store in S3
+      operationId: exportInvoicePdf
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: { type: string }
+                  url: { type: string }
   /fees/webhooks/gateway:
     post:
       summary: Payment gateway webhook
+      operationId: feesGatewayWebhook
       requestBody:
         required: true
         content:
@@ -711,6 +1292,7 @@ paths:
   /admissions/applications:
     post:
       summary: Create application
+      operationId: createApplication
       requestBody:
         required: true
         content:
@@ -718,19 +1300,44 @@ paths:
             schema: { $ref: '#/components/schemas/Application' }
       responses:
         '201': { description: Created }
+    get:
+      summary: List applications
+      operationId: listApplications
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Application' }
+                  meta: { $ref: '#/components/schemas/Meta' }
   /admissions/applications/{id}:
     get:
       summary: Get application
+      operationId: getApplication
       parameters:
         - in: path
           name: id
           required: true
           schema: { type: string }
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Application' }
   /admissions/applications/{id}/documents:
     post:
       summary: Upload document
+      operationId: uploadApplicationDocument
       parameters:
         - in: path
           name: id
@@ -746,6 +1353,7 @@ paths:
   /admissions/applications/{id}/offer:
     post:
       summary: Create offer for application
+      operationId: createOffer
       parameters:
         - in: path
           name: id
@@ -756,6 +1364,7 @@ paths:
   /admissions/offers/{offerId}/accept:
     post:
       summary: Accept offer
+      operationId: acceptOffer
       parameters:
         - in: path
           name: offerId
@@ -766,66 +1375,255 @@ paths:
   /hr/staff:
     get:
       summary: List staff
+      operationId: listStaff
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Staff' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create staff
+      operationId: createStaff
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Staff' }
       responses:
         '201': { description: Created }
+  /hr/teachers:
+    get:
+      summary: List teachers
+      operationId: listTeachers
+      tags: [HR]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Teacher' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+    post:
+      summary: Create teacher
+      operationId: createTeacher
+      tags: [HR]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Teacher' }
+      responses:
+        '201': { description: Created }
+  /hr/teachers/{id}:
+    get:
+      summary: Get teacher
+      operationId: getTeacher
+      tags: [HR]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Teacher' }
+        '404': { $ref: '#/components/responses/NotFoundError' }
+    patch:
+      summary: Update teacher
+      operationId: updateTeacher
+      tags: [HR]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Teacher' }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete teacher
+      operationId: deleteTeacher
+      tags: [HR]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Deleted }
   /hr/payroll/runs:
     post:
       summary: Start payroll run
+      operationId: startPayrollRun
       responses:
         '202': { description: Accepted }
   /transport/routes:
     get:
       summary: List routes
+      operationId: listRoutes
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Route' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create route
+      operationId: createRoute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Route' }
       responses:
         '201': { description: Created }
   /library/books:
     get:
       summary: List books
+      operationId: listBooks
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Book' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Add book
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Book' }
       responses:
         '201': { description: Created }
   /hostel/rooms:
     get:
       summary: List rooms
+      operationId: listHostelRooms
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/HostelRoom' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create room
+      operationId: createHostelRoom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HostelRoom' }
       responses:
         '201': { description: Created }
   /comms/messages:
     post:
       summary: Send message
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MessageRequest' }
       responses:
         '202': { description: Accepted }
   /analytics/dashboards:
     get:
       summary: List dashboards
+      operationId: listDashboards
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Dashboard' }
+                  meta: { $ref: '#/components/schemas/Meta' }
   /inventory/items:
     get:
       summary: List items
+      operationId: listInventoryItems
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/InventoryItem' }
+                  meta: { $ref: '#/components/schemas/Meta' }
     post:
       summary: Create item
+      operationId: createInventoryItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InventoryItem' }
       responses:
         '201': { description: Created }
   /tenants:
     post:
       summary: Provision tenant
+      operationId: provisionTenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TenantProvisionRequest' }
       responses:
-        '201': { description: Created }
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tenant' }
 
