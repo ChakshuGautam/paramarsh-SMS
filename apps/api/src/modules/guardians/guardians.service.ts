@@ -22,6 +22,8 @@ export class GuardiansService {
 
     const where: any = {};
     if (params.studentId) where.studentId = params.studentId;
+    const { branchId } = PrismaService.getScope();
+    if (branchId) where.branchId = branchId;
 
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))

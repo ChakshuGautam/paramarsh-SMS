@@ -25,6 +25,8 @@ export class StaffService {
     const where: any = {};
     if (params.department) where.department = params.department;
     if (params.status) where.status = params.status;
+    const { branchId } = PrismaService.getScope();
+    if (branchId) where.branchId = branchId;
 
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))

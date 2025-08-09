@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { v4 as uuidv4 } from 'uuid';
+import { PrismaService } from './prisma/prisma.service';
 
 function problemJsonFactory(
   message: string,
@@ -26,7 +27,9 @@ async function bootstrap() {
   app.use(helmet());
   app.use((req: any, _res: any, next: any) => {
     (req as any).requestId = req.headers['x-request-id'] || uuidv4();
-    next();
+    const tenantId = (req.headers['x-tenant-id'] as string | undefined) || undefined;
+    const branchId = (req.headers['x-branch-id'] as string | undefined) || undefined;
+    PrismaService.runWithScope({ tenantId, branchId }, () => next());
   });
   app.useGlobalPipes(
     new ValidationPipe({
