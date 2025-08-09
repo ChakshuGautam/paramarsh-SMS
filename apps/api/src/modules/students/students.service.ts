@@ -27,10 +27,12 @@ export class StudentsService {
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
+    const { branchId } = PrismaService.getScope();
+    const where: any = {};
+    if (branchId) where.branchId = branchId;
+
     const data = await this.prisma.student.findMany({
-      where: {
-        classId: params.className ? undefined : undefined,
-      },
+      where,
       skip,
       take: pageSize,
       orderBy: params.sort
@@ -41,7 +43,7 @@ export class StudentsService {
           }))
         : { id: 'asc' },
     });
-    const total = await this.prisma.student.count();
+    const total = await this.prisma.student.count({ where });
     return {
       data,
       meta: { page, pageSize, total, hasNext: skip + pageSize < total },
