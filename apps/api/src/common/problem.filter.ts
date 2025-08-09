@@ -5,8 +5,11 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiExtraModels } from '@nestjs/swagger';
+import { ProblemDto } from './problem.dto';
 
 @Catch()
+@ApiExtraModels(ProblemDto)
 export class ProblemJsonFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();

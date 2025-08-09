@@ -18,6 +18,7 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
 import { FeeStructuresModule } from './modules/fee-structures/fee-structures.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { APP_FILTER } from '@nestjs/core';
+import { FilesModule } from './modules/files/files.module';
 import { ProblemJsonFilter } from './common/problem.filter';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -39,6 +40,7 @@ import { PrismaService } from './prisma/prisma.service';
     AttendanceModule,
     FeeStructuresModule,
     StaffModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [

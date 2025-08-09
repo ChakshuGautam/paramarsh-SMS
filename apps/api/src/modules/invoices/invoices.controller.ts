@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { FilesService } from '../files/files.service';
 
 class UpsertInvoiceDto {
   @IsString()
@@ -26,7 +27,7 @@ class UpsertInvoiceDto {
 @ApiTags('Invoices')
 @Controller('fees/invoices')
 export class InvoicesController {
-  constructor(private readonly service: InvoicesService) {}
+  constructor(private readonly service: InvoicesService, private readonly files: FilesService) {}
 
   @Get()
   @ApiQuery({ name: 'studentId', required: false })
@@ -54,5 +55,15 @@ export class InvoicesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  @Post(':id/export')
+  async export(@Param('id') id: string) {
+    // In a real app, render a PDF and upload. Here, just allocate a key for the future PDF
+    const filename = `invoice-${id}.pdf`;
+    const prefix = `invoices/${id}`;
+    const key = `${prefix}/${filename}`;
+    const { uploadUrl, url } = await this.files.presignUpload({ key, contentType: 'application/pdf' });
+    return { data: { key, uploadUrl, url } };
   }
 }

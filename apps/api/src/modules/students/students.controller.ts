@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ProblemDto } from '../../common/problem.dto';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './types/create-student.dto';
 import { UpdateStudentDto } from './types/update-student.dto';
@@ -11,6 +12,7 @@ export class StudentsController {
 
   @Get()
   @ApiOkResponse({ description: 'List students' })
+  @ApiBadRequestResponse({ description: 'Invalid query', type: ProblemDto })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'pageSize', required: false })
   @ApiQuery({ name: 'sort', required: false })
@@ -30,6 +32,7 @@ export class StudentsController {
 
   @Post()
   @ApiCreatedResponse({ description: 'Create student' })
+  @ApiUnprocessableEntityResponse({ description: 'Validation error', type: ProblemDto })
   create(@Body() body: CreateStudentDto) {
     return this.service.create(body);
   }
