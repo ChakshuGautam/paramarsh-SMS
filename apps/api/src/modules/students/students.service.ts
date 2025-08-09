@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import fs from 'fs';
-import path from 'path';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export type Student = {
   admissionNo: string;
@@ -14,59 +13,56 @@ export type Student = {
 
 @Injectable()
 export class StudentsService {
-  private students: Student[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor() {
-    const root = path.resolve(__dirname, '../../../../..');
-    const csvPath = path.join(root, 'docs/Seeds/students.csv');
-    if (fs.existsSync(csvPath)) {
-      const lines = fs
-        .readFileSync(csvPath, 'utf-8')
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .slice(1);
-      this.students = lines.map((l) => {
-        const [admissionNo, firstName, lastName, dob, gender, className, sectionName] = l.split(',');
-        return { admissionNo, firstName, lastName, dob, gender, className, sectionName } as Student;
-      });
-    }
-  }
-
-  list(params: { page?: number; pageSize?: number; sort?: string; q?: string; className?: string; sectionName?: string }) {
+  async list(params: { page?: number; pageSize?: number; sort?: string; q?: string; className?: string; sectionName?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
-    let data = [...this.students];
-    if (params.className) data = data.filter((s) => s.className === params.className);
-    if (params.sectionName) data = data.filter((s) => s.sectionName === params.sectionName);
-    if (params.q) {
-      const q = params.q.toLowerCase();
-      data = data.filter(
-        (s) =>
-          s.firstName.toLowerCase().includes(q) ||
-          s.lastName.toLowerCase().includes(q) ||
-          s.admissionNo.toLowerCase().includes(q),
-      );
-    }
+    const data = await this.prisma.student.findMany({
+      where: {
+        classId: params.className ? undefined : undefined,
+      },
+      skip,
+      take: pageSize,
+      orderBy: params.sort
+        ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
+        : { id: 'asc' },
+    });
+    const total = await this.prisma.student.count();
+    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  }
+  async create(input: Partial<Student>) {
+    const created = await this.prisma.student.create({ data: {
+      admissionNo: input.admissionNo ?? null,
+      firstName: input.firstName!,
+      lastName: input.lastName!,
+      dob: input.dob ?? null,
+      gender: input.gender ?? null,
+      classId: input.className as any ?? null,
+      sectionId: input.sectionName as any ?? null,
+    }});
+    return { data: created };
+  }
 
-    if (params.sort) {
-      const fields = params.sort.split(',');
-      data.sort((a, b) => {
-        for (const f of fields) {
-          const desc = f.startsWith('-');
-          const key = desc ? f.slice(1) : f;
-          const av = (a as any)[key];
-          const bv = (b as any)[key];
-          if (av === bv) continue;
-          return (av > bv ? 1 : -1) * (desc ? -1 : 1);
-        }
-        return 0;
-      });
-    }
+  async update(id: string, input: Partial<Student>) {
+    const updated = await this.prisma.student.update({ where: { id }, data: {
+      admissionNo: input.admissionNo ?? undefined,
+      firstName: input.firstName ?? undefined,
+      lastName: input.lastName ?? undefined,
+      dob: input.dob ?? undefined,
+      gender: input.gender ?? undefined,
+    }});
+    return { data: updated };
+  }
 
-    const total = data.length;
-    const pageData = data.slice(skip, skip + pageSize);
-    return { data: pageData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  async remove(id: string) {
+    try {
+      await this.prisma.student.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Student not found');
+    }
+    return { success: true };
   }
 }

@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id               String             @id @default(uuid())
+  admissionNo      String?
+  firstName        String
+  lastName         String
+  dob              String?
+  gender           String?
+  classId          String?
+  sectionId        String?
+  guardians        Guardian[]
+  invoices         Invoice[]
+  enrollments      Enrollment[]
+  MarksEntry       MarksEntry[]
+  AttendanceRecord AttendanceRecord[]
+}
+
+model Guardian {
+  id        String  @id @default(uuid())
+  studentId String
+  relation  String?
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Exam {
+  id        String        @id @default(uuid())
+  name      String
+  startDate String?
+  endDate   String?
+  sessions  ExamSession[]
+}
+
+model FeeStructure {
+  id         String         @id @default(uuid())
+  gradeId    String?
+  components FeeComponent[]
+}
+
+model FeeComponent {
+  id             String       @id @default(uuid())
+  feeStructureId String
+  name           String
+  type           String?
+  amount         Int
+  feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id        String    @id @default(uuid())
+  studentId String
+  period    String?
+  dueDate   String?
+  amount    Int?
+  status    String?
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  payments  Payment[]
+}
+
+model Application {
+  id                String   @id @default(uuid())
+  tenantId          String?
+  programId         String?
+  studentProfileRef String?
+  status            String?
+  score             Float?
+  priorityTag       String?
+  createdAt         DateTime @default(now())
+}
+
+model Tenant {
+  id        String @id @default(uuid())
+  name      String
+  subdomain String
+}
+
+model Class {
+  id         String    @id @default(uuid())
+  name       String
+  gradeLevel Int?
+  sections   Section[]
+}
+
+model Section {
+  id          String       @id @default(uuid())
+  classId     String
+  name        String
+  capacity    Int?
+  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id        String  @id @default(uuid())
+  studentId String
+  sectionId String
+  status    String?
+  startDate String?
+  endDate   String?
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id        String  @id @default(uuid())
+  invoiceId String
+  gateway   String?
+  amount    Int?
+  status    String?
+  reference String?
+  method    String?
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model ExamSession {
+  id        String       @id @default(uuid())
+  examId    String
+  subjectId String?
+  roomId    String?
+  schedule  String?
+  exam      Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  marks     MarksEntry[]
+}
+
+model MarksEntry {
+  id        String      @id @default(uuid())
+  studentId String
+  sessionId String
+  rawMarks  Float?
+  grade     String?
+  comments  String?
+  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  session   ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model AttendanceRecord {
+  id        String  @id @default(uuid())
+  studentId String
+  date      String
+  status    String?
+  reason    String?
+  markedBy  String?
+  source    String?
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}

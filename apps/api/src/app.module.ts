@@ -19,6 +19,7 @@ import { FeeStructuresModule } from './modules/fee-structures/fee-structures.mod
 import { StaffModule } from './modules/staff/staff.module';
 import { APP_FILTER } from '@nestjs/core';
 import { ProblemJsonFilter } from './common/problem.filter';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ProblemJsonFilter } from './common/problem.filter';
   controllers: [AppController],
   providers: [
     AppService,
+    PrismaService,
     { provide: APP_FILTER, useClass: ProblemJsonFilter },
   ],
 })
