@@ -17,15 +17,19 @@ import { MarksModule } from './modules/marks/marks.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { FeeStructuresModule } from './modules/fee-structures/fee-structures.module';
 import { StaffModule } from './modules/staff/staff.module';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { FilesModule } from './modules/files/files.module';
+import { FeeSchedulesModule } from './modules/fee-schedules/fee-schedules.module';
 import { ProblemJsonFilter } from './common/problem.filter';
+import { BranchGuard } from './common/guards/branch.guard';
 import { PrismaService } from './prisma/prisma.service';
+import { PrismaModule } from './prisma/prisma.module';
 import { RequestLoggingMiddleware } from './common/request-logging.middleware';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     HealthModule,
     TenantsModule,
     StudentsModule,
@@ -42,12 +46,14 @@ import { RequestLoggingMiddleware } from './common/request-logging.middleware';
     FeeStructuresModule,
     StaffModule,
     FilesModule,
+    FeeSchedulesModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     PrismaService,
     { provide: APP_FILTER, useClass: ProblemJsonFilter },
+    { provide: APP_GUARD, useClass: BranchGuard },
   ],
 })
 export class AppModule implements NestModule {

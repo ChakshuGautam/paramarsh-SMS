@@ -65,11 +65,13 @@ export class GuardiansService {
   }
 
   async remove(id: string) {
-    try {
-      await this.prisma.guardian.delete({ where: { id } });
-    } catch {
-      throw new NotFoundException('Guardian not found');
+    const guardian = await this.prisma.guardian.findUnique({ where: { id } });
+    if (!guardian) throw new NotFoundException('Guardian not found');
+    const count = await this.prisma.guardian.count({ where: { studentId: guardian.studentId } });
+    if (count <= 1) {
+      throw new Error('Cannot delete the last guardian of a student');
     }
+    await this.prisma.guardian.delete({ where: { id } });
     return { success: true };
   }
 }
