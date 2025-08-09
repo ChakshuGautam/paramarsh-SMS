@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
@@ -22,11 +23,14 @@ class UpsertInvoiceDto {
   withPayment?: boolean;
 }
 
+@ApiTags('Invoices')
 @Controller('fees/invoices')
 export class InvoicesController {
   constructor(private readonly service: InvoicesService) {}
 
   @Get()
+  @ApiQuery({ name: 'studentId', required: false })
+  @ApiQuery({ name: 'status', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,

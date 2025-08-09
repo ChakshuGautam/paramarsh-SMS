@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
 import { IsOptional, IsString } from 'class-validator';
 
@@ -18,11 +19,14 @@ class UpsertEnrollmentDto {
   endDate?: string;
 }
 
+@ApiTags('Enrollments')
 @Controller('enrollments')
 export class EnrollmentsController {
   constructor(private readonly service: EnrollmentsService) {}
 
   @Get()
+  @ApiQuery({ name: 'sectionId', required: false })
+  @ApiQuery({ name: 'status', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,

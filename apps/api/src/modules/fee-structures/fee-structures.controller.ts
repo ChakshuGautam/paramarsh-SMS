@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { FeeStructuresService } from './fee-structures.service';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
@@ -20,6 +21,7 @@ class CreateComponentDto {
   amount!: number;
 }
 
+@ApiTags('Fee Structures')
 @Controller('fees/structures')
 export class FeeStructuresController {
   constructor(private readonly service: FeeStructuresService) {}

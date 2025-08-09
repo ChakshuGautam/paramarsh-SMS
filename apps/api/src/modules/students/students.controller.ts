@@ -1,13 +1,22 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './types/create-student.dto';
 import { UpdateStudentDto } from './types/update-student.dto';
 
+@ApiTags('Students')
 @Controller('students')
 export class StudentsController {
   constructor(private readonly service: StudentsService) {}
 
   @Get()
+  @ApiOkResponse({ description: 'List students' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'pageSize', required: false })
+  @ApiQuery({ name: 'sort', required: false })
+  @ApiQuery({ name: 'q', required: false })
+  @ApiQuery({ name: 'className', required: false })
+  @ApiQuery({ name: 'sectionName', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
@@ -20,6 +29,7 @@ export class StudentsController {
   }
 
   @Post()
+  @ApiCreatedResponse({ description: 'Create student' })
   create(@Body() body: CreateStudentDto) {
     return this.service.create(body);
   }

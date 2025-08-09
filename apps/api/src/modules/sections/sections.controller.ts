@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { SectionsService } from './sections.service';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
@@ -12,11 +13,13 @@ class UpsertSectionDto {
   capacity?: number;
 }
 
+@ApiTags('Sections')
 @Controller('sections')
 export class SectionsController {
   constructor(private readonly service: SectionsService) {}
 
   @Get()
+  @ApiQuery({ name: 'classId', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
