@@ -72,13 +72,13 @@
   - [ ] Nest CLI minimal project with `@nestjs/cli`
   - [ ] Add `dev`, `build`, `start:dev` scripts via Turborepo
 - [ ] Prisma integration
-  - [ ] Share Prisma schema or mirror models
+  - [x] Share Prisma schema or mirror models (added `apps/api/prisma/schema.prisma`)
   - [ ] Add PrismaModule and service lifecycle
 - [ ] OpenAPI-first
   - [ ] Import `docs/API/openapi.yaml` and validate routes (nestjs-zod/openapi)
   - [ ] Generate DTOs/types from OpenAPI
 - [ ] Modules for domains (Students, Fees, Exams, Admissions, HR, Tenants)
-  - [ ] Controllers → Services → Repos
+  - [x] Controllers → Services (CSV-backed reads for key modules)
   - [ ] DTO validation (class-validator)
   - [ ] Pagination/sorting/filtering utilities
 - [ ] Auth (stub for mock), tenancy scoping guards

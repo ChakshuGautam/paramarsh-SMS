@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://paramarsh.example/schemas/application.schema.json",
+    "title": "Application",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "tenantId": {
+            "type": "string"
+        },
+        "programId": {
+            "type": "string"
+        },
+        "studentProfileRef": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "verified",
+                "offered",
+                "accepted",
+                "waitlisted",
+                "rejected",
+                "withdrawn"
+            ]
+        },
+        "score": {
+            "type": "number",
+            "nullable": true
+        },
+        "priorityTag": {
+            "type": "string",
+            "nullable": true
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "required": [
+        "programId"
+    ]
+}

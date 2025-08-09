@@ -1,0 +1,73 @@
+---
+alwaysApply: true
+globs: apps/web/**/*.tsx,apps/web/**/*.ts
+description: Admin CRUD scaffolding and resource structure rules for shadcn-admin-kit + react-admin style
+---
+
+# Admin CRUD — Required Structure & Conventions
+
+This rule enforces consistent CRUD pages and structure for the admin app using shadcn-admin-kit (react-admin style). Apply to all admin changes.
+
+## CRUD Pages For Every Resource
+
+- Always implement the full CRUD set using page components:
+  - **List**: `<List>` + `<DataTable>` with sorting, pagination, and filters
+  - **Show**: `<Show>` + `<SimpleShowLayout>` (or custom) for read-only details
+  - **Edit**: `<Edit>` + `<SimpleForm>` for updates
+  - **Create**: `<Create>` + `<SimpleForm>` for creation
+- Ensure these actions are present on lists where applicable:
+  - **CreateButton**, **EditButton**, **DeleteButton**, **BulkDeleteButton**, **ExportButton**
+- Lists must support filters, sort, and pagination via the `List` context.
+
+## Resource File Layout (Do NOT inline into `AdminApp.tsx`)
+
+- Each resource must live in its own directory under `apps/web/app/admin/resources/<resource>/` with the following files:
+  - `List.tsx`, `Show.tsx`, `Edit.tsx`, `Create.tsx`, and `index.ts`
+  - Optional: `fields.tsx`, `inputs.tsx`, and `filters.tsx` to keep columns/inputs tidy
+- `apps/web/app/admin/AdminApp.tsx` should only register resources:
+  ```tsx
+  <Resource
+    name="students"
+    list={Students.List}
+    show={Students.Show}
+    edit={Students.Edit}
+    create={Students.Create}
+  />
+  ```
+  Import from each resource’s `index.ts`.
+
+## Relationships — Reference Components
+
+- When a record references another resource (e.g., `studentId`, `classId`, `sectionId`, `invoiceId`), use:
+  - **List/Show**: `<ReferenceField reference="<target>" source="<foreignKey>" />`
+  - **Edit/Create**: `<ReferenceInput reference="<target>" source="<foreignKey>" />`
+- Common relationships in this project:
+  - `students` ↔ `guardians`, `enrollments`, `invoices`, `marks`, `attendanceRecords`
+  - `classes` → `sections` → `enrollments`
+  - `invoices` → `payments`
+  - `staff` used across HR-related screens
+
+## Data Provider Alignment
+
+- Keep `apps/web/app/admin/DataProvider.tsx` mapping up to date. Ensure an entry in `resourceToPath` for every new resource.
+- Lists must map to API pagination/sort params defined in `[docs/API/openapi.yaml](mdc:docs/API/openapi.yaml)` and return `{ data, total }` (use `meta.total` when available).
+- Implement all CRUD methods: `getList`, `getOne`, `getMany`, `getManyReference`, `create`, `update`, `updateMany`, `delete`, `deleteMany`.
+
+## UX Defaults
+
+- Prefer `DataTable` (TanStack) for lists; enable column sorting and selection; include a toolbar with create/export/bulk actions.
+- Use `SimpleForm` for forms with appropriate inputs; validate where needed (Zod if applicable).
+- Use meaningful labels and show key identifiers (e.g., `admissionNo`, `status`, `period`).
+
+## Scaffolding & Guessers
+
+- You can start with guessers (`ListGuesser`, `EditGuesser`, `ShowGuesser`) to bootstrap, but replace with explicit components and move into the resource directory before committing.
+
+## OpenAPI-First
+
+- Treat `[docs/API/openapi.yaml](mdc:docs/API/openapi.yaml)` as source of truth. If you add a new resource, update the spec first, then adjust `DataProvider` mappings and resource pages accordingly.
+
+## Do Not
+
+- Do not pile multiple resources into `AdminApp.tsx` with inline JSX. Keep resources modular.
+- Do not ship list pages without filters and basic actions.

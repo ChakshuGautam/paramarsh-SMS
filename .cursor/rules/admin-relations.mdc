@@ -1,0 +1,33 @@
+---
+alwaysApply: true
+globs: apps/web/**/*.tsx,apps/web/**/*.ts
+description: Enforce Reference components and relational wiring across Admin resources
+---
+
+# Admin Relations — Reference Components Required
+
+Always wire relationships using reference components so that lists, shows, and forms are relationally rich and efficient.
+
+## Many-to-One
+
+- Use `<ReferenceField reference="<target>" source="<foreignKey>">` in list/show pages to display referenced records.
+- Use `<ReferenceInput reference="<target>" source="<foreignKey>">` with an `<AutocompleteInput />` (or SelectInput) in edit/create forms to choose related records.
+- Leverage batching via `getMany` to avoid N+1; ensure `DataProvider.getMany` is implemented.
+
+## One-to-Many
+
+- Use `<ReferenceManyField reference="<child>" target="<foreignKey>">` inside show pages to list related children (e.g., a student's invoices or attendance records).
+
+## Many-to-Many & One-to-One
+
+- Prefer reducing to one-to-many through join or details tables where applicable.
+- `<ReferenceOneField>` can be used for one-to-one via a reverse foreign key.
+
+## Structure
+
+- Keep resource files under `apps/web/app/admin/resources/<resource>/` with `List.tsx`, `Show.tsx`, `Edit.tsx`, `Create.tsx`.
+- Update `AdminApp.tsx` to register `list`, `show`, `edit`, `create` for each resource as they are added.
+
+## Data Provider
+
+- Ensure `getMany`, `getManyReference` are present and efficient. Keep `resourceToPath` in sync with API routes defined in `[docs/API/openapi.yaml](mdc:docs/API/openapi.yaml)`.

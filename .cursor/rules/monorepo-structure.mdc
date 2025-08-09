@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+description: Monorepo layout, workspace orchestration, and environment separation
+---
+
+# Monorepo Layout
+
+- Applications in `apps/` (e.g., `apps/web` for the shadcn-admin-kit SPA).
+- Local-only services in `services/` (e.g., `services/mock-api`). Do not deploy mocks.
+- Shared libraries/config in `packages/` (e.g., OpenAPI types/codegen).
+
+# Workspaces & Orchestration
+
+- Use PNPM workspaces at the root (`pnpm-workspace.yaml`).
+- Use Turborepo (`turbo.json`) to orchestrate `dev`, `build`, `lint`, `typecheck`, and `codegen`.
+
+# Environment Separation
+
+- Frontend reads the API base URL from env (e.g., `NEXT_PUBLIC_API_URL` / `VITE_JSON_SERVER_URL`) to target mock vs real APIs.
+- Keep mock server implementation separate from production code; no prod pollution.
+
+# OpenAPI-first Alignment
+
+- Treat [docs/API/openapi.yaml](mdc:docs/API/openapi.yaml) as the API source of truth.
+- Update the spec first, then regenerate types/clients and adapt the Data Provider accordingly.
