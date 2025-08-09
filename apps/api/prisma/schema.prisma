@@ -154,3 +154,16 @@ model AttendanceRecord {
   source    String?
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
+
+model Staff {
+  id             String  @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String?
+  phone          String?
+  designation    String?
+  department     String?
+  employmentType String?
+  joinDate       String?
+  status         String?
+}
