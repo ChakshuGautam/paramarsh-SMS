@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+globs: apps/web/**/*.ts,apps/web/**/*.tsx
+description: shadcn-admin-kit SPA architecture — Admin/Resource/Data Provider model
+---
+
+# shadcn-admin-kit — Admin SPA
+
+- Root `<Admin>` with child `<Resource>` per backend resource.
+- Use guessers (`ListGuesser`, `ShowGuesser`, `EditGuesser`) to bootstrap, then replace with custom components.
+- Compose pages with `<List>`, `<DataTable>`, `<Show>`, `<Edit>`, `<Create>`.
+- Relationships via `<ReferenceField>` / `<ReferenceInput>`; prefer `link="show"` where helpful.
+- Optimistic updates + Undo enabled by default for better UX.
+
+# Data Provider (Adapter)
+
+- Implement CRUD methods: `getList`, `getOne`, `getMany`, `getManyReference`, `create`, `update`, `updateMany`, `delete`, `deleteMany`.
+- Map pagination/sort/filter to the API defined in [docs/API/openapi.yaml](mdc:docs/API/openapi.yaml): `page`, `pageSize`, `sort` (or cursor/limit where specified).
+- Transform list responses from `{ data, meta }` (spec) to `{ data, total }` (use `meta.total` when present).
+- Read API base URL from env (e.g., `NEXT_PUBLIC_API_URL` or `VITE_JSON_SERVER_URL`) to target mock vs real API.
+
+# UI System
+
+- Use shadcn/ui (Radix + Tailwind) components; prefer composition over configuration.
+- Forms inside `<SimpleForm>`; validate with Zod or provided adapters.
+- Keep features modular within `apps/web`.

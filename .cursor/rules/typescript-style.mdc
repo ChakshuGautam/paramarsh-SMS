@@ -1,0 +1,22 @@
+---
+globs: *.ts,*.tsx
+description: TypeScript code style and quality guidance
+---
+
+# Code Style
+
+- Prefer clear, descriptive names over abbreviations (Clean Code). Functions are verbs; variables are nouns.
+- Use strict typing; annotate public APIs and exported functions.
+- Avoid deep nesting; use early returns and guard clauses.
+- Handle errors and edge cases explicitly; surface helpful messages.
+
+# Comments
+
+- Keep comments minimal; explain non-obvious intent, not the obvious mechanics.
+- Avoid TODOs—implement or ticket them.
+
+# Formatting
+
+- Match existing formatting; avoid reformatting unrelated code in edits.
+- Prefer multi-line constructs for readability; wrap long lines.
+

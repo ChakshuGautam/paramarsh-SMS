@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "shadcn-admin-kit": {
+      "command": "npx",
+      "args": ["-y", "shadcn@canary", "registry:mcp"],
+      "env": {
+        "REGISTRY_URL": "https://marmelab.com/shadcn-admin-kit/r/registry.json"
+      }
+    }
+  }
+}

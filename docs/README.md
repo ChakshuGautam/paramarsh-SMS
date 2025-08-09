@@ -6,7 +6,8 @@ Core
 - PRD: PRD.md
 - Architecture  ERD: Architecture_and_ERD.md
 - Tech Stack Overview: Tech_Stack.md
-- Frontend Architecture: Frontend/Architecture.md
+Frontend Architecture: Frontend/Architecture.md
+- Frontend Experiments: Frontend/Experiments/README.md
 - Backend Architecture: Backend/Architecture.md
 - Testing Strategy: Testing/Strategy.md
 - Data Dictionary: DataModel/Data_Dictionary.md
@@ -68,6 +69,9 @@ Governance  Operations
 - Operations Runbooks: Operations/Runbooks.md
 - Data Migrations: Operations/Migrations.md
 - Project Plan: Project/Plan.md
+
+Tenancy
+- Multi-tenant Strategy: Tenancy/Strategy.md
 
 UI
 - Design System: UI/Design_System.md

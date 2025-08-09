@@ -1,0 +1,33 @@
+---
+alwaysApply: true
+description: Local mock API server (Prism) usage for development only
+---
+
+# Mock API Server
+
+- Location: `services/mock-api` (separate from production apps).
+- Purpose: serve mock responses based on [docs/API/openapi.yaml](mdc:docs/API/openapi.yaml) for frontend development.
+
+# Suggested Setup (Prism)
+
+`services/mock-api/package.json` scripts:
+
+```json
+{
+  "scripts": {
+    "dev": "prism mock ../../docs/API/openapi.yaml -p 4010 --cors --errors"
+  },
+  "devDependencies": { "@stoplight/prism-cli": "^5.10.1" }
+}
+```
+
+Run locally:
+
+```bash
+pnpm --filter @sms/mock-api dev
+```
+
+Point the frontend to `http://localhost:4010` via env (e.g., `NEXT_PUBLIC_API_URL`).
+
+Do not deploy this service.
+

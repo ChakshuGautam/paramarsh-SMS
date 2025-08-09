@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+description: OpenAPI-first development workflow and conventions for Paramarsh SMS
+---
+
+# OpenAPI-first — Source of Truth
+
+- Treat [docs/API/openapi.yaml](mdc:docs/API/openapi.yaml) as the source of truth for the API.
+- Edit the spec before coding FE or BE. Keep endpoints, parameters, pagination, and errors aligned with:
+  - [docs/API/Responses_and_Conventions.md](mdc:docs/API/Responses_and_Conventions.md)
+  - [docs/API/Error_Codes.md](mdc:docs/API/Error_Codes.md)
+  - JSON Schemas in [docs/API/schemas/](mdc:docs/API/schemas)
+
+# Pagination, Sorting, Responses
+
+- Lists must follow `{ data, meta }` (see Responses & Conventions). `meta` may include `page`, `pageSize`, `total`, `hasNext`.
+- Support `page`, `pageSize`, and `sort` query params (or `cursor`, `limit` where defined).
+- Errors must be RFC7807 Problem+JSON.
+
+# Codegen (Type Safety)
+
+- Generate TypeScript types and/or clients from the OpenAPI spec.
+
+```bash
+npx openapi-typescript ./docs/API/openapi.yaml -o ./packages/openapi-types/src/types.ts --export-type
+```
+
+- FE should import generated types for endpoint responses and payloads.
+- BE DTOs should mirror schemas and validations from the spec.
+
+# Change Management
+
+- Any deviation from conventions must be documented and reflected in the spec.
+- Backwards-incompatible changes require a version bump and migration notes in docs.
+
