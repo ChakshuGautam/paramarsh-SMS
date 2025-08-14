@@ -14,14 +14,32 @@ export type Enrollment = {
 export class EnrollmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; sectionId?: string; status?: string }) {
+  async list(params: { 
+    page?: number; 
+    pageSize?: number; 
+    sort?: string; 
+    sectionId?: string; 
+    studentId?: string;
+    status?: string;
+    startDateGte?: string;
+    endDateLte?: string;
+  }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
     if (params.sectionId) where.sectionId = params.sectionId;
+    if (params.studentId) where.studentId = params.studentId;
     if (params.status) where.status = params.status;
+    
+    // Date filters
+    if (params.startDateGte) {
+      where.startDate = { ...where.startDate, gte: new Date(params.startDateGte) };
+    }
+    if (params.endDateLte) {
+      where.endDate = { ...where.endDate, lte: new Date(params.endDateLte) };
+    }
     const { branchId } = PrismaService.getScope();
     if (branchId) where.branchId = branchId;
 
@@ -34,6 +52,24 @@ export class EnrollmentsService {
       this.prisma.enrollment.count({ where }),
     ]);
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+  }
+
+  async getOne(id: string) {
+    const enrollment = await this.prisma.enrollment.findUnique({ 
+      where: { id },
+      include: {
+        student: true,
+        section: {
+          include: {
+            class: true
+          }
+        }
+      }
+    });
+    if (!enrollment) {
+      throw new NotFoundException('Enrollment not found');
+    }
+    return { data: enrollment };
   }
 
   async create(input: { studentId: string; sectionId: string; status?: string; startDate?: string; endDate?: string }) {

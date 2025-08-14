@@ -10,6 +10,7 @@ tags:
   - name: Attendance
   - name: Exams
   - name: Fees
+    - name: Fee Schedules
   - name: Admissions
   - name: Timetable
   - name: HR
@@ -268,6 +269,18 @@ components:
           type: array
           items: { $ref: '#/components/schemas/FeeComponent' }
         concessions: { type: array, items: { type: object } }
+    FeeSchedule:
+      type: object
+      properties:
+        id: { type: string }
+        feeStructureId: { type: string }
+        recurrence: { type: string, enum: [monthly, quarterly, halfYearly, annual] }
+        dueDayOfMonth: { type: integer, minimum: 1, maximum: 28 }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+        classId: { type: string, nullable: true }
+        sectionId: { type: string, nullable: true }
+        status: { type: string, enum: [active, paused], default: active }
     Payment:
       type: object
       properties:
@@ -1021,6 +1034,80 @@ paths:
             schema: { $ref: '#/components/schemas/Student' }
       responses:
         '200': { description: OK }
+  /fees/schedules:
+    get:
+      summary: List fee schedules
+      tags: [Fee Schedules]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - $ref: '#/components/parameters/SortParam'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeeSchedule' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+    post:
+      summary: Create fee schedule
+      tags: [Fee Schedules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FeeSchedule' }
+      responses:
+        '201': { description: Created }
+  /fees/schedules/{id}:
+    patch:
+      summary: Update fee schedule
+      tags: [Fee Schedules]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FeeSchedule' }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete fee schedule
+      tags: [Fee Schedules]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Deleted }
+  /fees/schedules/{id}/generate:
+    post:
+      summary: Generate invoices for next cycle for schedule
+      tags: [Fee Schedules]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created: { type: integer }
   /students/{id}/guardians:
     post:
       summary: Link guardian to student
@@ -1569,6 +1656,197 @@ paths:
             schema: { $ref: '#/components/schemas/MessageRequest' }
       responses:
         '202': { description: Accepted }
+  /comms/templates:
+    get:
+      tags: [Communications]
+      summary: List message templates
+      operationId: listTemplates
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: channel
+          in: query
+          schema:
+            type: string
+            enum: [email, sms, push, whatsapp]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Template' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+    post:
+      tags: [Communications]
+      summary: Create message template
+      operationId: createTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Template' }
+      responses:
+        '201': { description: Created }
+  /comms/campaigns:
+    get:
+      tags: [Communications]
+      summary: List campaigns
+      operationId: listCampaigns
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, scheduled, active, completed, paused]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Campaign' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+    post:
+      tags: [Communications]
+      summary: Create campaign
+      operationId: createCampaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Campaign' }
+      responses:
+        '201': { description: Created }
+  /comms/campaigns/{id}/execute:
+    post:
+      tags: [Communications]
+      summary: Execute campaign
+      operationId: executeCampaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '202': { description: Accepted }
+  /comms/messages:
+    get:
+      tags: [Communications]
+      summary: List messages
+      operationId: listMessages
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, sent, delivered, failed, bounced]
+        - name: channel
+          in: query
+          schema:
+            type: string
+            enum: [email, sms, push, whatsapp]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Message' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+    post:
+      tags: [Communications]
+      summary: Send message
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MessageRequest' }
+      responses:
+        '202': { description: Accepted }
+  /helpdesk/tickets:
+    get:
+      tags: [Communications]
+      summary: List tickets
+      operationId: listTickets
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, normal, high, urgent]
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [academic, fees, technical, general]
+        - name: assigneeId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Ticket' }
+                  meta: { $ref: '#/components/schemas/Meta' }
+    post:
+      tags: [Communications]
+      summary: Create ticket
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TicketRequest' }
+      responses:
+        '201': { description: Created }
+  /helpdesk/tickets/{id}/reply:
+    post:
+      tags: [Communications]
+      summary: Reply to ticket
+      operationId: replyToTicket
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TicketReply' }
+      responses:
+        '201': { description: Created }
   /analytics/dashboards:
     get:
       summary: List dashboards

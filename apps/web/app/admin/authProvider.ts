@@ -45,6 +45,10 @@ async function getUser(): Promise<ClerkLikeUser> {
 
 const authProvider: AuthProvider = {
   async login() {
+    // For development, auto-login without Clerk
+    if (process.env.NODE_ENV === 'development') {
+      return Promise.resolve();
+    }
     if (typeof window !== "undefined") {
       window.location.href = "/admin/login";
     }
@@ -65,6 +69,10 @@ const authProvider: AuthProvider = {
     return Promise.resolve();
   },
   async checkAuth() {
+    // For development, always authenticated
+    if (process.env.NODE_ENV === 'development') {
+      return Promise.resolve();
+    }
     return (await isSignedIn()) ? Promise.resolve() : Promise.reject();
   },
   async checkError(error: unknown) {
@@ -76,6 +84,16 @@ const authProvider: AuthProvider = {
     return Promise.resolve();
   },
   async getIdentity(): Promise<UserIdentity> {
+    // For development, return a mock admin user
+    if (process.env.NODE_ENV === 'development') {
+      return {
+        id: 'dev-user',
+        fullName: 'Development Admin',
+        avatar: undefined,
+        roles: ['admin'] // Give admin role for development
+      } as UserIdentity & { roles?: string[] };
+    }
+    
     const user = await getUser();
     if (!user) return Promise.reject();
     const identity: UserIdentity & { roles?: string[] } = {
@@ -111,6 +129,11 @@ const authProvider: AuthProvider = {
     return identity;
   },
   async getPermissions() {
+    // For development, return admin permissions
+    if (process.env.NODE_ENV === 'development') {
+      return ['admin'] as unknown;
+    }
+    
     const user = await getUser();
     // Prefer local override for RBAC testing
     let roles: string[] = [];

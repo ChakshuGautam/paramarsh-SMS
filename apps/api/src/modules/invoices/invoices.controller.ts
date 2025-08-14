@@ -1,25 +1,61 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
-import { FilesService } from '../files/files.service';
+import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID, IsDateString, IsPositive } from 'class-validator';
 
 class UpsertInvoiceDto {
+  @ApiProperty({
+    description: 'Unique identifier of the student this invoice belongs to',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    format: 'uuid'
+  })
   @IsString()
+  @IsUUID()
   studentId!: string;
+
+  @ApiPropertyOptional({
+    description: 'Billing period for the invoice (e.g., month-year or term)',
+    example: '2024-03',
+    maxLength: 50
+  })
   @IsOptional()
   @IsString()
   period?: string;
+
+  @ApiPropertyOptional({
+    description: 'Due date for the invoice payment in ISO date format',
+    example: '2024-03-15',
+    format: 'date'
+  })
   @IsOptional()
   @IsString()
+  @IsDateString()
   dueDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'Total amount due for the invoice in the smallest currency unit (e.g., cents)',
+    example: 150000,
+    minimum: 0
+  })
   @IsOptional()
   @IsNumber()
+  @IsPositive()
   amount?: number;
+
+  @ApiPropertyOptional({
+    description: 'Current status of the invoice',
+    example: 'pending',
+    enum: ['pending', 'paid', 'overdue', 'cancelled', 'partial']
+  })
   @IsOptional()
   @IsString()
   status?: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether to create a payment record along with the invoice',
+    example: false
+  })
   @IsOptional()
   @IsBoolean()
   withPayment?: boolean;
@@ -28,7 +64,7 @@ class UpsertInvoiceDto {
 @ApiTags('Invoices')
 @Controller('fees/invoices')
 export class InvoicesController {
-  constructor(private readonly service: InvoicesService, private readonly files: FilesService) {}
+  constructor(private readonly service: InvoicesService) {}
 
   @Get()
   @ListDocs('List invoices')

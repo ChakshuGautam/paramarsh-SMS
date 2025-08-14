@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import helmet from 'helmet';
+// import helmet from 'helmet'; // Temporarily disabled for CORS
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -22,9 +22,16 @@ function problemJsonFactory(
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: true // Enable CORS at creation
+  });
+  
   app.setGlobalPrefix('api/v1');
-  app.use(helmet());
+  
+  // Disable helmet in development to avoid CORS issues
+  // app.use(helmet({
+  //   crossOriginResourcePolicy: false,
+  // }));
   app.use((req: any, _res: any, next: any) => {
     (req as any).requestId = req.headers['x-request-id'] || uuidv4();
     const tenantId = (req.headers['x-tenant-id'] as string | undefined) || undefined;
@@ -57,7 +64,9 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger
+  // Swagger Configuration
+  // For detailed documentation guidelines, see: docs/swagger-documentation.md
+  // IMPORTANT: All DTOs must have @ApiProperty decorators for proper schema generation
   const config = new DocumentBuilder()
     .setTitle('Paramarsh SMS API (Mock/Nest)')
     .setDescription('Dev API aligned with OpenAPI-first approach')

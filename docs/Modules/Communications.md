@@ -19,6 +19,23 @@ APIs
 - GET /api/v1/comms/messages?status=failed
 - POST /api/v1/comms/webhooks/{provider}
 
+Notifications & Events
+
+- System notifications for important updates (fees due, timetable changes, exam results, attendance anomalies).
+- Delivery fan-out rules with throttling and quiet hours per `Preference`.
+- In-app notification center with read/unread state, archive, and per-tenant retention policy.
+
+Queries & Complaints (Helpdesk)
+
+- Entities: Ticket(id, ownerType[student,guardian,staff], ownerId, category, priority, status[open,in_progress,resolved,closed], assigneeId, messages[], attachments[], slaDueAt).
+- Screens: Inbox (filters by status/priority), Ticket detail with internal notes, student/guardian portal to raise and track.
+- APIs:
+  - POST /api/v1/helpdesk/tickets
+  - GET /api/v1/helpdesk/tickets?status&assigneeId&page&pageSize
+  - POST /api/v1/helpdesk/tickets/{id}/reply
+  - PATCH /api/v1/helpdesk/tickets/{id} (assign, change status, add tags)
+  - POST /api/v1/helpdesk/tickets/{id}/attachments
+
 Validations
 - Templating variables vs data; opt-in/opt-out enforcement; DND handling
 

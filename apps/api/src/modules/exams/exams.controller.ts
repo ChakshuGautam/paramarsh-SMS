@@ -1,17 +1,37 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ExamsService } from './exams.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsDateString } from 'class-validator';
 
 class UpsertExamDto {
+  @ApiProperty({
+    description: 'Name of the examination',
+    example: 'Final Examinations 2024',
+    minLength: 1,
+    maxLength: 200
+  })
   @IsString()
   name!: string;
+
+  @ApiPropertyOptional({
+    description: 'Start date of the examination period in ISO date format',
+    example: '2024-12-01',
+    format: 'date'
+  })
   @IsOptional()
   @IsString()
+  @IsDateString()
   startDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'End date of the examination period in ISO date format',
+    example: '2024-12-15',
+    format: 'date'
+  })
   @IsOptional()
   @IsString()
+  @IsDateString()
   endDate?: string;
 }
 
@@ -22,14 +42,34 @@ export class ExamsController {
 
   @Get()
   @ListDocs('List exams')
-  @ApiQuery({ name: 'q', required: false })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
+  @ApiQuery({ name: 'pageSize', required: false, description: 'Number of items per page', example: 10 })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'startDate:desc' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query for exam name', example: 'final' })
+  @ApiQuery({ name: 'startDate_gte', required: false, description: 'Filter exams starting on or after this date', example: '2024-01-01' })
+  @ApiQuery({ name: 'startDate_lte', required: false, description: 'Filter exams starting on or before this date', example: '2024-12-31' })
+  @ApiQuery({ name: 'endDate_gte', required: false, description: 'Filter exams ending on or after this date', example: '2024-01-01' })
+  @ApiQuery({ name: 'endDate_lte', required: false, description: 'Filter exams ending on or before this date', example: '2024-12-31' })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('q') q?: string,
+    @Query('startDate_gte') startDateGte?: string,
+    @Query('startDate_lte') startDateLte?: string,
+    @Query('endDate_gte') endDateGte?: string,
+    @Query('endDate_lte') endDateLte?: string,
   ) {
-    return this.service.list({ page, pageSize, sort, q });
+    return this.service.list({ 
+      page, 
+      pageSize, 
+      sort, 
+      q, 
+      startDateGte,
+      startDateLte,
+      endDateGte,
+      endDateLte,
+    });
   }
 
   @Post()

@@ -1,24 +1,56 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FeeStructuresService } from './fee-structures.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUUID, IsPositive } from 'class-validator';
 
 class CreateStructureDto {
+  @ApiPropertyOptional({
+    description: 'Unique identifier of the grade/class this fee structure applies to',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    format: 'uuid'
+  })
   @IsOptional()
   @IsString()
+  @IsUUID()
   gradeId?: string;
 }
 
 class CreateComponentDto {
+  @ApiProperty({
+    description: 'Unique identifier of the fee structure this component belongs to',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    format: 'uuid'
+  })
   @IsString()
+  @IsUUID()
   feeStructureId!: string;
+
+  @ApiProperty({
+    description: 'Name of the fee component',
+    example: 'Tuition Fee',
+    minLength: 1,
+    maxLength: 100
+  })
   @IsString()
   name!: string;
+
+  @ApiPropertyOptional({
+    description: 'Type or category of the fee component',
+    example: 'academic',
+    enum: ['academic', 'transport', 'hostel', 'library', 'laboratory', 'sports', 'extracurricular', 'miscellaneous']
+  })
   @IsOptional()
   @IsString()
   type?: string;
+
+  @ApiProperty({
+    description: 'Amount for this fee component in the smallest currency unit (e.g., cents)',
+    example: 50000,
+    minimum: 0
+  })
   @IsNumber()
+  @IsPositive()
   amount!: number;
 }
 

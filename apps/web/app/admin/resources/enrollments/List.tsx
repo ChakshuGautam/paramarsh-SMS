@@ -1,10 +1,33 @@
 "use client";
 
-import { List, DataTable, TextField } from "@/components/admin";
+import { List, DataTable, TextField, SelectInput, ReferenceInput, DateRangeInput } from "@/components/admin";
 import { ReferenceField } from "@/components/admin/reference-field";
 
+const enrollmentFilters = [
+  <ReferenceInput source="studentId" reference="students" label="Filter by Student">
+    <SelectInput source="studentId" optionText={(record: any) => `${record.firstName} ${record.lastName}`} />
+  </ReferenceInput>,
+  <ReferenceInput source="sectionId" reference="sections" label="Filter by Section">
+    <SelectInput source="sectionId" optionText="name" />
+  </ReferenceInput>,
+  <SelectInput source="status" label="Filter by Status" choices={[
+    { id: 'active', name: 'Active' },
+    { id: 'inactive', name: 'Inactive' },
+    { id: 'transferred', name: 'Transferred' },
+    { id: 'graduated', name: 'Graduated' },
+    { id: 'dropped', name: 'Dropped' }
+  ]} />,
+  <DateRangeInput 
+    source="enrollment"
+    sourceFrom="startDate_gte"
+    sourceTo="endDate_lte"
+    label="Filter by Period" 
+    placeholder="Select enrollment period"
+  />,
+];
+
 export const EnrollmentsList = () => (
-  <List>
+  <List filters={enrollmentFilters}>
     <DataTable>
       <DataTable.Col source="id" label="ID" />
       <DataTable.Col label="Student">

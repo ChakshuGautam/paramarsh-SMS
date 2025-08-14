@@ -1,14 +1,29 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ClassesService } from './classes.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
 
 class UpsertClassDto {
+  @ApiProperty({
+    description: 'Name of the class',
+    example: 'Class 10A',
+    minLength: 1,
+    maxLength: 100
+  })
   @IsString()
   name!: string;
+
+  @ApiPropertyOptional({
+    description: 'Grade level of the class (1-12)',
+    example: 10,
+    minimum: 1,
+    maximum: 12
+  })
   @IsOptional()
   @IsNumber()
+  @Min(1)
+  @Max(12)
   gradeLevel?: number;
 }
 
@@ -27,6 +42,11 @@ export class ClassesController {
     @Query('q') q?: string,
   ) {
     return this.service.list({ page, pageSize, sort, q });
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
   }
 
   @Post()

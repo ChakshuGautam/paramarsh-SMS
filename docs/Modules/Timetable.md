@@ -19,6 +19,14 @@ APIs
 - GET /api/v1/timetable/sections/{sectionId}
 - POST /api/v1/timetable/periods/{periodId}/substitution
 
+Exam Timetables
+
+- Publish exam session schedules by class/section and teacher invigilation duties.
+- Cross-links:
+  - GET /api/v1/exams (list exams)
+  - POST /api/v1/exams/{examId}/sessions (create sessions)
+  - GET /api/v1/exams/{id} (details including sessions)
+
 Acceptance Criteria
 - Generate within 5 minutes for 50 sections
 - Manual override without breaking constraints report

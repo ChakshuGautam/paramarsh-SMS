@@ -27,6 +27,16 @@ export class ClassesService {
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
   }
 
+  async findOne(id: string) {
+    const entity = await this.prisma.class.findUnique({
+      where: { id },
+    });
+    if (!entity) {
+      throw new NotFoundException('Class not found');
+    }
+    return { data: entity };
+  }
+
   async create(input: { name: string; gradeLevel?: number }) {
     const created = await this.prisma.class.create({ data: { name: input.name, gradeLevel: input.gradeLevel ?? null } });
     return { data: created };

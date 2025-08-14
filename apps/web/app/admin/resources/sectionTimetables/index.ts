@@ -1,0 +1,1 @@
+export { TimetableShow as Show } from '../../timetable/TimetableShow';

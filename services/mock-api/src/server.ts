@@ -239,6 +239,61 @@ app.get("/fees/structures", async (req, res) => {
   });
 });
 
+// Fee Schedules (mock)
+app.get("/fees/schedules", async (req, res) => {
+  const { skip, take, page, pageSize } = parsePagination(req.query as ListQuery);
+  const sort = parseSort((req.query as ListQuery).sort);
+  const branchId = getBranchId(req);
+  const orderBy = sort.field ? { [sort.field]: sort.order } : { id: "asc" };
+  const where: any = { ...(withBranch(branchId) as any) };
+  const [data, total] = await Promise.all([
+    prisma.feeSchedule.findMany({ skip, take, orderBy, where }),
+    prisma.feeSchedule.count({ where }),
+  ]);
+  res.json({ data, meta: { page, pageSize, total, hasNext: skip + take < total } });
+});
+
+app.post("/fees/schedules", async (req, res) => {
+  const branchId = getBranchId(req);
+  const payload = { ...(req.body || {}), ...withBranch(branchId) };
+  const data = await prisma.feeSchedule.create({ data: payload });
+  res.status(201).json({ data });
+});
+
+app.patch("/fees/schedules/:id", async (req, res) => {
+  const branchId = getBranchId(req);
+  const existing = await prisma.feeSchedule.findFirst({ where: { id: req.params.id, ...(withBranch(branchId) as any) } });
+  if (!existing) return res.status(404).json({ message: "Not found" });
+  const data = await prisma.feeSchedule.update({ where: { id: existing.id }, data: req.body });
+  res.json({ data });
+});
+
+app.delete("/fees/schedules/:id", async (req, res) => {
+  const branchId = getBranchId(req);
+  const existing = await prisma.feeSchedule.findFirst({ where: { id: req.params.id, ...(withBranch(branchId) as any) } });
+  if (!existing) return res.status(404).end();
+  await prisma.feeSchedule.delete({ where: { id: existing.id } });
+  res.status(204).end();
+});
+
+app.post("/fees/schedules/:id/generate", async (req, res) => {
+  const schedule = await prisma.feeSchedule.findUnique({ where: { id: req.params.id } });
+  if (!schedule) return res.status(404).json({ message: "Not found" });
+  if (schedule.status === "paused") return res.json({ created: 0 });
+
+  const structure = await prisma.feeStructure.findUnique({ where: { id: schedule.feeStructureId }, include: { components: true } });
+  if (!structure) return res.status(404).json({ message: "Fee structure not found" });
+  const amount = (structure.components || []).reduce((sum, c) => sum + (c.amount || 0), 0);
+
+  const students = await prisma.student.findMany({ select: { id: true } });
+  const created = await Promise.all(
+    students.map((s) =>
+      prisma.invoice.create({ data: { studentId: s.id, period: new Date().toISOString().slice(0, 7), dueDate: new Date().toISOString().slice(0, 10), amount, status: "issued" } })
+    )
+  );
+  res.status(202).json({ created: created.length });
+});
+
 app.get("/fees/structures/:id", async (req, res) => {
   const branchId = getBranchId(req);
   const data = await prisma.feeStructure.findFirst({

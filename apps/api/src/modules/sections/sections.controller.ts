@@ -1,16 +1,39 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SectionsService } from './sections.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUUID, Length, Min, Max } from 'class-validator';
 
 class UpsertSectionDto {
+  @ApiProperty({
+    description: 'Class ID that this section belongs to',
+    example: 'class-123',
+    format: 'uuid'
+  })
   @IsString()
+  @IsUUID()
   classId!: string;
+
+  @ApiProperty({
+    description: 'Section name',
+    example: 'A',
+    minLength: 1,
+    maxLength: 50
+  })
   @IsString()
+  @Length(1, 50)
   name!: string;
+
+  @ApiPropertyOptional({
+    description: 'Maximum capacity of students in this section',
+    example: 40,
+    minimum: 1,
+    maximum: 200
+  })
   @IsOptional()
   @IsNumber()
+  @Min(1)
+  @Max(200)
   capacity?: number;
 }
 
@@ -29,6 +52,12 @@ export class SectionsController {
     @Query('classId') classId?: string,
   ) {
     return this.service.list({ page, pageSize, sort, classId });
+  }
+
+  @Get(':id')
+  @ApiQuery({ name: 'id', required: true })
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
   }
 
   @Post()

@@ -117,10 +117,11 @@ export const ListView = <RecordType extends RaRecord = RaRecord>(
       </div>
       {filters && filters.length ? (
         <FilterLiveForm>
-          <div className="flex flex-col md:flex-row md:items-center gap-2 flex-wrap">
+          <div className="flex flex-row items-center gap-2 overflow-x-auto pb-2">
             {filters.map((filter) =>
               cloneElement(filter, {
                 key: filter.key ?? (filter.props as { source: string }).source,
+                className: "flex-shrink-0",
               })
             )}
           </div>

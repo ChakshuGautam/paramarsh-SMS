@@ -1,0 +1,405 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
+
+describe('API Endpoints (e2e)', () => {
+  let app: INestApplication;
+  let prisma: PrismaService;
+  let createdIds: { [key: string]: string[] } = {
+    students: [],
+    classes: [],
+    sections: [],
+    guardians: [],
+  };
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api/v1');
+    prisma = app.get(PrismaService);
+    
+    await app.init();
+  });
+
+  afterAll(async () => {
+    // Clean up created test data
+    for (const studentId of createdIds.students) {
+      await prisma.student.delete({ where: { id: studentId } }).catch(() => {});
+    }
+    for (const guardianId of createdIds.guardians) {
+      await prisma.guardian.delete({ where: { id: guardianId } }).catch(() => {});
+    }
+    for (const sectionId of createdIds.sections) {
+      await prisma.section.delete({ where: { id: sectionId } }).catch(() => {});
+    }
+    for (const classId of createdIds.classes) {
+      await prisma.class.delete({ where: { id: classId } }).catch(() => {});
+    }
+    
+    await app.close();
+  });
+
+  describe('Classes API', () => {
+    it('GET /api/v1/classes should return list', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/classes')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body).toHaveProperty('meta');
+          expect(res.body.meta).toHaveProperty('total');
+          expect(res.body.meta).toHaveProperty('page');
+          expect(res.body.meta).toHaveProperty('pageSize');
+        });
+    });
+
+    it('POST /api/v1/classes should create a class', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/classes')
+        .send({
+          name: 'Test Class',
+          gradeLevel: 5,
+        })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.name).toBe('Test Class');
+          createdIds.classes.push(res.body.data.id);
+        });
+    });
+
+    it('GET /api/v1/classes/:id should return single class', async () => {
+      const classId = createdIds.classes[0];
+      if (!classId) {
+        // Create a class first if none exists
+        const createRes = await request(app.getHttpServer())
+          .post('/api/v1/classes')
+          .send({ name: 'Test Class 2', gradeLevel: 6 });
+        createdIds.classes.push(createRes.body.data.id);
+      }
+      
+      return request(app.getHttpServer())
+        .get(`/api/v1/classes/${createdIds.classes[0]}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.id).toBe(createdIds.classes[0]);
+        });
+    });
+
+    it('PATCH /api/v1/classes/:id should update class', async () => {
+      const classId = createdIds.classes[0];
+      return request(app.getHttpServer())
+        .patch(`/api/v1/classes/${classId}`)
+        .send({ name: 'Updated Class Name' })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data.name).toBe('Updated Class Name');
+        });
+    });
+  });
+
+  describe('Sections API', () => {
+    let testClassId: string;
+
+    beforeAll(async () => {
+      // Ensure we have a class for sections
+      const classRes = await request(app.getHttpServer())
+        .post('/api/v1/classes')
+        .send({ name: 'Class for Sections', gradeLevel: 7 });
+      testClassId = classRes.body.data.id;
+      createdIds.classes.push(testClassId);
+    });
+
+    it('GET /api/v1/sections should return list', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/sections')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body).toHaveProperty('meta');
+        });
+    });
+
+    it('POST /api/v1/sections should create a section', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/sections')
+        .send({
+          classId: testClassId,
+          name: 'Section A',
+          capacity: 30,
+        })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.name).toBe('Section A');
+          createdIds.sections.push(res.body.data.id);
+        });
+    });
+
+    it('GET /api/v1/sections/:id should return single section', async () => {
+      const sectionId = createdIds.sections[0];
+      return request(app.getHttpServer())
+        .get(`/api/v1/sections/${sectionId}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.id).toBe(sectionId);
+        });
+    });
+
+    it('GET /api/v1/sections with classId filter should filter results', () => {
+      return request(app.getHttpServer())
+        .get(`/api/v1/sections?classId=${testClassId}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          const sections = res.body.data;
+          if (sections.length > 0) {
+            expect(sections.every((s: any) => s.classId === testClassId)).toBe(true);
+          }
+        });
+    });
+  });
+
+  describe('Students API', () => {
+    let testClassId: string;
+    let testSectionId: string;
+
+    beforeAll(async () => {
+      // Create test class and section
+      const classRes = await request(app.getHttpServer())
+        .post('/api/v1/classes')
+        .send({ name: 'Class for Students', gradeLevel: 8 });
+      testClassId = classRes.body.data.id;
+      createdIds.classes.push(testClassId);
+
+      const sectionRes = await request(app.getHttpServer())
+        .post('/api/v1/sections')
+        .send({
+          classId: testClassId,
+          name: 'Section B',
+          capacity: 25,
+        });
+      testSectionId = sectionRes.body.data.id;
+      createdIds.sections.push(testSectionId);
+    });
+
+    it('GET /api/v1/students should return list', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/students')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body).toHaveProperty('meta');
+          expect(res.body.meta).toHaveProperty('total');
+        });
+    });
+
+    it('POST /api/v1/students should create a student', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/students')
+        .send({
+          admissionNo: `TEST${Date.now()}`,
+          firstName: 'John',
+          lastName: 'Doe',
+          dob: '2010-01-01',
+          gender: 'MALE',
+          classId: testClassId,
+          sectionId: testSectionId,
+        })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.firstName).toBe('John');
+          expect(res.body.data.lastName).toBe('Doe');
+          createdIds.students.push(res.body.data.id);
+        });
+    });
+
+    it('GET /api/v1/students/:id should return single student', async () => {
+      const studentId = createdIds.students[0];
+      return request(app.getHttpServer())
+        .get(`/api/v1/students/${studentId}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.id).toBe(studentId);
+        });
+    });
+
+    it('PATCH /api/v1/students/:id should update student', async () => {
+      const studentId = createdIds.students[0];
+      return request(app.getHttpServer())
+        .patch(`/api/v1/students/${studentId}`)
+        .send({ firstName: 'Jane' })
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data.firstName).toBe('Jane');
+        });
+    });
+
+    it('GET /api/v1/students with pagination should work', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/students?page=1&pageSize=10')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.meta.page).toBe(1);
+          expect(res.body.meta.pageSize).toBe(10);
+          expect(res.body.data.length).toBeLessThanOrEqual(10);
+        });
+    });
+  });
+
+  describe('Guardians API', () => {
+    let testStudentId: string;
+
+    beforeAll(async () => {
+      // Create a student for guardian
+      const classRes = await request(app.getHttpServer())
+        .post('/api/v1/classes')
+        .send({ name: 'Class for Guardian Test', gradeLevel: 9 });
+      const classId = classRes.body.data.id;
+      createdIds.classes.push(classId);
+
+      const sectionRes = await request(app.getHttpServer())
+        .post('/api/v1/sections')
+        .send({
+          classId: classId,
+          name: 'Section C',
+          capacity: 20,
+        });
+      const sectionId = sectionRes.body.data.id;
+      createdIds.sections.push(sectionId);
+
+      const studentRes = await request(app.getHttpServer())
+        .post('/api/v1/students')
+        .send({
+          admissionNo: `GUARD${Date.now()}`,
+          firstName: 'Student',
+          lastName: 'WithGuardian',
+          dob: '2010-01-01',
+          gender: 'FEMALE',
+          classId: classId,
+          sectionId: sectionId,
+        });
+      testStudentId = studentRes.body.data.id;
+      createdIds.students.push(testStudentId);
+    });
+
+    it('GET /api/v1/guardians should return list', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/guardians')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(Array.isArray(res.body.data)).toBe(true);
+          expect(res.body).toHaveProperty('meta');
+        });
+    });
+
+    it('POST /api/v1/guardians should create a guardian', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/guardians')
+        .send({
+          studentId: testStudentId,
+          name: 'Parent Name',
+          relation: 'Father',
+          email: 'parent@test.com',
+          phone: '1234567890',
+        })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.name).toBe('Parent Name');
+          createdIds.guardians.push(res.body.data.id);
+        });
+    });
+
+    it('GET /api/v1/guardians/:id should return single guardian', async () => {
+      const guardianId = createdIds.guardians[0];
+      return request(app.getHttpServer())
+        .get(`/api/v1/guardians/${guardianId}`)
+        .expect(200)
+        .expect((res) => {
+          expect(res.body).toHaveProperty('data');
+          expect(res.body.data).toHaveProperty('id');
+          expect(res.body.data.id).toBe(guardianId);
+        });
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('GET /api/v1/students/:id should return 404 for non-existent student', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/students/non-existent-id')
+        .expect(404);
+    });
+
+    it('POST /api/v1/students should return 422 for invalid data', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/students')
+        .send({
+          // Missing required fields
+          firstName: 'John',
+        })
+        .expect(422);
+    });
+
+    it('PATCH /api/v1/classes/:id should return 404 for non-existent class', () => {
+      return request(app.getHttpServer())
+        .patch('/api/v1/classes/non-existent-id')
+        .send({ name: 'Updated' })
+        .expect(404);
+    });
+  });
+
+  describe('Sorting and Filtering', () => {
+    it('GET /api/v1/students with sort should order results', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/students?sort=firstName')
+        .expect(200)
+        .expect((res) => {
+          const data = res.body.data;
+          if (data.length > 1) {
+            // Check if sorted alphabetically
+            for (let i = 1; i < data.length; i++) {
+              expect(data[i].firstName >= data[i - 1].firstName).toBe(true);
+            }
+          }
+        });
+    });
+
+    it('GET /api/v1/students with reverse sort should order results descending', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/students?sort=-firstName')
+        .expect(200)
+        .expect((res) => {
+          const data = res.body.data;
+          if (data.length > 1) {
+            // Check if sorted reverse alphabetically
+            for (let i = 1; i < data.length; i++) {
+              expect(data[i].firstName <= data[i - 1].firstName).toBe(true);
+            }
+          }
+        });
+    });
+  });
+});

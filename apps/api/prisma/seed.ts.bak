@@ -1,0 +1,572 @@
+import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log('🌱 Starting database seed...');
+
+  // Clean existing data
+  console.log('🧹 Cleaning existing data...');
+  await cleanDatabase();
+
+  // Create tenant
+  console.log('🏢 Creating tenant...');
+  await createTenant();
+
+  // Create academic structure
+  console.log('📚 Creating classes and sections...');
+  const { classes, sections } = await createClassesAndSections();
+
+  // Create subjects
+  console.log('📖 Creating subjects...');
+  const subjects = await createSubjects();
+
+  // Create staff and teachers
+  console.log('👥 Creating staff and teachers...');
+  const { staff, teachers } = await createStaffAndTeachers();
+
+  // Create students and guardians
+  console.log('👨‍👩‍👧‍👦 Creating students and guardians...');
+  const { students, guardians } = await createStudentsAndGuardians(sections);
+
+  // Create enrollments
+  console.log('📝 Creating enrollments...');
+  await createEnrollments(students, sections);
+
+  // Create fee structures and invoices
+  console.log('💰 Creating fee structures and invoices...');
+  await createFeesAndInvoices(students, classes);
+
+  // Create exams and marks
+  console.log('📊 Creating exams and marks...');
+  await createExamsAndMarks(students, subjects, classes);
+
+  // Create attendance records
+  console.log('✅ Creating attendance records...');
+  await createAttendanceRecords(students);
+
+  // Create timetable
+  console.log('📅 Creating timetable...');
+  await createTimetable(sections, subjects, teachers);
+
+  // Create communication templates and campaigns
+  console.log('📧 Creating communication data...');
+  await createCommunicationData();
+
+  console.log('✅ Seed completed successfully!');
+}
+
+async function cleanDatabase() {
+  // Delete in reverse order of dependencies
+  await prisma.ticketAttachment.deleteMany({});
+  await prisma.ticketMessage.deleteMany({});
+  await prisma.ticket.deleteMany({});
+  await prisma.preference.deleteMany({});
+  await prisma.message.deleteMany({});
+  await prisma.campaign.deleteMany({});
+  await prisma.template.deleteMany({});
+  await prisma.substitution.deleteMany({});
+  await prisma.timetablePeriod.deleteMany({});
+  await prisma.timeSlot.deleteMany({});
+  await prisma.room.deleteMany({});
+  await prisma.attendanceRecord.deleteMany({});
+  await prisma.marksEntry.deleteMany({});
+  await prisma.examSession.deleteMany({});
+  await prisma.exam.deleteMany({});
+  await prisma.payment.deleteMany({});
+  await prisma.invoice.deleteMany({});
+  await prisma.feeSchedule.deleteMany({});
+  await prisma.feeComponent.deleteMany({});
+  await prisma.feeStructure.deleteMany({});
+  await prisma.enrollment.deleteMany({});
+  await prisma.application.deleteMany({});
+  await prisma.student.deleteMany({});
+  await prisma.guardian.deleteMany({});
+  await prisma.teacher.deleteMany({});
+  await prisma.staff.deleteMany({});
+  await prisma.subject.deleteMany({});
+  await prisma.section.deleteMany({});
+  await prisma.class.deleteMany({});
+  await prisma.tenant.deleteMany({});
+}
+
+async function createTenant() {
+  await prisma.tenant.create({
+    data: {
+      id: 'tenant_default',
+      name: 'Default School District',
+      subdomain: 'default'
+    }
+  });
+}
+
+async function createClassesAndSections() {
+  const classNames = [
+    'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 
+    'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 
+    'Grade 10', 'Grade 11', 'Grade 12'
+  ];
+
+  const classes = await Promise.all(
+    classNames.map((name, index) => 
+      prisma.class.create({
+        data: {
+          name,
+          gradeLevel: index
+        }
+      })
+    )
+  );
+
+  const sections = [];
+  for (const cls of classes) {
+    const sectionNames = cls.gradeLevel < 6 ? ['A', 'B'] : ['A', 'B', 'C'];
+    for (const sectionName of sectionNames) {
+      const section = await prisma.section.create({
+        data: {
+          name: sectionName,
+          classId: cls.id,
+          capacity: 30
+        }
+      });
+      sections.push(section);
+    }
+  }
+
+  return { classes, sections };
+}
+
+async function createSubjects() {
+  const subjectData = [
+    { name: 'Mathematics', code: 'MATH', credits: 4 },
+    { name: 'English Language', code: 'ENG', credits: 4 },
+    { name: 'Science', code: 'SCI', credits: 4 },
+    { name: 'Social Studies', code: 'SOC', credits: 3 },
+    { name: 'Physical Education', code: 'PE', credits: 2 },
+    { name: 'Art', code: 'ART', credits: 2 },
+    { name: 'Music', code: 'MUS', credits: 2 },
+    { name: 'Computer Science', code: 'CS', credits: 3 },
+    { name: 'Physics', code: 'PHY', credits: 4 },
+    { name: 'Chemistry', code: 'CHEM', credits: 4 },
+    { name: 'Biology', code: 'BIO', credits: 4 },
+    { name: 'History', code: 'HIST', credits: 3 },
+    { name: 'Geography', code: 'GEO', credits: 3 },
+    { name: 'Literature', code: 'LIT', credits: 3 },
+    { name: 'Foreign Language', code: 'FL', credits: 3 }
+  ];
+
+  return Promise.all(
+    subjectData.map(subject =>
+      prisma.subject.create({
+        data: subject
+      })
+    )
+  );
+}
+
+async function createStaffAndTeachers() {
+  const departments = ['Academic', 'Administration', 'Support', 'IT', 'Finance'];
+  const positions = ['Principal', 'Vice Principal', 'Coordinator', 'Secretary', 'Accountant'];
+  
+  const staff = [];
+  for (let i = 0; i < 20; i++) {
+    const staffMember = await prisma.staff.create({
+      data: {
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
+        email: faker.internet.email(),
+        phone: faker.phone.number(),
+        department: faker.helpers.arrayElement(departments),
+        designation: faker.helpers.arrayElement(positions),
+        employmentType: 'FULL_TIME',
+        joinDate: faker.date.past({ years: 5 }).toISOString(),
+        status: 'ACTIVE'
+      }
+    });
+    staff.push(staffMember);
+  }
+
+  const teachers = [];
+  const subjects = await prisma.subject.findMany();
+  
+  // Create additional staff members who will be teachers
+  for (let i = 0; i < 30; i++) {
+    const teacherStaff = await prisma.staff.create({
+      data: {
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
+        email: faker.internet.email(),
+        phone: faker.phone.number(),
+        department: 'Academic',
+        designation: 'Teacher',
+        employmentType: 'FULL_TIME',
+        joinDate: faker.date.past({ years: 5 }).toISOString(),
+        status: 'ACTIVE'
+      }
+    });
+    
+    const teacher = await prisma.teacher.create({
+      data: {
+        staffId: teacherStaff.id,
+        subjects: faker.helpers.arrayElement(subjects).name,
+        qualifications: faker.helpers.arrayElement(['B.Ed', 'M.Ed', 'B.Sc', 'M.Sc', 'B.A', 'M.A']),
+        experienceYears: faker.number.int({ min: 1, max: 20 })
+      }
+    });
+    teachers.push(teacher);
+  }
+
+  return { staff, teachers };
+}
+
+async function createStudentsAndGuardians(sections: any[]) {
+  const students = [];
+  const guardians = [];
+  let admissionNo = 1000;
+
+  for (const section of sections) {
+    const studentCount = faker.number.int({ min: 20, max: 28 });
+    
+    for (let i = 0; i < studentCount; i++) {
+      // Create student first (Guardian depends on Student)
+      const classData = await prisma.class.findFirst({ where: { id: section.classId } });
+      const student = await prisma.student.create({
+        data: {
+          admissionNo: `ADM${admissionNo++}`,
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          dob: faker.date.birthdate({ min: 5, max: 18, mode: 'age' }).toISOString(),
+          gender: faker.helpers.arrayElement(['MALE', 'FEMALE']),
+          classId: section.classId,
+          sectionId: section.id
+        }
+      });
+      students.push(student);
+
+      // Create guardian after student
+      const guardian = await prisma.guardian.create({
+        data: {
+          studentId: student.id,
+          name: `${faker.person.firstName()} ${faker.person.lastName()}`,
+          relation: faker.helpers.arrayElement(['Father', 'Mother', 'Guardian']),
+          email: faker.internet.email(),
+          phone: faker.phone.number(),
+          address: faker.location.streetAddress()
+        }
+      });
+      guardians.push(guardian);
+    }
+  }
+
+  return { students, guardians };
+}
+
+async function createEnrollments(students: any[], sections: any[]) {
+  const enrollments = [];
+
+  for (const student of students) {
+    const enrollment = await prisma.enrollment.create({
+      data: {
+        studentId: student.id,
+        sectionId: student.sectionId,
+        startDate: new Date('2024-09-01').toISOString(),
+        status: 'ACTIVE'
+      }
+    });
+    enrollments.push(enrollment);
+  }
+
+  return enrollments;
+}
+
+async function createFeesAndInvoices(students: any[], classes: any[]) {
+  // Create fee structures for each class
+  for (const cls of classes) {
+    await prisma.feeStructure.create({
+      data: {
+        name: `${cls.name} Fee Structure`,
+        classId: cls.id,
+        academicYear: '2024-2025',
+        components: {
+          tuition: 5000,
+          lab: 500,
+          library: 300,
+          sports: 400,
+          activities: 600
+        },
+        totalAmount: 6800
+      }
+    });
+
+    // Create fee schedules
+    const terms = ['Term 1', 'Term 2', 'Term 3'];
+    for (const term of terms) {
+      await prisma.feeSchedule.create({
+        data: {
+          name: `${cls.name} - ${term}`,
+          classId: cls.id,
+          term,
+          dueDate: faker.date.future(),
+          amount: 2267 // Total divided by 3
+        }
+      });
+    }
+  }
+
+  // Create invoices for students
+  for (const student of students.slice(0, 100)) { // Create for first 100 students
+    const statuses = ['PENDING', 'PAID', 'OVERDUE', 'PARTIAL'];
+    
+    await prisma.invoice.create({
+      data: {
+        invoiceNo: `INV${faker.string.numeric(6)}`,
+        studentId: student.id,
+        period: 'Term 1 2024',
+        amount: 2267,
+        dueDate: faker.date.future(),
+        status: faker.helpers.arrayElement(statuses),
+        items: {
+          tuition: 1667,
+          lab: 167,
+          library: 100,
+          sports: 133,
+          activities: 200
+        }
+      }
+    });
+  }
+}
+
+async function createExamsAndMarks(students: any[], subjects: any[], classes: any[]) {
+  const examTypes = ['Mid-term', 'Final', 'Quiz', 'Assignment'];
+  
+  for (const cls of classes.slice(0, 5)) { // Create for first 5 classes
+    for (const examType of examTypes) {
+      const exam = await prisma.exam.create({
+        data: {
+          name: `${cls.name} ${examType} Exam`,
+          type: examType,
+          classId: cls.id,
+          startDate: faker.date.recent(),
+          endDate: faker.date.soon(),
+          totalMarks: 100,
+          passingMarks: 40
+        }
+      });
+
+      // Create marks for some students
+      const classStudents = students.filter(s => s.sectionId);
+      for (const student of classStudents.slice(0, 20)) {
+        for (const subject of subjects.slice(0, 5)) {
+          await prisma.marksEntry.create({
+            data: {
+              studentId: student.id,
+              examId: exam.id,
+              subjectId: subject.id,
+              marksObtained: faker.number.int({ min: 30, max: 100 }),
+              grade: faker.helpers.arrayElement(['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F']),
+              remarks: faker.helpers.arrayElement(['Excellent', 'Good', 'Average', 'Needs Improvement'])
+            }
+          });
+        }
+      }
+    }
+  }
+}
+
+async function createAttendanceRecords(students: any[]) {
+  const today = new Date();
+  const statuses = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'];
+  
+  // Create attendance for last 30 days
+  for (let day = 0; day < 30; day++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - day);
+    
+    // Skip weekends
+    if (date.getDay() === 0 || date.getDay() === 6) continue;
+    
+    // Create attendance for random students
+    for (const student of students.slice(0, 100)) {
+      await prisma.attendanceRecord.create({
+        data: {
+          studentId: student.id,
+          date,
+          status: faker.helpers.arrayElement(statuses),
+          remarks: faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.1 })
+        }
+      });
+    }
+  }
+}
+
+async function createTimetable(sections: any[], subjects: any[], teachers: any[]) {
+  // Create rooms
+  const rooms = [];
+  for (let i = 1; i <= 20; i++) {
+    const room = await prisma.room.create({
+      data: {
+        name: `Room ${i}`,
+        code: `R${String(i).padStart(3, '0')}`,
+        building: faker.helpers.arrayElement(['A', 'B', 'C']),
+        floor: faker.number.int({ min: 0, max: 3 }),
+        capacity: faker.number.int({ min: 25, max: 40 }),
+        type: faker.helpers.arrayElement(['Classroom', 'Lab', 'Library', 'Auditorium'])
+      }
+    });
+    rooms.push(room);
+  }
+
+  // Create time slots
+  const timeSlots = [
+    { name: 'Period 1', startTime: '08:00', endTime: '08:45', order: 1 },
+    { name: 'Period 2', startTime: '08:45', endTime: '09:30', order: 2 },
+    { name: 'Period 3', startTime: '09:30', endTime: '10:15', order: 3 },
+    { name: 'Break', startTime: '10:15', endTime: '10:30', order: 4, type: 'BREAK' },
+    { name: 'Period 4', startTime: '10:30', endTime: '11:15', order: 5 },
+    { name: 'Period 5', startTime: '11:15', endTime: '12:00', order: 6 },
+    { name: 'Lunch', startTime: '12:00', endTime: '13:00', order: 7, type: 'LUNCH' },
+    { name: 'Period 6', startTime: '13:00', endTime: '13:45', order: 8 },
+    { name: 'Period 7', startTime: '13:45', endTime: '14:30', order: 9 },
+    { name: 'Period 8', startTime: '14:30', endTime: '15:15', order: 10 }
+  ];
+
+  const createdTimeSlots = await Promise.all(
+    timeSlots.map(slot =>
+      prisma.timeSlot.create({
+        data: {
+          ...slot,
+          type: slot.type || 'CLASS'
+        }
+      })
+    )
+  );
+
+  // Create timetable periods for some sections
+  const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+  
+  for (const section of sections.slice(0, 10)) {
+    for (const day of days) {
+      for (const timeSlot of createdTimeSlots.filter(s => s.type === 'CLASS')) {
+        const subject = faker.helpers.arrayElement(subjects);
+        const teacher = faker.helpers.arrayElement(teachers);
+        const room = faker.helpers.arrayElement(rooms);
+        
+        await prisma.timetablePeriod.create({
+          data: {
+            sectionId: section.id,
+            subjectId: subject.id,
+            teacherId: teacher.id,
+            roomId: room.id,
+            timeSlotId: timeSlot.id,
+            dayOfWeek: day
+          }
+        });
+      }
+    }
+  }
+}
+
+async function createCommunicationData() {
+  // Create templates
+  const templates = [
+    {
+      name: 'Welcome Message',
+      type: 'WELCOME',
+      channel: 'EMAIL',
+      subject: 'Welcome to Our School!',
+      content: 'Dear {{name}}, Welcome to our school community...'
+    },
+    {
+      name: 'Fee Reminder',
+      type: 'REMINDER',
+      channel: 'SMS',
+      subject: 'Fee Payment Reminder',
+      content: 'Dear Parent, This is a reminder that fees for {{period}} are due on {{dueDate}}.'
+    },
+    {
+      name: 'Exam Notification',
+      type: 'NOTIFICATION',
+      channel: 'EMAIL',
+      subject: 'Upcoming Examinations',
+      content: 'Dear Student, Your {{examType}} examinations will begin on {{startDate}}.'
+    },
+    {
+      name: 'Attendance Alert',
+      type: 'ALERT',
+      channel: 'SMS',
+      subject: 'Attendance Alert',
+      content: 'Dear Parent, Your child {{studentName}} was marked {{status}} today.'
+    }
+  ];
+
+  const createdTemplates = await Promise.all(
+    templates.map(template =>
+      prisma.template.create({
+        data: template
+      })
+    )
+  );
+
+  // Create campaigns
+  const campaigns = [
+    {
+      name: 'Back to School 2024',
+      description: 'Welcome message for new academic year',
+      type: 'BULK',
+      status: 'COMPLETED',
+      scheduledAt: new Date('2024-09-01'),
+      templateId: createdTemplates[0].id
+    },
+    {
+      name: 'Term 1 Fee Reminder',
+      description: 'Fee payment reminder for Term 1',
+      type: 'SCHEDULED',
+      status: 'ACTIVE',
+      scheduledAt: faker.date.future(),
+      templateId: createdTemplates[1].id
+    }
+  ];
+
+  const createdCampaigns = await Promise.all(
+    campaigns.map(campaign =>
+      prisma.campaign.create({
+        data: campaign
+      })
+    )
+  );
+
+  // Create some messages
+  const students = await prisma.student.findMany({ take: 20 });
+  
+  for (const campaign of createdCampaigns) {
+    for (const student of students.slice(0, 10)) {
+      await prisma.message.create({
+        data: {
+          to: student.email || faker.internet.email(),
+          from: 'school@example.com',
+          channel: faker.helpers.arrayElement(['EMAIL', 'SMS']),
+          subject: campaign.name,
+          content: 'Message content here...',
+          status: faker.helpers.arrayElement(['SENT', 'DELIVERED', 'FAILED', 'PENDING']),
+          campaignId: campaign.id,
+          templateId: campaign.templateId,
+          metadata: {
+            studentId: student.id,
+            studentName: `${student.firstName} ${student.lastName}`
+          }
+        }
+      });
+    }
+  }
+}
+
+main()
+  .catch((e) => {
+    console.error('❌ Seed failed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

@@ -11,6 +11,7 @@ Imported from docs-cursor and aligned to current stack (Next.js, ShadCN, TanStac
 - Communications: Communications.md
 - Analytics: Analytics.md
 - HR & Payroll: HR_Payroll.md
+- Teacher Management: Teacher_Management.md
 - Transport: Transport.md
 - Library: Library.md
 - Hostel: Hostel.md
@@ -20,4 +21,5 @@ Imported from docs-cursor and aligned to current stack (Next.js, ShadCN, TanStac
 - Superadmin/Tenant: Superadmin_Tenant.md
 - Health/Counseling/Discipline: Health_Counseling_Discipline.md
 - Data Governance: Data_Governance.md
+ - Extracurriculars & Events: Extracurriculars.md
 

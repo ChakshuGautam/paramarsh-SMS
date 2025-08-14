@@ -17,9 +17,12 @@ import { MarksModule } from './modules/marks/marks.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { FeeStructuresModule } from './modules/fee-structures/fee-structures.module';
 import { StaffModule } from './modules/staff/staff.module';
+import { TeachersModule } from './modules/teachers/teachers.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { FilesModule } from './modules/files/files.module';
 import { FeeSchedulesModule } from './modules/fee-schedules/fee-schedules.module';
+import { CommunicationsModule } from './modules/communications/communications.module';
+import { TimetableModule } from './modules/timetable/timetable.module';
 import { ProblemJsonFilter } from './common/problem.filter';
 import { BranchGuard } from './common/guards/branch.guard';
 import { PrismaService } from './prisma/prisma.service';
@@ -45,8 +48,11 @@ import { RequestLoggingMiddleware } from './common/request-logging.middleware';
     AttendanceModule,
     FeeStructuresModule,
     StaffModule,
+    TeachersModule,
     FilesModule,
     FeeSchedulesModule,
+    CommunicationsModule,
+    TimetableModule,
   ],
   controllers: [AppController],
   providers: [

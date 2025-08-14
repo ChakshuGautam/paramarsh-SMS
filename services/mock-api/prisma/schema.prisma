@@ -50,6 +50,7 @@ model FeeStructure {
     branchId   String?
     gradeId    String?
     components FeeComponent[]
+    schedules  FeeSchedule[]
 }
 
 model FeeComponent {
@@ -58,6 +59,20 @@ model FeeComponent {
     name           String
     type           String?
     amount         Int
+    feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+}
+
+model FeeSchedule {
+    id             String   @id @default(uuid())
+    branchId       String?
+    feeStructureId String
+    recurrence     String   // monthly | quarterly | halfYearly | annual
+    dueDayOfMonth  Int
+    startDate      String?
+    endDate        String?
+    classId        String?
+    sectionId      String?
+    status         String?
     feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
 }
 

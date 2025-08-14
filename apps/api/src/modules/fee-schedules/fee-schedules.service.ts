@@ -24,16 +24,25 @@ export class FeeSchedulesService {
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
       : [{ id: 'asc' }];
+    
+    const { branchId } = PrismaService.getScope();
+    const where: any = {};
+    if (branchId) where.branchId = branchId;
+    
+    const prismaAny = this.prisma as any;
     const [data, total] = await Promise.all([
-      this.prisma.feeSchedule.findMany({ skip, take: pageSize, orderBy }),
-      this.prisma.feeSchedule.count(),
+      prismaAny.feeSchedule.findMany({ where, skip, take: pageSize, orderBy }),
+      prismaAny.feeSchedule.count({ where }),
     ]);
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
   }
 
   async create(input: FeeSchedule) {
-    const created = await this.prisma.feeSchedule.create({
+    const { branchId } = PrismaService.getScope();
+    const prismaAny = this.prisma as any;
+    const created = await prismaAny.feeSchedule.create({
       data: {
+        branchId: branchId ?? null,
         feeStructureId: input.feeStructureId,
         recurrence: input.recurrence,
         dueDayOfMonth: input.dueDayOfMonth,
@@ -49,7 +58,8 @@ export class FeeSchedulesService {
 
   async update(id: string, input: Partial<FeeSchedule>) {
     try {
-      const updated = await this.prisma.feeSchedule.update({
+      const prismaAny = this.prisma as any;
+      const updated = await prismaAny.feeSchedule.update({
         where: { id },
         data: {
           feeStructureId: input.feeStructureId ?? undefined,
@@ -70,7 +80,8 @@ export class FeeSchedulesService {
 
   async remove(id: string) {
     try {
-      await this.prisma.feeSchedule.delete({ where: { id } });
+      const prismaAny = this.prisma as any;
+      await prismaAny.feeSchedule.delete({ where: { id } });
     } catch {
       throw new NotFoundException('Fee schedule not found');
     }
@@ -101,7 +112,8 @@ export class FeeSchedulesService {
   }
 
   async generateForSchedule(id: string) {
-    const schedule = await this.prisma.feeSchedule.findUnique({ where: { id } });
+    const prismaAny = this.prisma as any;
+    const schedule = await prismaAny.feeSchedule.findUnique({ where: { id } });
     if (!schedule) throw new NotFoundException('Fee schedule not found');
     if (schedule.status === 'paused') return { created: 0 };
 

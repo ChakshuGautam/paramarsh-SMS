@@ -7,18 +7,48 @@ export type Exam = { id?: string; name: string; startDate?: string; endDate?: st
 export class ExamsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; q?: string }) {
+  async list(params: { 
+    page?: number; 
+    pageSize?: number; 
+    sort?: string; 
+    q?: string;
+    startDateGte?: string;
+    startDateLte?: string;
+    endDateGte?: string;
+    endDateLte?: string;
+  }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
-    if (params.q) where.name = { contains: params.q, mode: 'insensitive' };
+    
+    // Text search
+    if (params.q) {
+      where.name = { contains: params.q, mode: 'insensitive' };
+    }
+    
+    // Date filters
+    if (params.startDateGte || params.startDateLte) {
+      where.startDate = {};
+      if (params.startDateGte) where.startDate.gte = new Date(params.startDateGte);
+      if (params.startDateLte) where.startDate.lte = new Date(params.startDateLte);
+    }
+    
+    if (params.endDateGte || params.endDateLte) {
+      where.endDate = {};
+      if (params.endDateGte) where.endDate.gte = new Date(params.endDateGte);
+      if (params.endDateLte) where.endDate.lte = new Date(params.endDateLte);
+    }
+    
+    // Branch scoping
     const { branchId } = PrismaService.getScope();
     if (branchId) where.branchId = branchId;
+    
+    // Sorting
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ id: 'asc' }];
+      : [{ startDate: 'desc' }]; // Default sort by start date descending
 
     const [data, total] = await Promise.all([
       this.prisma.exam.findMany({ where, skip, take: pageSize, orderBy }),
