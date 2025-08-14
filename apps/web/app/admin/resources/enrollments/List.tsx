@@ -1,50 +1,186 @@
 "use client";
 
-import { List, DataTable, TextField, SelectInput, ReferenceInput, DateRangeInput } from "@/components/admin";
-import { ReferenceField } from "@/components/admin/reference-field";
+import { useListContext } from "ra-core";
+import {
+  DataTable,
+  List,
+  ReferenceField,
+  TextField,
+  TextInput,
+  ReferenceInput,
+  AutocompleteInput,
+  DateRangeInput,
+  Count,
+} from "@/components/admin";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
+// Store keys for different status tabs
+const storeKeyByStatus = {
+  active: "enrollments.list.active",
+  inactive: "enrollments.list.inactive",
+  transferred: "enrollments.list.transferred",
+  graduated: "enrollments.list.graduated",
+  dropped: "enrollments.list.dropped",
+};
+
+// Label-less filters with placeholders
 const enrollmentFilters = [
-  <ReferenceInput source="studentId" reference="students" label="Filter by Student">
-    <SelectInput source="studentId" optionText={(record: any) => `${record.firstName} ${record.lastName}`} />
+  <TextInput source="q" placeholder="Search enrollments..." label={false} alwaysOn />,
+  <ReferenceInput source="studentId" reference="students">
+    <AutocompleteInput 
+      placeholder="Filter by student" 
+      label={false} 
+      optionText={(record) => `${record.firstName} ${record.lastName}`}
+    />
   </ReferenceInput>,
-  <ReferenceInput source="sectionId" reference="sections" label="Filter by Section">
-    <SelectInput source="sectionId" optionText="name" />
+  <ReferenceInput source="sectionId" reference="sections">
+    <AutocompleteInput placeholder="Filter by section" label={false} optionText="name" />
   </ReferenceInput>,
-  <SelectInput source="status" label="Filter by Status" choices={[
-    { id: 'active', name: 'Active' },
-    { id: 'inactive', name: 'Inactive' },
-    { id: 'transferred', name: 'Transferred' },
-    { id: 'graduated', name: 'Graduated' },
-    { id: 'dropped', name: 'Dropped' }
-  ]} />,
   <DateRangeInput 
     source="enrollment"
     sourceFrom="startDate_gte"
     sourceTo="endDate_lte"
-    label="Filter by Period" 
+    label={false}
     placeholder="Select enrollment period"
   />,
 ];
 
 export const EnrollmentsList = () => (
-  <List filters={enrollmentFilters}>
-    <DataTable>
-      <DataTable.Col source="id" label="ID" />
-      <DataTable.Col label="Student">
-        <ReferenceField reference="students" source="studentId">
-          <TextField source="firstName" />
-        </ReferenceField>
-      </DataTable.Col>
-      <DataTable.Col label="Section">
-        <ReferenceField reference="sections" source="sectionId">
-          <TextField source="name" />
-        </ReferenceField>
-      </DataTable.Col>
-      <DataTable.Col source="status" label="Status" />
-      <DataTable.Col source="startDate" label="Start" />
-      <DataTable.Col source="endDate" label="End" />
-    </DataTable>
+  <List
+    sort={{ field: "startDate", order: "DESC" }}
+    filterDefaultValues={{ status: "active" }}
+    filters={enrollmentFilters}
+    perPage={25}
+  >
+    <TabbedDataTable />
   </List>
 );
+
+const TabbedDataTable = () => {
+  const listContext = useListContext();
+  const { filterValues, setFilters, displayedFilters } = listContext;
+  
+  const handleChange = (value: string) => () => {
+    setFilters({ ...filterValues, status: value }, displayedFilters);
+  };
+  
+  return (
+    <Tabs value={filterValues.status ?? "active"}>
+      <TabsList>
+        <TabsTrigger value="active" onClick={handleChange("active")}>
+          Active
+          <Badge variant="outline" className="ml-2">
+            <Count filter={{ ...filterValues, status: "active" }} />
+          </Badge>
+        </TabsTrigger>
+        <TabsTrigger value="inactive" onClick={handleChange("inactive")}>
+          Inactive
+          <Badge variant="outline" className="ml-2">
+            <Count filter={{ ...filterValues, status: "inactive" }} />
+          </Badge>
+        </TabsTrigger>
+        <TabsTrigger value="transferred" onClick={handleChange("transferred")}>
+          Transferred
+          <Badge variant="outline" className="ml-2">
+            <Count filter={{ ...filterValues, status: "transferred" }} />
+          </Badge>
+        </TabsTrigger>
+        <TabsTrigger value="graduated" onClick={handleChange("graduated")}>
+          Graduated
+          <Badge variant="outline" className="ml-2">
+            <Count filter={{ ...filterValues, status: "graduated" }} />
+          </Badge>
+        </TabsTrigger>
+        <TabsTrigger value="dropped" onClick={handleChange("dropped")}>
+          Dropped
+          <Badge variant="outline" className="ml-2">
+            <Count filter={{ ...filterValues, status: "dropped" }} />
+          </Badge>
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="active">
+        <EnrollmentsTable storeKey={storeKeyByStatus.active} />
+      </TabsContent>
+      <TabsContent value="inactive">
+        <EnrollmentsTable storeKey={storeKeyByStatus.inactive} />
+      </TabsContent>
+      <TabsContent value="transferred">
+        <EnrollmentsTable storeKey={storeKeyByStatus.transferred} />
+      </TabsContent>
+      <TabsContent value="graduated">
+        <EnrollmentsTable storeKey={storeKeyByStatus.graduated} />
+      </TabsContent>
+      <TabsContent value="dropped">
+        <EnrollmentsTable storeKey={storeKeyByStatus.dropped} />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
+  <DataTable 
+    storeKey={storeKey}
+    rowClassName={(record) => {
+      const statusColors = {
+        active: 'border-l-4 border-l-green-500',
+        inactive: 'border-l-4 border-l-gray-400',
+        transferred: 'border-l-4 border-l-blue-500',
+        graduated: 'border-l-4 border-l-purple-500',
+        dropped: 'border-l-4 border-l-red-500',
+      };
+      return statusColors[record.status] || '';
+    }}
+  >
+    {/* Always visible columns */}
+    <DataTable.Col label="Student">
+      <ReferenceField reference="students" source="studentId">
+        <TextField source="firstName" />
+      </ReferenceField>
+    </DataTable.Col>
+    <DataTable.Col source="status" label="Status">
+      <StatusBadge />
+    </DataTable.Col>
+    <DataTable.Col source="startDate" label="Start Date" />
+    
+    {/* Desktop-only columns */}
+    <DataTable.Col label="Section" className="hidden md:table-cell">
+      <ReferenceField reference="sections" source="sectionId">
+        <TextField source="name" />
+      </ReferenceField>
+    </DataTable.Col>
+    <DataTable.Col source="endDate" label="End Date" className="hidden lg:table-cell" />
+    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+  </DataTable>
+);
+
+const StatusBadge = ({ record }: { record?: any }) => {
+  if (!record) return null;
+  
+  const variants = {
+    active: 'default',
+    inactive: 'secondary',
+    transferred: 'secondary',
+    graduated: 'default',
+    dropped: 'destructive',
+  } as const;
+  
+  const colors = {
+    active: 'text-green-700 bg-green-100',
+    inactive: 'text-gray-700 bg-gray-100',
+    transferred: 'text-blue-700 bg-blue-100',
+    graduated: 'text-purple-700 bg-purple-100',
+    dropped: 'text-red-700 bg-red-100',
+  } as const;
+  
+  return (
+    <Badge 
+      variant={variants[record.status as keyof typeof variants] || 'default'}
+      className={colors[record.status as keyof typeof colors] || ''}
+    >
+      {record.status}
+    </Badge>
+  );
+};
 
 export default EnrollmentsList;
