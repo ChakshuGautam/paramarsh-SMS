@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, FilterLiveForm } from "ra-core";
 import {
   DataTable,
   List,
@@ -11,7 +11,6 @@ import {
   AutocompleteInput,
   SelectInput,
   Count,
-  FilterLiveForm,
   ToggleFilterButton,
   FilterCategory,
 } from "@/components/admin";
