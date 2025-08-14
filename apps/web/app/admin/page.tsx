@@ -1,32 +1,40 @@
 // app/admin/page.tsx
 "use client";
 
-import dynamic from "next/dynamic";
+import React, { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+import AdminApp from "./AdminApp";
 
-const Admin = dynamic(() => import("./AdminApp"), {
-  ssr: false, // Required to avoid react-router related errors
-});
+function AdminLoader() {
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-muted-foreground">Loading admin panel...</p>
+      </div>
+    </div>
+  );
+}
 
 export default function Page() {
-  const publishableKey =
-    (typeof window !== "undefined"
-      ? (window as unknown as { NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string })
-          .NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-      : undefined) || process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   if (!publishableKey) {
-    if (typeof window !== "undefined") {
-      console.warn(
-        "@clerk/nextjs: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is missing; rendering Admin without auth.",
-      );
-    }
-    return <Admin />;
+    console.warn(
+      "@clerk/nextjs: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is missing; rendering Admin without auth.",
+    );
+    return (
+      <Suspense fallback={<AdminLoader />}>
+        <AdminApp />
+      </Suspense>
+    );
   }
 
   return (
     <ClerkProvider publishableKey={publishableKey}>
-      <Admin />
+      <Suspense fallback={<AdminLoader />}>
+        <AdminApp />
+      </Suspense>
     </ClerkProvider>
   );
 }

@@ -1,136 +1,93 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { BaseCrudService } from '../../common/base-crud.service';
 import { PrismaService } from '../../prisma/prisma.service';
-
-export type Student = {
-  admissionNo: string;
-  firstName: string;
-  lastName: string;
-  dob?: string;
-  gender?: string;
-  className: string;
-  sectionName: string;
-};
+import { mapDbToSchoolResponse, mapSchoolToDbParams } from '../../common/school-alias.helper';
 
 @Injectable()
-export class StudentsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class StudentsService extends BaseCrudService<any> {
+  constructor(prisma: PrismaService) {
+    super(prisma, 'student');
+  }
 
-  async list(params: {
-    page?: number;
-    pageSize?: number;
-    sort?: string;
-    q?: string;
-    className?: string;
-    sectionName?: string;
-  }) {
-    const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
-
-    const { branchId } = PrismaService.getScope();
-    const where: any = {};
-    if (branchId) where.branchId = branchId;
-
-    const data = await this.prisma.student.findMany({
-      where,
-      skip,
-      take: pageSize,
-      orderBy: params.sort
-        ? params.sort.split(',').map((f) => ({
-            [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-')
-              ? 'desc'
-              : 'asc',
-          }))
-        : { id: 'asc' },
-    });
-    const total = await this.prisma.student.count({ where });
+  /**
+   * Override to add school aliasing
+   */
+  async getList(params: any) {
+    const result = await super.getList(params);
     return {
-      data,
-      meta: { page, pageSize, total, hasNext: skip + pageSize < total },
+      data: result.data.map(mapDbToSchoolResponse),
+      total: result.total,
     };
   }
 
-  async create(
-    input: Partial<Student> & {
-      guardians?: Array<{
-        relation?: string;
-        name: string;
-        email?: string;
-        phone?: string;
-        address?: string;
-      }>;
-      enrollment?: {
-        sectionId: string;
-        status?: string;
-        startDate?: string;
-        endDate?: string;
-      };
-    },
-  ) {
-    const created = await this.prisma.$transaction(async (tx) => {
-      const student = await tx.student.create({
-        data: {
-          admissionNo: input.admissionNo ?? null,
-          firstName: input.firstName!,
-          lastName: input.lastName!,
-          dob: input.dob ?? null,
-          gender: input.gender ?? null,
-          classId: (input.className as any) ?? null,
-          sectionId: (input.sectionName as any) ?? null,
-        },
-      });
-      if (input.guardians?.length) {
-        await Promise.all(
-          input.guardians.map((g) =>
-            tx.guardian.create({
-              data: {
-                studentId: student.id,
-                relation: g.relation ?? null,
-                name: g.name,
-                email: g.email ?? null,
-                phone: g.phone ?? null,
-                address: g.address ?? null,
-              },
-            }),
-          ),
-        );
-      }
-      if (input.enrollment?.sectionId) {
-        await tx.enrollment.create({
-          data: {
-            studentId: student.id,
-            sectionId: input.enrollment.sectionId,
-            status: input.enrollment.status ?? null,
-            startDate: input.enrollment.startDate ?? null,
-            endDate: input.enrollment.endDate ?? null,
-          },
-        });
-      }
-      return student;
-    });
-    return { data: created };
+  /**
+   * Override to add school aliasing
+   */
+  async getOne(id: string) {
+    const result = await super.getOne(id);
+    return {
+      data: mapDbToSchoolResponse(result.data),
+    };
   }
 
-  async update(id: string, input: Partial<Student>) {
-    const updated = await this.prisma.student.update({
-      where: { id },
-      data: {
-        admissionNo: input.admissionNo ?? undefined,
-        firstName: input.firstName ?? undefined,
-        lastName: input.lastName ?? undefined,
-        dob: input.dob ?? undefined,
-        gender: input.gender ?? undefined,
-      },
-    });
-    return { data: updated };
+  /**
+   * Override to add school aliasing
+   */
+  async getMany(ids: string[]) {
+    const result = await super.getMany(ids);
+    return {
+      data: result.data.map(mapDbToSchoolResponse),
+    };
   }
 
-  async remove(id: string) {
-    try {
-      await this.prisma.student.delete({ where: { id } });
-    } catch {
-      throw new NotFoundException('Student not found');
-    }
-    return { success: true };
+  /**
+   * Override to handle school aliasing
+   */
+  async create(data: any) {
+    const dbData = mapSchoolToDbParams(data);
+    const result = await super.create(dbData);
+    return {
+      data: mapDbToSchoolResponse(result.data),
+    };
+  }
+
+  /**
+   * Override to handle school aliasing
+   */
+  async update(id: string, data: any) {
+    const dbData = mapSchoolToDbParams(data);
+    const result = await super.update(id, dbData);
+    return {
+      data: mapDbToSchoolResponse(result.data),
+    };
+  }
+
+  /**
+   * Override to add school aliasing
+   */
+  async delete(id: string) {
+    const result = await super.delete(id);
+    return {
+      data: mapDbToSchoolResponse(result.data),
+    };
+  }
+
+  /**
+   * Override to support search
+   */
+  protected buildSearchClause(search: string): any[] {
+    return [
+      { firstName: { contains: search, mode: 'insensitive' } },
+      { lastName: { contains: search, mode: 'insensitive' } },
+      { admissionNo: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  /**
+   * Students support branch scoping
+   */
+  protected supportsBranchScoping(): boolean {
+    return true;
   }
 }

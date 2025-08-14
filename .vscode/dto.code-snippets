@@ -1,0 +1,110 @@
+{
+  "NestJS DTO with Swagger Documentation": {
+    "prefix": "dto-swagger",
+    "body": [
+      "import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';",
+      "import { IsString, IsOptional, IsUUID, Length } from 'class-validator';",
+      "",
+      "export class ${1:Create}${2:Resource}Dto {",
+      "  @ApiProperty({",
+      "    description: '${3:Field description}',",
+      "    example: '${4:example-value}',",
+      "    minLength: 1,",
+      "    maxLength: 100",
+      "  })",
+      "  @IsString()",
+      "  @Length(1, 100)",
+      "  ${5:fieldName}!: string;",
+      "",
+      "  @ApiPropertyOptional({",
+      "    description: '${6:Optional field description}',",
+      "    example: '${7:optional-example}'",
+      "  })",
+      "  @IsOptional()",
+      "  @IsString()",
+      "  ${8:optionalField}?: string;",
+      "",
+      "  @ApiProperty({",
+      "    description: '${9:Related entity ID}',",
+      "    example: '${10:entity-123}',",
+      "    format: 'uuid'",
+      "  })",
+      "  @IsString()",
+      "  @IsUUID()",
+      "  ${11:entityId}!: string;",
+      "}"
+    ],
+    "description": "Creates a properly documented NestJS DTO with Swagger decorators"
+  },
+  "NestJS Controller Endpoint with Swagger": {
+    "prefix": "endpoint-swagger",
+    "body": [
+      "@${1|Post,Get,Patch,Delete|}('${2:path}')",
+      "@ApiOperation({",
+      "  summary: '${3:Endpoint summary}',",
+      "  description: '${4:Detailed description of what this endpoint does}'",
+      "})",
+      "@${5|CreateDocs,ListDocs,UpdateDocs,DeleteDocs|}('${6:Success message}')",
+      "${7:methodName}(@Body() ${8:dto}: ${9:DtoType}) {",
+      "  return this.${10:service}.${7:methodName}(${8:dto});",
+      "}"
+    ],
+    "description": "Creates a properly documented NestJS controller endpoint"
+  },
+  "Swagger DTO Field - Required": {
+    "prefix": "api-property",
+    "body": [
+      "@ApiProperty({",
+      "  description: '${1:Field description}',",
+      "  example: '${2:example-value}'${3:,}",
+      "  ${4:minLength: 1,}",
+      "  ${5:maxLength: 100}",
+      "})",
+      "@IsString()",
+      "@Length(1, 100)",
+      "${6:fieldName}!: string;"
+    ],
+    "description": "Creates a required DTO field with Swagger documentation"
+  },
+  "Swagger DTO Field - Optional": {
+    "prefix": "api-property-optional",
+    "body": [
+      "@ApiPropertyOptional({",
+      "  description: '${1:Field description}',",
+      "  example: '${2:example-value}'",
+      "})",
+      "@IsOptional()",
+      "@IsString()",
+      "${3:fieldName}?: string;"
+    ],
+    "description": "Creates an optional DTO field with Swagger documentation"
+  },
+  "Swagger DTO Field - UUID": {
+    "prefix": "api-property-uuid",
+    "body": [
+      "@ApiProperty({",
+      "  description: '${1:Entity ID description}',",
+      "  example: '${2:entity-123}',",
+      "  format: 'uuid'",
+      "})",
+      "@IsString()",
+      "@IsUUID()",
+      "${3:entityId}!: string;"
+    ],
+    "description": "Creates a UUID field with Swagger documentation"
+  },
+  "Swagger DTO Field - Enum": {
+    "prefix": "api-property-enum",
+    "body": [
+      "@ApiProperty({",
+      "  description: '${1:Field description}',",
+      "  example: '${2:value1}',",
+      "  enum: [${3:'value1', 'value2', 'value3'}]",
+      "})",
+      "@IsString()",
+      "@IsIn([${3:'value1', 'value2', 'value3'}])",
+      "${4:fieldName}!: string;"
+    ],
+    "description": "Creates an enum field with Swagger documentation"
+  }
+}

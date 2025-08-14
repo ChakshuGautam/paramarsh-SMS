@@ -1,0 +1,815 @@
+{
+  "generatedAt": "2025-08-11T14:24:11.629Z",
+  "mockApiPresent": true,
+  "horizontals": {
+    "score": 100,
+    "signals": {
+      "openapiSpec": true,
+      "responsesConventionsDoc": true,
+      "errorProblemDto": true,
+      "tenancyGuard": true,
+      "healthModule": true,
+      "backendTests": true,
+      "webTests": true,
+      "mockApi": true,
+      "adminReferenceComponents": true,
+      "adminCrudStructure": true
+    }
+  },
+  "modules": [
+    {
+      "module": "Admissions",
+      "title": "Admissions",
+      "docPath": "docs/Modules/Admissions.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:applications",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/applications",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:admissionsApplications",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/admissionsApplications",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Analytics",
+      "title": "Analytics",
+      "docPath": "docs/Modules/Analytics.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Attendance",
+      "title": "Attendance",
+      "docPath": "docs/Modules/Attendance.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:attendance",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/attendance",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:attendanceRecords",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/attendanceRecords",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Communications",
+      "title": "Communications",
+      "docPath": "docs/Modules/Communications.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:files",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/files",
+            "exists": true,
+            "files": 4
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Data_Governance",
+      "title": "Data Governance",
+      "docPath": "docs/Modules/Data_Governance.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Exams",
+      "title": "Exams",
+      "docPath": "docs/Modules/Exams.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:exams",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/exams",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "api:marks",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/marks",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:exams",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/exams",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:marks",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/marks",
+            "exists": true,
+            "files": 3
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Extracurriculars",
+      "title": "Extracurriculars",
+      "docPath": "docs/Modules/Extracurriculars.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Fees",
+      "title": "Fees",
+      "docPath": "docs/Modules/Fees.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:fee-structures",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/fee-structures",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "api:fee-schedules",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/fee-schedules",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "api:invoices",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/invoices",
+            "exists": true,
+            "files": 4
+          },
+          {
+            "label": "api:payments",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/payments",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:feeStructures",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/feeStructures",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:invoices",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/invoices",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:payments",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/payments",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "HR_Payroll",
+      "title": "HR Payroll",
+      "docPath": "docs/Modules/HR_Payroll.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:staff",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/staff",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:staff",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/staff",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:teachers",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/teachers",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Health_Counseling_Discipline",
+      "title": "Health Counseling Discipline",
+      "docPath": "docs/Modules/Health_Counseling_Discipline.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Hostel",
+      "title": "Hostel",
+      "docPath": "docs/Modules/Hostel.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Inventory_Procurement",
+      "title": "Inventory Procurement",
+      "docPath": "docs/Modules/Inventory_Procurement.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "LMS_Integrations",
+      "title": "LMS Integrations",
+      "docPath": "docs/Modules/LMS_Integrations.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Library",
+      "title": "Library",
+      "docPath": "docs/Modules/Library.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Portals_Apps",
+      "title": "Portals Apps",
+      "docPath": "docs/Modules/Portals_Apps.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "SIS",
+      "title": "SIS",
+      "docPath": "docs/Modules/SIS.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:students",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/students",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "api:guardians",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/guardians",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "api:enrollments",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/enrollments",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:students",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/students",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:guardians",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/guardians",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:enrollments",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/enrollments",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Superadmin_Tenant",
+      "title": "Superadmin Tenant",
+      "docPath": "docs/Modules/Superadmin_Tenant.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Teacher_Management",
+      "title": "Teacher Management",
+      "docPath": "docs/Modules/Teacher_Management.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "api:staff",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/api/src/modules/staff",
+            "exists": true,
+            "files": 3
+          },
+          {
+            "label": "web:staff",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/staff",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:teachers",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/teachers",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Timetable",
+      "title": "Timetable",
+      "docPath": "docs/Modules/Timetable.md",
+      "implementation": {
+        "score": 100,
+        "details": [
+          {
+            "label": "web:sections",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/sections",
+            "exists": true,
+            "files": 5
+          },
+          {
+            "label": "web:classes",
+            "path": "/Users/__chaks__/repos/paramarsh-SMS/apps/web/app/admin/resources/classes",
+            "exists": true,
+            "files": 5
+          }
+        ]
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    },
+    {
+      "module": "Transport",
+      "title": "Transport",
+      "docPath": "docs/Modules/Transport.md",
+      "implementation": {
+        "score": 0,
+        "details": []
+      },
+      "openapi": {
+        "present": true,
+        "matchedPaths": [
+          "students",
+          "guardians",
+          "attendance",
+          "exams",
+          "marks",
+          "fees",
+          "invoices",
+          "files",
+          "admissions",
+          "timetable",
+          "hr",
+          "teachers",
+          "staff",
+          "analytics",
+          "library",
+          "transport"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "documentedModules": 20,
+    "avgImplementationScore": 45,
+    "implementedModules": 9
+  }
+}

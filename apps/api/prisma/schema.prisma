@@ -1,3 +1,12 @@
+// School Management System Database Schema
+// 
+// TERMINOLOGY NOTE:
+// - "branchId" in the database represents "schoolId" in the API/UI layer
+// - This allows the system to support multiple schools in a multi-tenant architecture
+// - Each "branch" is an independent school with its own data
+// - The term "branch" is used internally for historical/technical reasons
+// - All API endpoints and UI should refer to "school" for better user understanding
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,11 +25,15 @@ model Student {
   gender           String?
   classId          String?
   sectionId        String?
+  // Note: branchId is used internally but represents schoolId in the API layer
+  // This allows multi-school support where each school is a separate branch
   guardians        Guardian[]
   invoices         Invoice[]
   enrollments      Enrollment[]
   MarksEntry       MarksEntry[]
   AttendanceRecord AttendanceRecord[]
+
+  @@unique([admissionNo])
 }
 
 model Guardian {
@@ -46,6 +59,7 @@ model FeeStructure {
   id         String         @id @default(uuid())
   gradeId    String?
   components FeeComponent[]
+  schedules  FeeSchedule[]
 }
 
 model FeeComponent {
@@ -54,6 +68,20 @@ model FeeComponent {
   name           String
   type           String?
   amount         Int
+  feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
+}
+
+model FeeSchedule {
+  id             String   @id @default(uuid())
+  branchId       String?  // Represents schoolId - which school this fee schedule belongs to
+  feeStructureId String
+  recurrence     String   // monthly | quarterly | halfYearly | annual
+  dueDayOfMonth  Int
+  startDate      String?
+  endDate        String?
+  classId        String?
+  sectionId      String?
+  status         String?  // active | paused
   feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
 }
 
@@ -66,6 +94,8 @@ model Invoice {
   status    String?
   student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   payments  Payment[]
+
+  @@unique([studentId, period])
 }
 
 model Application {
@@ -101,6 +131,7 @@ model Section {
   homeroomTeacher   Teacher?    @relation(fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
   class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
+  periods     TimetablePeriod[]
 }
 
 model Enrollment {
@@ -123,6 +154,9 @@ model Payment {
   reference String?
   method    String?
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([reference])
+  @@index([invoiceId])
 }
 
 model ExamSession {
@@ -144,6 +178,8 @@ model MarksEntry {
   comments  String?
   student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   session   ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([studentId])
+  @@index([sessionId])
 }
 
 model AttendanceRecord {
@@ -155,6 +191,8 @@ model AttendanceRecord {
   markedBy  String?
   source    String?
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 model Staff {
@@ -173,9 +211,283 @@ model Staff {
 
 model Teacher {
   id              String  @id @default(uuid())
-  staffId         String
+  staffId         String  @unique
   subjects        String?
   qualifications  String?
   experienceYears Int?
   staff           Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  homeroomSections Section[]
+  periods         TimetablePeriod[]
+  substitutions   Substitution[]
+  constraints     TeacherConstraint[]
+}
+
+// Communications Module
+model Template {
+  id        String     @id @default(uuid())
+  branchId  String?    // Represents schoolId - which school this template belongs to
+  name      String
+  channel   String     // email | sms | push | whatsapp
+  locale    String     @default("en")
+  content   String
+  variables String?    // JSON array of variable names
+  campaigns Campaign[]
+  messages  Message[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Campaign {
+  id            String    @id @default(uuid())
+  branchId      String?
+  name          String
+  templateId    String?
+  template      Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  audienceQuery String?   // JSON query for selecting recipients
+  schedule      DateTime?
+  status        String    // draft | scheduled | active | completed | paused
+  messages      Message[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Message {
+  id         String    @id @default(uuid())
+  branchId   String?
+  channel    String    // email | sms | push | whatsapp
+  to         String    // recipient identifier
+  templateId String?
+  template   Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  payload    String?   // JSON payload with variable values
+  status     String    // pending | sent | delivered | failed | bounced
+  providerId String?   // external provider message ID
+  error      String?   // error message if failed
+  sentAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([status])
+  @@index([campaignId])
+}
+
+model Preference {
+  id         String   @id @default(uuid())
+  branchId   String?
+  ownerType  String   // student | guardian | staff
+  ownerId    String
+  channel    String   // email | sms | push | whatsapp
+  consent    Boolean  @default(true)
+  quietHours String?  // JSON object with start and end times
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([ownerType, ownerId, channel])
+}
+
+model Ticket {
+  id          String         @id @default(uuid())
+  branchId    String?
+  ownerType   String         // student | guardian | staff
+  ownerId     String
+  category    String?        // academic | fees | technical | general
+  priority    String         @default("normal") // low | normal | high | urgent
+  status      String         @default("open") // open | in_progress | resolved | closed
+  assigneeId  String?
+  subject     String
+  description String
+  slaDueAt    DateTime?
+  messages    TicketMessage[]
+  attachments TicketAttachment[]
+  resolvedAt  DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([status])
+  @@index([assigneeId])
+  @@index([ownerType, ownerId])
+}
+
+model TicketMessage {
+  id        String   @id @default(uuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  authorType String  // staff | requester
+  content   String
+  internal  Boolean  @default(false) // internal notes not visible to requester
+  createdAt DateTime @default(now())
+}
+
+model TicketAttachment {
+  id        String   @id @default(uuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileUrl   String
+  fileSize  Int?
+  mimeType  String?
+  createdAt DateTime @default(now())
+}
+
+// ============== TIMETABLE MODULE ==============
+
+model Subject {
+  id              String            @id @default(uuid())
+  branchId        String?           // Represents schoolId - which school offers this subject
+  code            String            @unique
+  name            String
+  description     String?
+  credits         Int?
+  isElective      Boolean           @default(false)
+  prerequisites   String?           // JSON array of subject IDs
+  periods         TimetablePeriod[]
+  constraints     SubjectConstraint[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Room {
+  id          String            @id @default(uuid())
+  branchId    String?           // Represents schoolId - which school this room belongs to
+  code        String            @unique
+  name        String
+  building    String?
+  floor       String?
+  capacity    Int
+  type        String            // classroom | lab | auditorium | sports
+  facilities  String?           // JSON array of facilities
+  isActive    Boolean           @default(true)
+  periods     TimetablePeriod[]
+  constraints RoomConstraint[]
+  substitutions Substitution[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model TimeSlot {
+  id          String            @id @default(uuid())
+  branchId    String?
+  dayOfWeek   Int              // 0=Sunday, 1=Monday, etc.
+  startTime   String           // HH:MM format
+  endTime     String           // HH:MM format
+  slotType    String           @default("regular") // regular | break | assembly
+  slotOrder   Int              // Order of the slot in the day
+  periods     TimetablePeriod[]
+  constraints TimeSlotConstraint[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([dayOfWeek, slotOrder])
+  @@index([dayOfWeek])
+}
+
+model TimetablePeriod {
+  id          String            @id @default(uuid())
+  branchId    String?
+  sectionId   String
+  section     Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subject     Subject           @relation(fields: [subjectId], references: [id])
+  teacherId   String
+  teacher     Teacher           @relation(fields: [teacherId], references: [id])
+  roomId      String?
+  room        Room?             @relation(fields: [roomId], references: [id])
+  timeSlotId  String
+  timeSlot    TimeSlot          @relation(fields: [timeSlotId], references: [id])
+  isActive    Boolean           @default(true)
+  effectiveFrom DateTime        @default(now())
+  effectiveTo DateTime?
+  substitutions Substitution[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@unique([sectionId, timeSlotId, effectiveFrom])
+  @@index([teacherId])
+  @@index([roomId])
+  @@index([isActive])
+}
+
+model Substitution {
+  id              String           @id @default(uuid())
+  periodId        String
+  period          TimetablePeriod  @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  substituteTeacherId String?
+  substituteTeacher   Teacher?     @relation(fields: [substituteTeacherId], references: [id])
+  substituteRoomId    String?
+  substituteRoom      Room?        @relation(fields: [substituteRoomId], references: [id])
+  date            DateTime
+  reason          String?
+  status          String           @default("pending") // pending | approved | rejected
+  approvedBy      String?
+  approvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([periodId, date])
+  @@index([date])
+  @@index([substituteTeacherId])
+}
+
+// Constraint Models for Timetable Generation
+model SubjectConstraint {
+  id          String    @id @default(uuid())
+  subjectId   String
+  subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  type        String    // max_per_day | min_gap | preferred_slots | consecutive
+  value       String    // JSON with constraint details
+  priority    Int       @default(1) // 1=soft, 2=medium, 3=hard
+  createdAt   DateTime  @default(now())
+
+  @@index([subjectId])
+}
+
+model TeacherConstraint {
+  id          String    @id @default(uuid())
+  teacherId   String
+  teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  type        String    // max_periods_per_day | unavailable_slots | max_consecutive
+  value       String    // JSON with constraint details
+  priority    Int       @default(1)
+  createdAt   DateTime  @default(now())
+
+  @@index([teacherId])
+}
+
+model RoomConstraint {
+  id          String    @id @default(uuid())
+  roomId      String
+  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  type        String    // unavailable_slots | reserved_for
+  value       String    // JSON with constraint details
+  priority    Int       @default(1)
+  createdAt   DateTime  @default(now())
+
+  @@index([roomId])
+}
+
+model TimeSlotConstraint {
+  id          String    @id @default(uuid())
+  timeSlotId  String
+  timeSlot    TimeSlot  @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
+  type        String    // no_core_subjects | assembly_only
+  value       String    // JSON with constraint details
+  priority    Int       @default(1)
+  createdAt   DateTime  @default(now())
+
+  @@index([timeSlotId])
+}
+
+model TimetableTemplate {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  gradeLevel  Int?
+  academicYear String?
+  isDefault   Boolean   @default(false)
+  config      String    // JSON with periods per day, working days, etc.
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

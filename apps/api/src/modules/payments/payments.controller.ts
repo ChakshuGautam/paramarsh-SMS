@@ -1,24 +1,61 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUUID, IsPositive } from 'class-validator';
 
 class UpsertPaymentDto {
+  @ApiProperty({
+    description: 'Unique identifier of the invoice this payment is for',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    format: 'uuid'
+  })
   @IsString()
+  @IsUUID()
   invoiceId!: string;
+
+  @ApiPropertyOptional({
+    description: 'Payment amount in the smallest currency unit (e.g., cents)',
+    example: 150000,
+    minimum: 0
+  })
   @IsOptional()
   @IsNumber()
+  @IsPositive()
   amount?: number;
+
+  @ApiPropertyOptional({
+    description: 'Current status of the payment',
+    example: 'completed',
+    enum: ['pending', 'completed', 'failed', 'cancelled', 'refunded']
+  })
   @IsOptional()
   @IsString()
   status?: string;
+
+  @ApiPropertyOptional({
+    description: 'Payment method used',
+    example: 'credit_card',
+    enum: ['cash', 'credit_card', 'debit_card', 'bank_transfer', 'upi', 'wallet', 'cheque']
+  })
   @IsOptional()
   @IsString()
   method?: string;
+
+  @ApiPropertyOptional({
+    description: 'Payment gateway used for processing',
+    example: 'stripe',
+    enum: ['stripe', 'razorpay', 'paypal', 'manual']
+  })
   @IsOptional()
   @IsString()
   gateway?: string;
+
+  @ApiPropertyOptional({
+    description: 'External reference number or transaction ID',
+    example: 'TXN123456789',
+    maxLength: 100
+  })
   @IsOptional()
   @IsString()
   reference?: string;

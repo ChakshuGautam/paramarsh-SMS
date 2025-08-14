@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
+import Image from "next/image";
 
 export const LoginPage = () => {
   const router = useRouter();
@@ -31,10 +32,35 @@ export const LoginPage = () => {
     [signInLoaded, signUpLoaded],
   );
 
+  // Carousel state for left panel screenshots
+  const screenshots = useMemo(
+    () => [
+      "/screenshots/admin-1.png",
+      "/screenshots/admin-2.png",
+      "/screenshots/admin-3.png",
+    ],
+    [],
+  );
+  const fallbackScreens = ["/window.svg", "/next.svg", "/globe.svg"];
+  const slides = (
+    screenshots && screenshots.length ? screenshots : fallbackScreens
+  ).slice(0, 5);
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused || slides.length <= 1) return;
+    const id = setInterval(
+      () => setCurrent((i) => (i + 1) % slides.length),
+      4000,
+    );
+    return () => clearInterval(id);
+  }, [paused, slides.length]);
+
   return (
     <div className="min-h-screen flex">
       <div className="container relative grid flex-col items-center justify-center sm:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex overflow-hidden">
           <div className="absolute inset-0 bg-zinc-900" />
           <div className="relative z-20 flex items-center text-lg font-medium">
             <svg
@@ -51,7 +77,86 @@ export const LoginPage = () => {
             </svg>
             Paramarsh SMS
           </div>
-          {/* Left panel kept for visual balance; removed placeholder quote */}
+          {/* Feature bullets */}
+          <div className="relative z-20 mt-8 space-y-4">
+            <h2 className="text-xl font-semibold">Why Paramarsh SMS?</h2>
+            <ul className="space-y-3 text-sm text-zinc-200">
+              <li className="flex items-start gap-2">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                Unified Admissions, Attendance, Exams, and Fees in one place
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                Powerful Admin with shadcn/ui + TanStack Data Tables
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                Multi-tenant ready with role-based access controls
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />
+                API-first with OpenAPI, mock server for instant local dev
+              </li>
+            </ul>
+          </div>
+
+          {/* Centered, controlled carousel */}
+          <div className="relative z-20 flex-1 flex items-center justify-center">
+            <div
+              className="group relative w-full max-w-xl overflow-hidden rounded-md border border-zinc-800 bg-zinc-950/40"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+            >
+              <div className="relative aspect-[16/9] w-full">
+                {slides.map((src, i) => (
+                  <div
+                    key={src + i}
+                    className={`absolute inset-0 transition-opacity duration-500 ${
+                      i === current ? "opacity-100" : "opacity-0"
+                    }`}
+                  >
+                    <Image
+                      src={src}
+                      alt="Admin screenshot"
+                      fill
+                      sizes="(max-width: 1280px) 100vw, 1280px"
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              {/* Controls */}
+              <button
+                aria-label="Previous"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded bg-zinc-900/60 px-2 py-1 text-sm opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={() =>
+                  setCurrent((current - 1 + slides.length) % slides.length)
+                }
+              >
+                ◀
+              </button>
+              <button
+                aria-label="Next"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded bg-zinc-900/60 px-2 py-1 text-sm opacity-0 transition-opacity group-hover:opacity-100"
+                onClick={() => setCurrent((current + 1) % slides.length)}
+              >
+                ▶
+              </button>
+              {/* Dots */}
+              <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-2">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    aria-label={`Go to slide ${i + 1}`}
+                    className={`h-2 w-2 rounded-full ${
+                      i === current ? "bg-emerald-400" : "bg-zinc-500"
+                    }`}
+                    onClick={() => setCurrent(i)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
         <div className="lg:p-8">
           <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">

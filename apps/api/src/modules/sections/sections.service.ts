@@ -27,6 +27,16 @@ export class SectionsService {
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
   }
 
+  async findOne(id: string) {
+    const section = await this.prisma.section.findUnique({
+      where: { id },
+    });
+    if (!section) {
+      throw new NotFoundException('Section not found');
+    }
+    return { data: section };
+  }
+
   async create(input: Section) {
     const created = await this.prisma.section.create({
       data: { classId: input.classId, name: input.name, capacity: input.capacity ?? null },

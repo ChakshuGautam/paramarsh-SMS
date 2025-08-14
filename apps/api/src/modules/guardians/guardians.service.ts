@@ -36,6 +36,16 @@ export class GuardiansService {
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
   }
 
+  async findOne(id: string) {
+    const entity = await this.prisma.guardian.findUnique({
+      where: { id },
+    });
+    if (!entity) {
+      throw new NotFoundException('Guardian not found');
+    }
+    return { data: entity };
+  }
+
   async create(input: Guardian) {
     const created = await this.prisma.guardian.create({
       data: {

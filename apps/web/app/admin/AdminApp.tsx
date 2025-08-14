@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Admin } from "@/components/admin";
-import { Resource, type DataProvider as RADataProvider } from "ra-core";
+import { type DataProvider as RADataProvider } from "ra-core";
+import { Resource } from "react-admin";
 import { dataProvider } from "./DataProvider";
 import authProvider from "./authProvider";
+// import { PermissionAwareResource } from "./components/PermissionAwareResource"; // Disabled for development
+import { RoleSwitcher } from "./components/RoleSwitcher";
 import * as Students from "./resources/students";
 import * as Guardians from "./resources/guardians";
 import * as AdmissionsApplications from "./resources/admissionsApplications";
@@ -18,11 +22,43 @@ import * as Marks from "./resources/marks";
 import * as AttendanceRecords from "./resources/attendanceRecords";
 import * as Staff from "./resources/staff";
 import * as Teachers from "./resources/teachers";
+import * as Templates from "./resources/templates";
+import * as Campaigns from "./resources/campaigns";
+import * as Messages from "./resources/messages";
+import * as Tickets from "./resources/tickets";
+import * as Subjects from "./resources/subjects";
+import * as Rooms from "./resources/rooms";
+import * as Timetable from "./resources/timetable";
+import * as TimeSlots from "./resources/timeSlots";
+import * as Substitutions from "./resources/substitutions";
+import * as FeeSchedules from "./resources/feeSchedules";
+import * as Preferences from "./resources/preferences";
+import * as Tenants from "./resources/tenants";
+import * as SectionTimetables from "./resources/sectionTimetables";
 
 const raDataProvider = dataProvider as unknown as RADataProvider;
 
-const AdminApp = () => (
-  <Admin dataProvider={raDataProvider} authProvider={authProvider}>
+const AdminApp = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading admin panel...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Admin dataProvider={raDataProvider} authProvider={authProvider}>
+    {/* Core Academic Resources */}
     <Resource
       name="students"
       list={Students.List}
@@ -38,41 +74,11 @@ const AdminApp = () => (
       create={Guardians.Create}
     />
     <Resource
-      name="admissionsApplications"
-      options={{ label: "Applications" }}
-      list={AdmissionsApplications.List}
-      show={AdmissionsApplications.Show}
-      edit={AdmissionsApplications.Edit}
-      create={AdmissionsApplications.Create}
-    />
-    <Resource
-      name="exams"
-      list={Exams.List}
-      show={Exams.Show}
-      edit={Exams.Edit}
-      create={Exams.Create}
-    />
-    <Resource
-      name="feeStructures"
-      options={{ label: "Fee Structures" }}
-      list={FeeStructures.List}
-      show={FeeStructures.Show}
-      edit={FeeStructures.Edit}
-      create={FeeStructures.Create}
-    />
-    <Resource
-      name="invoices"
-      list={Invoices.List}
-      show={Invoices.Show}
-      edit={Invoices.Edit}
-      create={Invoices.Create}
-    />
-    <Resource
-      name="payments"
-      list={Payments.List}
-      show={Payments.Show}
-      edit={Payments.Edit}
-      create={Payments.Create}
+      name="enrollments"
+      list={Enrollments.List}
+      show={Enrollments.Show}
+      edit={Enrollments.Edit}
+      create={Enrollments.Create}
     />
     <Resource
       name="classes"
@@ -88,14 +94,18 @@ const AdminApp = () => (
       edit={Sections.Edit}
       create={Sections.Create}
     />
+    
+    {/* Admissions */}
     <Resource
-      name="enrollments"
-      list={Enrollments.List}
-      show={Enrollments.Show}
-      edit={Enrollments.Edit}
-      create={Enrollments.Create}
+      name="admissionsApplications"
+      options={{ label: "Applications" }}
+      list={AdmissionsApplications.List}
+      show={AdmissionsApplications.Show}
+      edit={AdmissionsApplications.Edit}
+      create={AdmissionsApplications.Create}
     />
-    <Resource name="marks" list={Marks.List} show={Marks.Show} />
+    
+    {/* Academic Records */}
     <Resource
       name="attendanceRecords"
       options={{ label: "Attendance" }}
@@ -104,6 +114,54 @@ const AdminApp = () => (
       edit={AttendanceRecords.Edit}
       create={AttendanceRecords.Create}
     />
+    <Resource
+      name="exams"
+      list={Exams.List}
+      show={Exams.Show}
+      edit={Exams.Edit}
+      create={Exams.Create}
+    />
+    <Resource
+      name="marks"
+      list={Marks.List}
+      show={Marks.Show}
+      edit={Marks.Edit}
+      create={Marks.Create}
+    />
+    
+    {/* Financial */}
+    <Resource
+      name="feeStructures"
+      options={{ label: "Fee Structures" }}
+      list={FeeStructures.List}
+      show={FeeStructures.Show}
+      edit={FeeStructures.Edit}
+      create={FeeStructures.Create}
+    />
+    <Resource
+      name="feeSchedules"
+      options={{ label: "Fee Schedules" }}
+      list={FeeSchedules.List}
+      show={FeeSchedules.Show}
+      edit={FeeSchedules.Edit}
+      create={FeeSchedules.Create}
+    />
+    <Resource
+      name="invoices"
+      list={Invoices.List}
+      show={Invoices.Show}
+      edit={Invoices.Edit}
+      create={Invoices.Create}
+    />
+    <Resource
+      name="payments"
+      list={Payments.List}
+      show={Payments.Show}
+      edit={Payments.Edit}
+      create={Payments.Create}
+    />
+    
+    {/* HR & Staff */}
     <Resource
       name="staff"
       list={Staff.List}
@@ -119,7 +177,111 @@ const AdminApp = () => (
       edit={Teachers.Edit}
       create={Teachers.Create}
     />
+    
+    {/* Timetable */}
+    <Resource
+      name="subjects"
+      options={{ label: "Subjects" }}
+      list={Subjects.List}
+      show={Subjects.Show}
+      edit={Subjects.Edit}
+      create={Subjects.Create}
+    />
+    <Resource
+      name="rooms"
+      options={{ label: "Rooms" }}
+      list={Rooms.List}
+      show={Rooms.Show}
+      edit={Rooms.Edit}
+      create={Rooms.Create}
+    />
+    <Resource
+      name="timetablePeriods"
+      options={{ label: "Timetable" }}
+      list={Timetable.List}
+      show={Timetable.Show}
+      edit={Timetable.Edit}
+      create={Timetable.Create}
+    />
+    <Resource
+      name="timeSlots"
+      options={{ label: "Time Slots" }}
+      list={TimeSlots.List}
+      show={TimeSlots.Show}
+      edit={TimeSlots.Edit}
+      create={TimeSlots.Create}
+    />
+    <Resource
+      name="substitutions"
+      options={{ label: "Substitutions" }}
+      list={Substitutions.List}
+      show={Substitutions.Show}
+      edit={Substitutions.Edit}
+      create={Substitutions.Create}
+    />
+    <Resource
+      name="sectionTimetables"
+      options={{ label: "Section Timetables" }}
+      show={SectionTimetables.Show}
+      recordRepresentation={(record) => `${record.class?.name} - ${record.name} Timetable`}
+    />
+    
+    {/* Communications */}
+    <Resource
+      name="templates"
+      options={{ label: "Message Templates" }}
+      list={Templates.List}
+      show={Templates.Show}
+      edit={Templates.Edit}
+      create={Templates.Create}
+    />
+    <Resource
+      name="campaigns"
+      options={{ label: "Campaigns" }}
+      list={Campaigns.List}
+      show={Campaigns.Show}
+      edit={Campaigns.Edit}
+      create={Campaigns.Create}
+    />
+    <Resource
+      name="messages"
+      options={{ label: "Messages" }}
+      list={Messages.List}
+      show={Messages.Show}
+      edit={Messages.Edit}
+      create={Messages.Create}
+    />
+    <Resource
+      name="tickets"
+      options={{ label: "Support Tickets" }}
+      list={Tickets.List}
+      show={Tickets.Show}
+      edit={Tickets.Edit}
+      create={Tickets.Create}
+    />
+    <Resource
+      name="preferences"
+      options={{ label: "Communication Preferences" }}
+      list={Preferences.List}
+      show={Preferences.Show}
+      edit={Preferences.Edit}
+      create={Preferences.Create}
+    />
+    
+    {/* System Administration */}
+    <Resource
+      name="tenants"
+      options={{ label: "Tenants" }}
+      list={Tenants.List}
+      show={Tenants.Show}
+      edit={Tenants.Edit}
+      create={Tenants.Create}
+    />
+    
+    {/* Role Switcher for Development Testing */}
+    <RoleSwitcher />
   </Admin>
-);
+  );
+};
 
 export default AdminApp;

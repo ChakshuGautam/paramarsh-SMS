@@ -1,4 +1,4 @@
-import { createElement, useMemo } from "react";
+import React, { createElement, useMemo, useState } from "react";
 import {
   useCreatePath,
   useGetResourceLabel,
@@ -13,15 +13,120 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { List, House, Shell } from "lucide-react";
+import { 
+  List, 
+  House, 
+  Shell,
+  Users,
+  GraduationCap,
+  Calendar,
+  ClipboardCheck,
+  BookOpen,
+  CreditCard,
+  MessageSquare,
+  Settings,
+  ChevronRight,
+  UserCheck,
+  School,
+  Building2,
+  UsersRound,
+  FileText,
+  DollarSign,
+  Receipt,
+  Wallet,
+  CalendarDays,
+  Clock,
+  FileSpreadsheet,
+  Award,
+  Mail,
+  Megaphone,
+  TicketCheck,
+  Cog,
+  Database,
+} from "lucide-react";
 import { useGetIdentity } from "ra-core";
 import { isResourceAllowed } from "@/app/admin/permissions";
+import { cn } from "@/lib/utils";
+
+// Define resource groups with their icons and resources
+const resourceGroups = {
+  'Student Information': {
+    icon: GraduationCap,
+    resources: ['students', 'guardians', 'enrollments', 'applications'],
+    resourceIcons: {
+      students: Users,
+      guardians: UsersRound,
+      enrollments: FileText,
+      applications: FileSpreadsheet,
+    }
+  },
+  'Academic': {
+    icon: BookOpen,
+    resources: ['classes', 'sections', 'subjects', 'teachers'],
+    resourceIcons: {
+      classes: School,
+      sections: Building2,
+      subjects: BookOpen,
+      teachers: UserCheck,
+    }
+  },
+  'Attendance & Exams': {
+    icon: ClipboardCheck,
+    resources: ['attendanceRecords', 'exams', 'marks'],
+    resourceIcons: {
+      attendanceRecords: UserCheck,
+      exams: FileSpreadsheet,
+      marks: Award,
+    }
+  },
+  'Timetable': {
+    icon: Calendar,
+    resources: ['timetable', 'sectionTimetables', 'timeSlots', 'rooms', 'substitutions'],
+    resourceIcons: {
+      timetable: Calendar,
+      sectionTimetables: CalendarDays,
+      timeSlots: Clock,
+      rooms: Building2,
+      substitutions: Users,
+    }
+  },
+  'Finance': {
+    icon: CreditCard,
+    resources: ['feeStructures', 'feeSchedules', 'invoices', 'payments'],
+    resourceIcons: {
+      feeStructures: DollarSign,
+      feeSchedules: Receipt,
+      invoices: FileText,
+      payments: Wallet,
+    }
+  },
+  'Communication': {
+    icon: MessageSquare,
+    resources: ['messages', 'campaigns', 'templates', 'tickets'],
+    resourceIcons: {
+      messages: Mail,
+      campaigns: Megaphone,
+      templates: FileText,
+      tickets: TicketCheck,
+    }
+  },
+  'Administration': {
+    icon: Settings,
+    resources: ['staff', 'tenants', 'preferences'],
+    resourceIcons: {
+      staff: Users,
+      tenants: Database,
+      preferences: Cog,
+    }
+  },
+};
 
 export function AppSidebar() {
   const hasDashboard = useHasDashboard();
@@ -29,16 +134,37 @@ export function AppSidebar() {
   const { data: identity } = useGetIdentity();
   const roles = (identity as any)?.roles as string[] | undefined;
   const { openMobile, setOpenMobile } = useSidebar();
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    'Student Information': true,
+    'Academic': true,
+  });
+
   const handleClick = () => {
     if (openMobile) {
       setOpenMobile(false);
     }
   };
+
+  const toggleGroup = (groupName: string) => {
+    setOpenGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
+
   const visibleResourceNames = useMemo(() => {
     const names = Object.keys(resources).filter((name) => resources[name].hasList);
-    if (!roles) return names;
+    if (roles === undefined) return [];
+    if (Array.isArray(roles) && roles.includes("admin")) return names;
     return names.filter((name) => isResourceAllowed(roles, name));
   }, [resources, roles]);
+
+  // Filter resources to only show those that exist, have list view, and are allowed
+  const getGroupResources = (resourceList: string[]) => {
+    return resourceList.filter(name => 
+      visibleResourceNames.includes(name) && resources[name]?.hasList
+    );
+  };
   return (
     <Sidebar variant="floating" collapsible="icon">
       <SidebarHeader>
@@ -57,22 +183,88 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {hasDashboard ? (
+        {/* Dashboard */}
+        {hasDashboard && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
                 <DashboardMenuItem onClick={handleClick} />
-              ) : null}
-              {visibleResourceNames.map((name) => (
-                  <ResourceMenuItem
-                    key={name}
-                    name={name}
-                    onClick={handleClick}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Resource Groups */}
+        {Object.entries(resourceGroups).map(([groupName, groupConfig]) => {
+          const groupResources = getGroupResources(groupConfig.resources);
+          
+          // Don't show empty groups
+          if (groupResources.length === 0) return null;
+
+          const GroupIcon = groupConfig.icon;
+          const isOpen = openGroups[groupName];
+
+          return (
+            <SidebarGroup key={groupName}>
+              <SidebarGroupLabel 
+                onClick={() => toggleGroup(groupName)}
+                className="cursor-pointer hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex items-center gap-2 w-full py-1">
+                  <GroupIcon className="h-4 w-4" />
+                  <span className="flex-1 text-left text-sm font-medium">{groupName}</span>
+                  <ChevronRight 
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-200",
+                      isOpen && "rotate-90"
+                    )}
                   />
-                ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                </div>
+              </SidebarGroupLabel>
+              {isOpen && (
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {groupResources.map((resourceName) => (
+                      <ResourceMenuItem
+                        key={resourceName}
+                        name={resourceName}
+                        onClick={handleClick}
+                        icon={groupConfig.resourceIcons[resourceName as keyof typeof groupConfig.resourceIcons]}
+                      />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              )}
+            </SidebarGroup>
+          );
+        })}
+
+        {/* Ungrouped Resources (fallback for any resources not in groups) */}
+        {(() => {
+          const groupedResourceNames = Object.values(resourceGroups)
+            .flatMap(group => group.resources);
+          const ungroupedResources = visibleResourceNames
+            .filter(name => !groupedResourceNames.includes(name));
+
+          if (ungroupedResources.length === 0) return null;
+
+          return (
+            <SidebarGroup>
+              <SidebarGroupLabel>Other</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {ungroupedResources.map((name) => (
+                    <ResourceMenuItem
+                      key={name}
+                      name={name}
+                      onClick={handleClick}
+                    />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })()}
       </SidebarContent>
       <SidebarFooter />
     </Sidebar>
@@ -100,9 +292,11 @@ export const DashboardMenuItem = ({ onClick }: { onClick?: () => void }) => {
 export const ResourceMenuItem = ({
   name,
   onClick,
+  icon,
 }: {
   name: string;
   onClick?: () => void;
+  icon?: any;
 }) => {
   const resources = useResourceDefinitions();
   const getResourceLabel = useGetResourceLabel();
@@ -112,17 +306,24 @@ export const ResourceMenuItem = ({
     type: "list",
   });
   const match = useMatch({ path: to, end: false });
+  
+  // Move the Icon determination before any conditional returns
+  const Icon = icon || (resources?.[name]?.icon ? resources[name].icon : List);
+  
+  // Conditional return after all hooks
   if (!resources || !resources[name]) return null;
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={!!match}>
-        <Link to={to} state={{ _scrollToTop: true }} onClick={onClick}>
-          {resources[name].icon ? (
-            createElement(resources[name].icon)
-          ) : (
-            <List />
-          )}
+      <SidebarMenuButton asChild isActive={!!match} className="pl-8">
+        <Link
+          to={to}
+          state={{ _scrollToTop: true }}
+          onClick={onClick}
+          aria-label={name}
+          data-testid={`menu-${name}`}
+        >
+          {createElement(Icon, { className: "h-4 w-4" })}
           {getResourceLabel(name, 2)}
         </Link>
       </SidebarMenuButton>

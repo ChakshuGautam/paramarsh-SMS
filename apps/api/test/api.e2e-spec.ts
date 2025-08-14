@@ -1,11 +1,11 @@
-import request from 'supertest';
+import request = require('supertest');
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 
 describe('API E2E', () => {
   let app: INestApplication;
-  let http: request.SuperTest<request.Test>;
+  let http: ReturnType<typeof request>;
 
   beforeAll(async () => {
     process.env.PORT = '0';

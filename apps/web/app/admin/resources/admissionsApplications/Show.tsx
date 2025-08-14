@@ -15,3 +15,4 @@ export const AdmissionsApplicationsShow = () => (
 
 export default AdmissionsApplicationsShow;
 
+

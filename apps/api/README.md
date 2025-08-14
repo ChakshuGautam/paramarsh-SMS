@@ -70,6 +70,27 @@ $ mau deploy
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
+## API Documentation
+
+This project includes comprehensive Swagger/OpenAPI documentation for all API endpoints.
+
+### Accessing Documentation
+
+- **Swagger UI**: http://localhost:3000/api-docs
+- **JSON Schema**: http://localhost:3000/api-docs-json
+
+### Development Guidelines
+
+When adding new API endpoints, ensure they are properly documented:
+
+1. **Controllers**: Add `@ApiTags`, `@ApiOperation`, and parameter decorators
+2. **DTOs**: Add `@ApiProperty` decorators to all fields (this is critical for request body schemas)
+3. **Validation**: Align Swagger constraints with class-validator decorators
+
+For detailed guidelines on implementing and maintaining API documentation, see: [`docs/swagger-documentation.md`](./docs/swagger-documentation.md)
+
+**Important**: Always add `@ApiProperty` decorators to DTO fields, otherwise Swagger will show empty `{}` schemas for request bodies.
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:

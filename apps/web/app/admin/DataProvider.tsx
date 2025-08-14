@@ -3,13 +3,8 @@
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-const apiUrl =
-  (typeof window !== "undefined"
-    ? (window as unknown as { NEXT_PUBLIC_API_URL?: string })
-        .NEXT_PUBLIC_API_URL
-    : undefined) ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:4010";
+// Use Next.js API proxy to avoid CORS issues
+const apiUrl = "/api/admin";
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   try {
@@ -28,13 +23,6 @@ async function getAuthHeader(): Promise<Record<string, string>> {
       : undefined) || process.env.NEXT_PUBLIC_API_TOKEN;
   if (token) {
     return { Authorization: `Bearer ${token}` };
-  }
-  if (
-    apiUrl.includes(":4010") ||
-    apiUrl.includes("127.0.0.1:4010") ||
-    apiUrl.includes("localhost:4010")
-  ) {
-    return { Authorization: "Bearer mock" };
   }
   return {};
 }
@@ -130,15 +118,22 @@ function mapListParams(resource: string, params: ListParams) {
 type ApiListResponse<T> = { data: T[]; meta?: { total?: number } };
 
 function mapListResponse<T = unknown>(json: unknown) {
-  const value = json as ApiListResponse<T> | T[] | undefined;
-  const data =
-    (value && (value as ApiListResponse<T>).data
-      ? (value as ApiListResponse<T>).data
-      : (value as T[] | undefined)) ?? [];
-  const total =
-    (value && (value as ApiListResponse<T>).meta?.total) ??
-    (Array.isArray(data) ? data.length : 0);
-  return { data, total } as { data: T[]; total: number };
+  const value = json as any;
+  
+  // React Admin expects { data: [], total: number }
+  if (value && Array.isArray(value.data)) {
+    return {
+      data: value.data,
+      total: value.total || value.meta?.total || value.data.length
+    };
+  }
+  
+  // Fallback for array responses
+  if (Array.isArray(value)) {
+    return { data: value, total: value.length };
+  }
+  
+  return { data: [], total: 0 };
 }
 
 export const dataProvider = {
@@ -271,20 +266,50 @@ export type DataProviderLike = typeof dataProvider;
 // Map logical resource names to API paths
 function resourceToPath(resource: string): string {
   const mapping: Record<string, string> = {
+    // Core Academic
     students: "students",
     guardians: "guardians",
-    admissionsApplications: "admissions/applications",
-    exams: "exams",
-    feeStructures: "fees/structures",
-    invoices: "fees/invoices",
-    payments: "fees/payments",
     classes: "classes",
     sections: "sections",
     enrollments: "enrollments",
-    marks: "marks",
+    
+    // Admissions
+    admissionsApplications: "admissions/applications",
+    
+    // Attendance
     attendanceRecords: "attendance/records",
+    
+    // Exams & Marks
+    exams: "exams",
+    marks: "marks",
+    
+    // Fees & Payments
+    feeStructures: "fees/structures",
+    feeSchedules: "fees/schedules",
+    invoices: "fees/invoices",
+    payments: "fees/payments",
+    
+    // HR & Staff
     staff: "hr/staff",
     teachers: "hr/teachers",
+    
+    // Timetable
+    subjects: "subjects",
+    rooms: "rooms",
+    timetablePeriods: "timetable/periods",
+    timeSlots: "timetable/time-slots",
+    substitutions: "timetable/substitutions",
+    sectionTimetables: "sections", // Maps to sections API to get section data
+    
+    // Communications
+    templates: "comms/templates",
+    campaigns: "comms/campaigns",
+    messages: "comms/messages",
+    preferences: "comms/preferences",
+    tickets: "helpdesk/tickets",
+    
+    // System
+    tenants: "tenants",
   };
   return mapping[resource] ?? resource;
 }
