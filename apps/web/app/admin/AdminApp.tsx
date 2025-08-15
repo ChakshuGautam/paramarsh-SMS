@@ -12,6 +12,7 @@ import * as Students from "./resources/students";
 import * as Guardians from "./resources/guardians";
 import * as AdmissionsApplications from "./resources/admissionsApplications";
 import * as Exams from "./resources/exams";
+import * as AcademicYears from "./resources/academicYears";
 import * as FeeStructures from "./resources/feeStructures";
 import * as Invoices from "./resources/invoices";
 import * as Payments from "./resources/payments";
@@ -20,6 +21,8 @@ import * as Sections from "./resources/sections";
 import * as Enrollments from "./resources/enrollments";
 import * as Marks from "./resources/marks";
 import * as AttendanceRecords from "./resources/attendanceRecords";
+import * as AttendanceSessions from "./resources/attendanceSessions";
+import * as TeacherAttendance from "./resources/teacherAttendance";
 import * as Staff from "./resources/staff";
 import * as Teachers from "./resources/teachers";
 import * as Templates from "./resources/templates";
@@ -29,12 +32,14 @@ import * as Tickets from "./resources/tickets";
 import * as Subjects from "./resources/subjects";
 import * as Rooms from "./resources/rooms";
 import * as Timetable from "./resources/timetable";
+import * as TimetableGrid from "./resources/timetableGrid";
 import * as TimeSlots from "./resources/timeSlots";
 import * as Substitutions from "./resources/substitutions";
 import * as FeeSchedules from "./resources/feeSchedules";
 import * as Preferences from "./resources/preferences";
 import * as Tenants from "./resources/tenants";
 import * as SectionTimetables from "./resources/sectionTimetables";
+import * as Timetables from "./resources/timetables";
 
 const raDataProvider = dataProvider as unknown as RADataProvider;
 
@@ -108,11 +113,23 @@ const AdminApp = () => {
     {/* Academic Records */}
     <Resource
       name="attendanceRecords"
-      options={{ label: "Attendance" }}
+      options={{ label: "Attendance Records" }}
       list={AttendanceRecords.List}
       show={AttendanceRecords.Show}
       edit={AttendanceRecords.Edit}
       create={AttendanceRecords.Create}
+    />
+    <Resource
+      name="attendanceSessions"
+      options={{ label: "Student Attendance" }}
+      list={AttendanceSessions.List}
+      edit={AttendanceSessions.Edit}
+      show={AttendanceSessions.Show}
+    />
+    <Resource
+      name="teacherAttendance"
+      options={{ label: "Teacher Attendance" }}
+      list={TeacherAttendance.List}
     />
     <Resource
       name="exams"
@@ -120,6 +137,14 @@ const AdminApp = () => {
       show={Exams.Show}
       edit={Exams.Edit}
       create={Exams.Create}
+    />
+    <Resource
+      name="academicYears"
+      options={{ label: "Academic Years" }}
+      list={AcademicYears.List}
+      show={AcademicYears.Show}
+      edit={AcademicYears.Edit}
+      create={AcademicYears.Create}
     />
     <Resource
       name="marks"
@@ -202,6 +227,13 @@ const AdminApp = () => {
       show={Timetable.Show}
       edit={Timetable.Edit}
       create={Timetable.Create}
+    />
+    <Resource
+      name="timetables"
+      options={{ label: "Timetables" }}
+      list={Timetables.List}
+      show={Timetables.Show}
+      edit={Timetables.Edit}
     />
     <Resource
       name="timeSlots"

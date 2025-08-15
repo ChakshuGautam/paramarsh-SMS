@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -25,10 +25,10 @@ const storeKeyByType = {
 
 // Label-less filters with placeholders
 const subjectFilters = [
-  <TextInput source="q" placeholder="Search subjects..." label={false} alwaysOn />,
-  <NumberInput source="credits" placeholder="Filter by credits" label={false} />,
-  <BooleanInput source="isActive" label={false} />,
-  <BooleanInput source="isElective" label={false} />,
+  <TextInput source="q" placeholder="Search subjects..." label="" alwaysOn />,
+  <NumberInput source="credits" placeholder="Filter by credits" label="" />,
+  <BooleanInput source="isActive" label="" />,
+  <BooleanInput source="isElective" label="" />,
 ];
 
 export const SubjectsList = () => {
@@ -37,7 +37,7 @@ export const SubjectsList = () => {
       sort={{ field: "name", order: "ASC" }}
       filterDefaultValues={{ isActive: true }}
       filters={subjectFilters}
-      perPage={25}
+      perPage={10}
     >
       <TabbedDataTable />
     </List>
@@ -144,7 +144,7 @@ const SubjectsTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
     storeKey={storeKey}
     rowClassName={(record) => {
-      if (!record.isActive) return 'border-l-4 border-l-gray-400 opacity-60';
+      if (!record.isActive) return 'border-l-4 border-l-muted-foreground opacity-60';
       if (record.isElective) return 'border-l-4 border-l-purple-500';
       return 'border-l-4 border-l-blue-500';
     }}
@@ -169,7 +169,8 @@ const SubjectsTable = ({ storeKey }: { storeKey: string }) => (
   </DataTable>
 );
 
-const CodeBadge = ({ record }: { record?: any }) => {
+const CodeBadge = () => {
+  const record = useRecordContext();
   if (!record || !record.code) return null;
   
   return (
@@ -179,25 +180,27 @@ const CodeBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const NameWithIcon = ({ record }: { record?: any }) => {
+const NameWithIcon = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   return (
     <div className="flex items-center gap-2">
-      <BookOpen className={`w-4 h-4 ${record.isActive ? 'text-blue-600' : 'text-gray-400'}`} />
-      <span className={record.isActive ? '' : 'text-gray-500'}>{record.name}</span>
+      <BookOpen className={`w-4 h-4 ${record.isActive ? 'text-blue-600' : 'text-muted-foreground'}`} />
+      <span className={record.isActive ? '' : 'text-muted-foreground'}>{record.name}</span>
     </div>
   );
 };
 
-const CreditsBadge = ({ record }: { record?: any }) => {
+const CreditsBadge = () => {
+  const record = useRecordContext();
   if (!record || record.credits === undefined) return null;
   
   const getCreditsColor = (credits: number) => {
     if (credits >= 4) return 'text-purple-700 bg-purple-100';
     if (credits >= 3) return 'text-blue-700 bg-blue-100';
     if (credits >= 2) return 'text-green-700 bg-green-100';
-    return 'text-gray-700 bg-gray-100';
+    return 'text-muted-foreground bg-muted';
   };
   
   return (
@@ -210,7 +213,8 @@ const CreditsBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const TypeBadge = ({ record }: { record?: any }) => {
+const TypeBadge = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   if (record.isElective) {

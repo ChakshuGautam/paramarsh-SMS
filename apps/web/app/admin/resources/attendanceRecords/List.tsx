@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -16,6 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays, startOfWeek, startOfMonth } from "date-fns";
+import { Check, X, Clock, Shield, AlertCircle, Calendar } from "lucide-react";
 
 // Store keys for different date ranges
 const storeKeyByDateRange = {
@@ -45,18 +46,18 @@ const getDateFilter = (range: string) => {
 
 // Label-less filters with placeholders
 const attendanceFilters = [
-  <TextInput source="q" placeholder="Search students..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search students..." label="" alwaysOn />,
   <ReferenceInput source="studentId" reference="students">
     <AutocompleteInput 
       placeholder="Filter by student" 
-      label={false} 
+      label="" 
       optionText={(record) => `${record.firstName} ${record.lastName}`}
     />
   </ReferenceInput>,
   <SelectInput 
     source="status" 
     placeholder="Filter by status" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'present', name: 'Present' },
       { id: 'absent', name: 'Absent' },
@@ -64,7 +65,7 @@ const attendanceFilters = [
       { id: 'excused', name: 'Excused' }
     ]} 
   />,
-  <DateInput source="date" placeholder="Filter by date" label={false} />,
+  <DateInput source="date" placeholder="Filter by date" label="" />,
 ];
 
 export const AttendanceRecordsList = () => (
@@ -72,7 +73,7 @@ export const AttendanceRecordsList = () => (
     sort={{ field: "date", order: "DESC" }}
     filterDefaultValues={{ ...getDateFilter("today") }}
     filters={attendanceFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -161,41 +162,155 @@ const AttendanceTable = ({ storeKey }: { storeKey: string }) => (
         absent: 'border-l-4 border-l-red-500',
         late: 'border-l-4 border-l-yellow-500',
         excused: 'border-l-4 border-l-blue-500',
+        sick: 'border-l-4 border-l-purple-500',
+        partial: 'border-l-4 border-l-orange-500',
       };
       return statusColors[record.status] || '';
     }}
   >
     {/* Always visible columns */}
     <DataTable.Col label="Student">
-      <ReferenceField reference="students" source="studentId">
-        <TextField source="firstName" />
-      </ReferenceField>
+      <StudentName />
     </DataTable.Col>
     <DataTable.Col source="status" label="Status">
       <StatusBadge />
     </DataTable.Col>
-    <DataTable.Col source="date" label="Date" />
+    <DataTable.Col source="date" label="Date">
+      <DateDisplay />
+    </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col source="markedBy" label="Marked By" className="hidden md:table-cell" />
-    <DataTable.Col source="source" label="Source" className="hidden lg:table-cell" />
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col source="reason" label="Reason" className="hidden md:table-cell">
+      <ReasonText />
+    </DataTable.Col>
+    <DataTable.Col source="markedBy" label="Marked By" className="hidden lg:table-cell" />
+    <DataTable.Col source="source" label="Source" className="hidden lg:table-cell">
+      <SourceBadge />
+    </DataTable.Col>
   </DataTable>
 );
 
-const StatusBadge = ({ record }: { record?: any }) => {
+const StudentName = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
-  const variants = {
-    present: 'default',
-    absent: 'destructive',
-    late: 'warning',
-    excused: 'secondary',
-  } as const;
+  return (
+    <ReferenceField reference="students" source="studentId" link={false}>
+      <div className="flex flex-col">
+        <span className="font-medium">
+          <TextField source="firstName" /> <TextField source="lastName" />
+        </span>
+        <span className="text-xs text-gray-500">
+          <TextField source="rollNumber" />
+        </span>
+      </div>
+    </ReferenceField>
+  );
+};
+
+const StatusBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.status) return null;
+  
+  const statusConfig = {
+    present: {
+      icon: Check,
+      label: 'Present',
+      className: 'text-green-700 bg-green-100',
+      iconClassName: 'text-green-600'
+    },
+    absent: {
+      icon: X,
+      label: 'Absent',
+      className: 'text-red-700 bg-red-100',
+      iconClassName: 'text-red-600'
+    },
+    late: {
+      icon: Clock,
+      label: 'Late',
+      className: 'text-yellow-700 bg-yellow-100',
+      iconClassName: 'text-yellow-600'
+    },
+    excused: {
+      icon: Shield,
+      label: 'Excused',
+      className: 'text-blue-700 bg-blue-100',
+      iconClassName: 'text-blue-600'
+    },
+    sick: {
+      icon: AlertCircle,
+      label: 'Sick',
+      className: 'text-purple-700 bg-purple-100',
+      iconClassName: 'text-purple-600'
+    },
+    partial: {
+      icon: Clock,
+      label: 'Partial',
+      className: 'text-orange-700 bg-orange-100',
+      iconClassName: 'text-orange-600'
+    },
+  };
+  
+  const config = statusConfig[record.status as keyof typeof statusConfig] || statusConfig.present;
+  const Icon = config.icon;
   
   return (
-    <Badge variant={variants[record.status as keyof typeof variants] || 'default'}>
-      {record.status}
+    <div className="flex items-center gap-2">
+      <Icon className={`w-4 h-4 ${config.iconClassName}`} />
+      <Badge className={config.className}>
+        {config.label}
+      </Badge>
+    </div>
+  );
+};
+
+const DateDisplay = () => {
+  const record = useRecordContext();
+  if (!record || !record.date) return null;
+  
+  const date = new Date(record.date);
+  const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+  const isYesterday = format(date, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd');
+  
+  return (
+    <div className="flex items-center gap-2">
+      <Calendar className="w-4 h-4 text-gray-500" />
+      <span className={isToday ? 'font-medium text-blue-600' : isYesterday ? 'text-gray-600' : ''}>
+        {format(date, 'MMM dd, yyyy')}
+        {isToday && <span className="ml-2 text-xs text-blue-500">(Today)</span>}
+        {isYesterday && <span className="ml-2 text-xs text-gray-500">(Yesterday)</span>}
+      </span>
+    </div>
+  );
+};
+
+const ReasonText = () => {
+  const record = useRecordContext();
+  if (!record || !record.reason) return <span className="text-muted-foreground text-sm">-</span>;
+  
+  return (
+    <span className="text-sm">
+      {record.reason}
+    </span>
+  );
+};
+
+const SourceBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.source) return null;
+  
+  const sourceColors = {
+    manual: 'text-muted-foreground bg-muted',
+    biometric: 'text-green-700 bg-green-100',
+    rfid: 'text-blue-700 bg-blue-100',
+    mobile_app: 'text-purple-700 bg-purple-100',
+    web_portal: 'text-indigo-700 bg-indigo-100',
+    import: 'text-orange-700 bg-orange-100',
+  };
+  
+  return (
+    <Badge className={sourceColors[record.source as keyof typeof sourceColors] || 'text-muted-foreground bg-muted'}>
+      {record.source?.replace('_', ' ')}
     </Badge>
   );
 };

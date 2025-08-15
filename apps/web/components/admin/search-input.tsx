@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { sanitizeInputRestProps } from "@/lib/sanitizeInputRestProps";
 
 export interface SearchInputProps {
   source: string;
@@ -20,6 +21,8 @@ export interface SearchInputProps {
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
   ({ source, label, placeholder = "Search...", disabled, className, helperText, alwaysOn, ...rest }, ref) => {
+    // Extract alwaysOn to prevent it from being passed to DOM
+    // alwaysOn is used by React Admin for filter persistence but shouldn't go to DOM elements
     const {
       field,
       fieldState: { isTouched, invalid, error },
@@ -27,7 +30,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       isRequired,
     } = useInput({
       source,
-      ...rest,
+      ...sanitizeInputRestProps({ ...rest, alwaysOn }),
     });
 
     return (

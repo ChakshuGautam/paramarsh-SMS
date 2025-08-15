@@ -142,18 +142,24 @@ export class CampaignsService {
         if (branchId) where.branchId = branchId;
         const students = await this.prisma.student.findMany({
           where,
-          include: { guardians: true },
+          include: { 
+            guardians: {
+              include: {
+                guardian: true
+              }
+            }
+          },
         });
         
         for (const student of students) {
           // Get primary guardian's contact
-          const guardian = student.guardians[0];
-          if (guardian?.email) {
+          const studentGuardian = student.guardians[0];
+          if (studentGuardian?.guardian?.email) {
             recipients.push({
-              contact: guardian.email,
+              contact: studentGuardian.guardian.email,
               variables: {
                 studentName: `${student.firstName} ${student.lastName}`,
-                guardianName: guardian.name,
+                guardianName: studentGuardian.guardian.name,
               },
             });
           }
@@ -167,19 +173,25 @@ export class CampaignsService {
           },
           include: {
             student: {
-              include: { guardians: true },
+              include: { 
+                guardians: {
+                  include: {
+                    guardian: true
+                  }
+                }
+              },
             },
           },
         });
 
         for (const enrollment of enrollments) {
-          const guardian = enrollment.student.guardians[0];
-          if (guardian?.email) {
+          const studentGuardian = enrollment.student.guardians[0];
+          if (studentGuardian?.guardian?.email) {
             recipients.push({
-              contact: guardian.email,
+              contact: studentGuardian.guardian.email,
               variables: {
                 studentName: `${enrollment.student.firstName} ${enrollment.student.lastName}`,
-                guardianName: guardian.name,
+                guardianName: studentGuardian.guardian.name,
               },
             });
           }

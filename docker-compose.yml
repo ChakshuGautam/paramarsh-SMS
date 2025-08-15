@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # NestJS API Service  
+  api:
+    image: node:20-slim
+    container_name: paramarsh-api
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:/app/data/dev.db
+      - PORT=8080
+    volumes:
+      - ./apps/api:/app
+      - sqlite_data:/app/data
+    command: >
+      bash -c "
+        echo 'Installing system dependencies...' &&
+        apt-get update && apt-get install -y curl openssl ca-certificates &&
+        echo 'Installing npm dependencies...' &&
+        npm install --include=dev &&
+        echo 'Generating Prisma client...' &&
+        npx prisma generate &&
+        echo 'Setting up database...' &&
+        mkdir -p /app/data &&
+        npx prisma db push --accept-data-loss &&
+        echo 'Seeding database...' &&
+        npm run prisma:seed &&
+        echo 'Starting development server...' &&
+        npm run start:dev
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+
+  # Next.js Web Application
+  web:
+    image: node:20-slim
+    container_name: paramarsh-web
+    working_dir: /app
+    ports:
+      - "8081:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    volumes:
+      - ./apps/web:/app
+    command: >
+      bash -c "
+        echo 'Installing system dependencies...' &&
+        apt-get update && apt-get install -y curl &&
+        echo 'Installing dependencies with npm...' &&
+        npm install --legacy-peer-deps &&
+        echo 'Building application...' &&
+        npm run build &&
+        echo 'Starting web server...' &&
+        npm run start
+      "
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+volumes:
+  sqlite_data:
+    driver: local
+
+networks:
+  default:
+    name: paramarsh-network

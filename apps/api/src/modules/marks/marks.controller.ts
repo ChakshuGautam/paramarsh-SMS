@@ -2,57 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MarksService } from './marks.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsNumber, IsOptional, IsString, IsUUID, Min, Max } from 'class-validator';
-
-class UpsertMarkDto {
-  @ApiProperty({
-    description: 'Unique identifier of the student whose marks are being recorded',
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    format: 'uuid'
-  })
-  @IsString()
-  @IsUUID()
-  studentId!: string;
-
-  @ApiProperty({
-    description: 'Unique identifier of the exam session for which marks are being recorded',
-    example: '550e8400-e29b-41d4-a716-446655440001',
-    format: 'uuid'
-  })
-  @IsString()
-  @IsUUID()
-  sessionId!: string;
-
-  @ApiPropertyOptional({
-    description: 'Raw numerical marks obtained by the student (0-100)',
-    example: 85.5,
-    minimum: 0,
-    maximum: 100
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  rawMarks?: number;
-
-  @ApiPropertyOptional({
-    description: 'Letter grade assigned based on the marks',
-    example: 'A',
-    enum: ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'F', 'I', 'W']
-  })
-  @IsOptional()
-  @IsString()
-  grade?: string;
-
-  @ApiPropertyOptional({
-    description: 'Additional comments or feedback about the student\'s performance',
-    example: 'Excellent work with good understanding of concepts',
-    maxLength: 500
-  })
-  @IsOptional()
-  @IsString()
-  comments?: string;
-}
+import { CreateMarkDto } from './dto/create-mark.dto';
+import { UpdateMarkDto } from './dto/update-mark.dto';
 
 @ApiTags('Marks')
 @Controller('marks')
@@ -61,27 +12,39 @@ export class MarksController {
 
   @Get()
   @ListDocs('List marks')
-  @ApiQuery({ name: 'studentId', required: false })
-  @ApiQuery({ name: 'sessionId', required: false })
+  @ApiQuery({ name: 'q', required: false, description: 'Search by student or subject name' })
+  @ApiQuery({ name: 'examId', required: false, description: 'Filter by exam ID' })
+  @ApiQuery({ name: 'subjectId', required: false, description: 'Filter by subject ID' })
+  @ApiQuery({ name: 'studentId', required: false, description: 'Filter by student ID' })
+  @ApiQuery({ name: 'isAbsent', required: false, type: Boolean, description: 'Filter by absence status' })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
+    @Query('q') q?: string,
+    @Query('examId') examId?: string,
+    @Query('subjectId') subjectId?: string,
     @Query('studentId') studentId?: string,
-    @Query('sessionId') sessionId?: string,
+    @Query('isAbsent') isAbsent?: boolean,
   ) {
-    return this.service.list({ page, pageSize, sort, studentId, sessionId });
+    return this.service.list({ page, pageSize, sort, q, examId, subjectId, studentId, isAbsent });
+  }
+
+  @Get(':id')
+  @ListDocs('Get single mark entry')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
   }
 
   @Post()
   @CreateDocs('Create marks entry')
-  create(@Body() body: UpsertMarkDto) {
+  create(@Body() body: CreateMarkDto) {
     return this.service.create(body);
   }
 
   @Patch(':id')
   @UpdateDocs('Update marks entry')
-  update(@Param('id') id: string, @Body() body: Partial<UpsertMarkDto>) {
+  update(@Param('id') id: string, @Body() body: UpdateMarkDto) {
     return this.service.update(id, body);
   }
 
@@ -89,5 +52,30 @@ export class MarksController {
   @DeleteDocs('Delete marks entry')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  // Bulk operations
+  @Post('bulk/:examId/:subjectId')
+  @CreateDocs('Bulk create/update marks for an exam-subject combination')
+  bulkCreate(
+    @Param('examId') examId: string,
+    @Param('subjectId') subjectId: string,
+    @Body() marks: CreateMarkDto[]
+  ) {
+    return this.service.bulkCreate(examId, subjectId, marks);
+  }
+
+  // Get marks for an exam
+  @Get('exam/:examId')
+  @ListDocs('Get all marks for a specific exam')
+  getExamMarks(@Param('examId') examId: string) {
+    return this.service.getExamMarks(examId);
+  }
+
+  // Get marks for a student
+  @Get('student/:studentId')
+  @ListDocs('Get all marks for a specific student')
+  getStudentMarks(@Param('studentId') studentId: string) {
+    return this.service.getStudentMarks(studentId);
   }
 }

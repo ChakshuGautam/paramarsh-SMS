@@ -117,7 +117,7 @@ const SidebarFilters = () => {
         <TextInput
           source="q"
           placeholder={translate("ra.action.search")}
-          label={false}
+          label=""
           className="mb-6"
         />
       </FilterLiveForm>

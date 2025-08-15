@@ -27,25 +27,25 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const timetableFilters = [
-  <TextInput source="q" placeholder="Search timetable..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search timetable..." label="" alwaysOn />,
   <ReferenceInput source="sectionId" reference="sections">
-    <AutocompleteInput placeholder="Filter by section" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by section" label="" optionText="name" />
   </ReferenceInput>,
   <ReferenceInput source="subjectId" reference="subjects">
-    <AutocompleteInput placeholder="Filter by subject" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by subject" label="" optionText="name" />
   </ReferenceInput>,
   <ReferenceInput source="teacherId" reference="teachers">
     <AutocompleteInput 
       placeholder="Filter by teacher" 
-      label={false} 
+      label="" 
       optionText={(record) => `${record.firstName} ${record.lastName}`}
     />
   </ReferenceInput>,
   <ReferenceInput source="roomId" reference="rooms">
-    <AutocompleteInput placeholder="Filter by room" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by room" label="" optionText="name" />
   </ReferenceInput>,
-  <BooleanInput source="isActive" label={false} />,
-  <DateInput source="effectiveFrom" placeholder="Effective from" label={false} />,
+  <BooleanInput source="isActive" label="" />,
+  <DateInput source="effectiveFrom" placeholder="Effective from" label="" />,
 ];
 
 export const TimetableList = () => {
@@ -54,7 +54,7 @@ export const TimetableList = () => {
       sort={{ field: "effectiveFrom", order: "DESC" }}
       filterDefaultValues={{ isActive: true }}
       filters={timetableFilters}
-      perPage={25}
+      perPage={10}
     >
       <TabbedDataTable />
     </List>

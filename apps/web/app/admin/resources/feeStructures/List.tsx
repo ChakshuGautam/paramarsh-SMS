@@ -40,9 +40,9 @@ const getGradeLevelFilter = (level: string) => {
 
 // Label-less filters with placeholders
 const feeStructureFilters = [
-  <TextInput source="q" placeholder="Search fee structures..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search fee structures..." label="" alwaysOn />,
   <ReferenceInput source="gradeId" reference="classes">
-    <AutocompleteInput placeholder="Filter by grade" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by grade" label="" optionText="name" />
   </ReferenceInput>,
 ];
 
@@ -50,7 +50,7 @@ export const FeeStructuresList = () => (
   <List
     sort={{ field: "gradeId", order: "ASC" }}
     filters={feeStructureFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

@@ -23,11 +23,11 @@ const storeKeyByChannel = {
 
 // Label-less filters with placeholders
 const templateFilters = [
-  <TextInput source="q" placeholder="Search templates..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search templates..." label="" alwaysOn />,
   <SelectInput 
     source="channel" 
     placeholder="Filter by channel" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'SMS', name: 'SMS' },
       { id: 'EMAIL', name: 'Email' },
@@ -38,7 +38,7 @@ const templateFilters = [
   <SelectInput 
     source="locale" 
     placeholder="Filter by locale" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'en', name: 'English' },
       { id: 'hi', name: 'Hindi' },
@@ -53,7 +53,7 @@ export const TemplatesList = () => (
   <List
     sort={{ field: "updatedAt", order: "DESC" }}
     filters={templateFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

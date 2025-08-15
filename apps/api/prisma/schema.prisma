@@ -8,7 +8,8 @@
 // - All API endpoints and UI should refer to "school" for better user understanding
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -18,45 +19,94 @@ datasource db {
 
 model Student {
   id               String             @id @default(uuid())
+  branchId         String?            // Represents schoolId - which school this student belongs to
   admissionNo      String?
   firstName        String
   lastName         String
   dob              String?
-  gender           String?
+  gender           String?            // male | female | other
   classId          String?
   sectionId        String?
+  status           String?            @default("active") // active | inactive | graduated
+  rollNumber       String?            // Add roll number for attendance display
+  photoUrl         String?            // Add photo URL for visual identification
   // Note: branchId is used internally but represents schoolId in the API layer
   // This allows multi-school support where each school is a separate branch
-  guardians        Guardian[]
+  guardians        StudentGuardian[]  // Many-to-many relationship via junction table
   invoices         Invoice[]
   enrollments      Enrollment[]
   MarksEntry       MarksEntry[]
   AttendanceRecord AttendanceRecord[]
+  periodAttendance StudentPeriodAttendance[]  // New period-based attendance
+  marks            Mark[]  // New exam marks
 
   @@unique([admissionNo])
 }
 
 model Guardian {
-  id        String  @id @default(uuid())
-  studentId String
-  relation  String?
-  name      String
-  email     String?
-  phone     String?
-  address   String?
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                   String            @id @default(uuid())
+  branchId             String?           // Represents schoolId - which school this guardian belongs to
+  name                 String
+  email                String?
+  phoneNumber          String?           // Primary phone number
+  alternatePhoneNumber String?           // Secondary phone number
+  address              String?
+  occupation           String?           // Guardian's occupation
+  // Many-to-many relationship with students
+  students             StudentGuardian[]
+  
+  @@index([branchId])
+  @@index([email])
+  @@index([phoneNumber])
+}
+
+// Junction table for many-to-many relationship between students and guardians
+model StudentGuardian {
+  id               String   @id @default(uuid())
+  studentId        String
+  guardianId       String
+  relation         String   // father, mother, guardian, grandfather, grandmother, uncle, aunt, other
+  isPrimary        Boolean  @default(false) // Primary contact for the student
+  canPickup        Boolean  @default(true)  // Can pickup the student from school
+  emergencyContact Boolean  @default(true) // Can be contacted in emergency
+  
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardian         Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  
+  @@unique([studentId, guardianId]) // A guardian can only have one relationship type with a student
+  @@index([guardianId])
+  @@index([studentId])
 }
 
 model Exam {
-  id        String        @id @default(uuid())
-  name      String
-  startDate String?
-  endDate   String?
-  sessions  ExamSession[]
+  id               String        @id @default(uuid())
+  branchId         String?       // Represents schoolId - which school this exam belongs to
+  name             String
+  examType         String?       // UNIT_TEST, MONTHLY_TEST, QUARTERLY, HALF_YEARLY, ANNUAL, etc.
+  academicYearId   String?       // Reference to academic year
+  term             Int?          // 1, 2, or 3
+  weightagePercent Float?        // 0-100 weightage in final grade
+  minPassingMarks  Float?        // Minimum marks to pass
+  maxMarks         Float?        // Total marks for the exam
+  status           String?       @default("SCHEDULED") // SCHEDULED, ONGOING, COMPLETED, CANCELLED
+  startDate        String?
+  endDate          String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  // Relations
+  academicYear     AcademicYear? @relation(fields: [academicYearId], references: [id])
+  sessions         ExamSession[]
+  marks            Mark[]
+  
+  @@index([branchId, academicYearId])
+  @@index([branchId, status])
+  @@index([branchId, examType])
 }
 
 model FeeStructure {
   id         String         @id @default(uuid())
+  branchId   String?        // Represents schoolId - which school this fee structure belongs to
   gradeId    String?
   components FeeComponent[]
   schedules  FeeSchedule[]
@@ -64,6 +114,7 @@ model FeeStructure {
 
 model FeeComponent {
   id             String       @id @default(uuid())
+  branchId       String?      // Represents schoolId - inherited from fee structure
   feeStructureId String
   name           String
   type           String?
@@ -87,6 +138,7 @@ model FeeSchedule {
 
 model Invoice {
   id        String    @id @default(uuid())
+  branchId  String?   // Represents schoolId - which school this invoice belongs to
   studentId String
   period    String?
   dueDate   String?
@@ -101,6 +153,7 @@ model Invoice {
 model Application {
   id                String   @id @default(uuid())
   tenantId          String?
+  branchId          String?  // Represents schoolId - which school this application is for
   programId         String?
   studentProfileRef String?
   status            String?
@@ -111,12 +164,14 @@ model Application {
 
 model Tenant {
   id        String @id @default(uuid())
+  branchId  String? // Optional branch association for multi-school tenants
   name      String
   subdomain String
 }
 
 model Class {
   id         String    @id @default(uuid())
+  branchId   String?   // Represents schoolId - which school offers this class
   name       String
   gradeLevel Int?
   sections   Section[]
@@ -124,6 +179,7 @@ model Class {
 
 model Section {
   id          String       @id @default(uuid())
+  branchId    String?      // Represents schoolId - which school this section belongs to
   classId     String
   name        String
   capacity    Int?
@@ -132,10 +188,12 @@ model Section {
   class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
   periods     TimetablePeriod[]
+  attendanceSessions AttendanceSession[]  // Add reverse relation
 }
 
 model Enrollment {
   id        String  @id @default(uuid())
+  branchId  String? // Represents schoolId - inherited from section
   studentId String
   sectionId String
   status    String?
@@ -146,14 +204,17 @@ model Enrollment {
 }
 
 model Payment {
-  id        String  @id @default(uuid())
+  id        String    @id @default(uuid())
+  branchId  String?   // Represents schoolId - inherited from invoice
   invoiceId String
   gateway   String?
   amount    Int?
   status    String?
   reference String?
   method    String?
-  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([reference])
   @@index([invoiceId])
@@ -161,6 +222,7 @@ model Payment {
 
 model ExamSession {
   id        String       @id @default(uuid())
+  branchId  String?      // Represents schoolId - inherited from exam
   examId    String
   subjectId String?
   roomId    String?
@@ -171,6 +233,7 @@ model ExamSession {
 
 model MarksEntry {
   id        String      @id @default(uuid())
+  branchId  String?     // Represents schoolId - inherited from exam session
   studentId String
   sessionId String
   rawMarks  Float?
@@ -184,6 +247,7 @@ model MarksEntry {
 
 model AttendanceRecord {
   id        String  @id @default(uuid())
+  branchId  String? // Represents schoolId - inherited from student
   studentId String
   date      String
   status    String?
@@ -197,6 +261,7 @@ model AttendanceRecord {
 
 model Staff {
   id             String  @id @default(uuid())
+  branchId       String? // Represents schoolId - which school this staff member works at
   firstName      String
   lastName       String
   email          String?
@@ -211,6 +276,7 @@ model Staff {
 
 model Teacher {
   id              String  @id @default(uuid())
+  branchId        String? // Represents schoolId - inherited from staff
   staffId         String  @unique
   subjects        String?
   qualifications  String?
@@ -220,6 +286,13 @@ model Teacher {
   periods         TimetablePeriod[]
   substitutions   Substitution[]
   constraints     TeacherConstraint[]
+  
+  // New attendance relations
+  assignedSessions    AttendanceSession[] @relation("AssignedSessions")
+  actualSessions      AttendanceSession[] @relation("ActualSessions")
+  markedAttendance    StudentPeriodAttendance[] @relation("MarkedAttendance")
+  dailyAttendance     TeacherDailyAttendance[] @relation("TeacherAttendance")
+  substitutingFor     TeacherDailyAttendance[] @relation("SubstituteFor")
 }
 
 // Communications Module
@@ -312,6 +385,7 @@ model Ticket {
 
 model TicketMessage {
   id        String   @id @default(uuid())
+  branchId  String?  // Represents schoolId - inherited from ticket
   ticketId  String
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   authorId  String
@@ -323,6 +397,7 @@ model TicketMessage {
 
 model TicketAttachment {
   id        String   @id @default(uuid())
+  branchId  String?  // Represents schoolId - inherited from ticket
   ticketId  String
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   fileName  String
@@ -345,6 +420,8 @@ model Subject {
   prerequisites   String?           // JSON array of subject IDs
   periods         TimetablePeriod[]
   constraints     SubjectConstraint[]
+  attendanceSessions AttendanceSession[]  // Add reverse relation
+  marks           Mark[]  // New exam marks relation
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 }
@@ -401,6 +478,7 @@ model TimetablePeriod {
   effectiveFrom DateTime        @default(now())
   effectiveTo DateTime?
   substitutions Substitution[]
+  attendanceSessions AttendanceSession[]  // Add reverse relation
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
@@ -412,6 +490,7 @@ model TimetablePeriod {
 
 model Substitution {
   id              String           @id @default(uuid())
+  branchId        String?          // Represents schoolId - inherited from period
   periodId        String
   period          TimetablePeriod  @relation(fields: [periodId], references: [id], onDelete: Cascade)
   substituteTeacherId String?
@@ -434,6 +513,7 @@ model Substitution {
 // Constraint Models for Timetable Generation
 model SubjectConstraint {
   id          String    @id @default(uuid())
+  branchId    String?   // Represents schoolId - inherited from subject
   subjectId   String
   subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   type        String    // max_per_day | min_gap | preferred_slots | consecutive
@@ -446,6 +526,7 @@ model SubjectConstraint {
 
 model TeacherConstraint {
   id          String    @id @default(uuid())
+  branchId    String?   // Represents schoolId - inherited from teacher
   teacherId   String
   teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   type        String    // max_periods_per_day | unavailable_slots | max_consecutive
@@ -458,6 +539,7 @@ model TeacherConstraint {
 
 model RoomConstraint {
   id          String    @id @default(uuid())
+  branchId    String?   // Represents schoolId - inherited from room
   roomId      String
   room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
   type        String    // unavailable_slots | reserved_for
@@ -470,6 +552,7 @@ model RoomConstraint {
 
 model TimeSlotConstraint {
   id          String    @id @default(uuid())
+  branchId    String?   // Represents schoolId - inherited from time slot
   timeSlotId  String
   timeSlot    TimeSlot  @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
   type        String    // no_core_subjects | assembly_only
@@ -482,6 +565,7 @@ model TimeSlotConstraint {
 
 model TimetableTemplate {
   id          String    @id @default(uuid())
+  branchId    String?   // Represents schoolId - which school this template is for
   name        String
   description String?
   gradeLevel  Int?
@@ -491,3 +575,167 @@ model TimetableTemplate {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
+
+// ============================================
+// PERIOD-BASED ATTENDANCE MODELS
+// ============================================
+
+model AttendanceSession {
+  id                String   @id @default(uuid())
+  branchId          String?  // Represents schoolId
+  date              DateTime // Remove @db.Date for SQLite
+  periodId          String   // From TimetablePeriod
+  sectionId         String
+  subjectId         String
+  assignedTeacherId String   // Originally assigned teacher
+  actualTeacherId   String?  // Substitute if different
+  startTime         DateTime?
+  endTime           DateTime?
+  status            String   @default("scheduled") // scheduled, in-progress, completed, cancelled
+  lockedAt          DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  period            TimetablePeriod @relation(fields: [periodId], references: [id])
+  section           Section @relation(fields: [sectionId], references: [id])
+  subject           Subject @relation(fields: [subjectId], references: [id])
+  assignedTeacher   Teacher @relation("AssignedSessions", fields: [assignedTeacherId], references: [id])
+  actualTeacher     Teacher? @relation("ActualSessions", fields: [actualTeacherId], references: [id])
+  studentRecords    StudentPeriodAttendance[]
+  
+  @@index([date, sectionId])
+  @@index([date, assignedTeacherId])
+  @@unique([date, periodId, sectionId])
+}
+
+model StudentPeriodAttendance {
+  id           String   @id @default(uuid())
+  sessionId    String
+  studentId    String
+  status       String   // present, absent, late, excused, medical, suspended, activity
+  minutesLate  Int?
+  reason       String?
+  notes        String?
+  markedAt     DateTime
+  markedBy     String   // Teacher ID who marked attendance
+  
+  // Relations
+  session      AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student      Student @relation(fields: [studentId], references: [id])
+  marker       Teacher @relation("MarkedAttendance", fields: [markedBy], references: [id])
+  
+  @@unique([sessionId, studentId])
+  @@index([studentId, status])
+  @@index([sessionId])
+}
+
+model TeacherDailyAttendance {
+  id           String   @id @default(uuid())
+  branchId     String?  // Represents schoolId
+  teacherId    String
+  date         DateTime // Remove @db.Date for SQLite
+  checkIn      DateTime?
+  checkOut     DateTime?
+  status       String   // present, absent, leave, holiday, half-day
+  leaveType    String?
+  substituteId String?  // Who's substituting for this teacher
+  totalHours   Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  teacher      Teacher @relation("TeacherAttendance", fields: [teacherId], references: [id])
+  substitute   Teacher? @relation("SubstituteFor", fields: [substituteId], references: [id])
+  
+  @@unique([teacherId, date])
+  @@index([date, status])
+}
+
+// ========== Academic Year Management ==========
+model AcademicYear {
+  id        String   @id @default(uuid())
+  branchId  String   // REQUIRED - Each branch has its own academic calendar
+  name      String   // "2024-25"
+  startDate String
+  endDate   String
+  terms     String?  // JSON string - Array of terms with dates
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  exams     Exam[]
+  
+  @@unique([branchId, name])
+  @@index([branchId, isActive])
+}
+
+// ========== Exam Templates (Master Tables) ==========
+model ExamTemplate {
+  id                String   @id @default(uuid())
+  boardType         String?  // CBSE, ICSE, STATE_BOARD, CUSTOM
+  examType          String   // UNIT_TEST, MONTHLY_TEST, QUARTERLY, etc.
+  name              String   // Template name e.g., "CBSE Class 10 Board Exam"
+  description       String?
+  term              Int?     // 1, 2, or 3
+  weightagePercent  Float?   // 0-100
+  minPassingMarks   Float?
+  maxMarks          Float?
+  isGraded          Boolean  @default(false)
+  affectsPromotion  Boolean  @default(true)
+  applicableClasses String?  // JSON string - Array of applicable class levels
+  suggestedDuration Int?     // Suggested exam duration in days
+  isSystemTemplate  Boolean  @default(false) // System-provided vs custom
+  createdBy         String?  // User who created custom template
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ========== Marks Management ==========
+model Mark {
+  id             String    @id @default(uuid())
+  branchId       String    // REQUIRED - For data isolation
+  examId         String
+  subjectId      String
+  studentId      String
+  theoryMarks    Float?
+  practicalMarks Float?
+  projectMarks   Float?
+  internalMarks  Float?
+  totalMarks     Float?
+  grade          String?
+  remarks        String?
+  isAbsent       Boolean   @default(false)
+  evaluatedBy    String?   // Teacher ID
+  evaluatedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  // Relations
+  exam           Exam      @relation(fields: [examId], references: [id])
+  subject        Subject   @relation(fields: [subjectId], references: [id])
+  student        Student   @relation(fields: [studentId], references: [id])
+  
+  @@unique([examId, subjectId, studentId])
+  @@index([branchId, studentId])
+  @@index([branchId, examId])
+}
+
+// ========== Grading System ==========
+model GradingScale {
+  id             String   @id @default(uuid())
+  branchId       String   // REQUIRED - Branch-specific grading
+  name           String
+  type           String   // MARKS, GRADE, CGPA, PERCENTAGE
+  isDefault      Boolean  @default(false)
+  grades         String   // JSON string - Array of GradeRange objects
+  applicableFrom String?  // Academic year
+  applicableTo   String?  // Academic year
+  classes        String?  // JSON string - Applicable classes
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([branchId, isDefault])
+}
+

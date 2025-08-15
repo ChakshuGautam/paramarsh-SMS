@@ -28,14 +28,14 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const paymentFilters = [
-  <TextInput source="q" placeholder="Search payments..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search payments..." label="" alwaysOn />,
   <ReferenceInput source="invoiceId" reference="invoices">
-    <AutocompleteInput placeholder="Filter by invoice" label={false} optionText="id" />
+    <AutocompleteInput placeholder="Filter by invoice" label="" optionText="id" />
   </ReferenceInput>,
   <SelectInput 
     source="method" 
     placeholder="Filter by method" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'cash', name: 'Cash' },
       { id: 'card', name: 'Card' },
@@ -45,8 +45,8 @@ const paymentFilters = [
       { id: 'online', name: 'Online' }
     ]} 
   />,
-  <NumberInput source="amount_gte" placeholder="Min amount" label={false} />,
-  <DateInput source="createdAt_gte" placeholder="From date" label={false} />,
+  <NumberInput source="amount_gte" placeholder="Min amount" label="" />,
+  <DateInput source="createdAt_gte" placeholder="From date" label="" />,
 ];
 
 export const PaymentsList = () => (
@@ -54,7 +54,7 @@ export const PaymentsList = () => (
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "successful" }}
     filters={paymentFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

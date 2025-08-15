@@ -22,7 +22,15 @@ export class FeeSchedulesService {
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
     const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
+      ? params.sort.split(',').map((f) => {
+          let field = f.startsWith('-') ? f.slice(1) : f;
+          const direction = f.startsWith('-') ? 'desc' : 'asc';
+          
+          // Map frontend field names to database field names
+          if (field === 'dueDate') field = 'dueDayOfMonth';
+          
+          return { [field]: direction };
+        })
       : [{ id: 'asc' }];
     
     const { branchId } = PrismaService.getScope();

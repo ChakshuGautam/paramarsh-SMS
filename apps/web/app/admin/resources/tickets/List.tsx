@@ -26,11 +26,11 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const ticketFilters = [
-  <TextInput source="q" placeholder="Search tickets..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search tickets..." label="" alwaysOn />,
   <SelectInput 
     source="category" 
     placeholder="Filter by category" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'technical', name: 'Technical' },
       { id: 'academic', name: 'Academic' },
@@ -42,7 +42,7 @@ const ticketFilters = [
   <SelectInput 
     source="priority" 
     placeholder="Filter by priority" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'low', name: 'Low' },
       { id: 'medium', name: 'Medium' },
@@ -53,7 +53,7 @@ const ticketFilters = [
   <SelectInput 
     source="ownerType" 
     placeholder="Filter by owner type" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'student', name: 'Student' },
       { id: 'parent', name: 'Parent' },
@@ -64,7 +64,7 @@ const ticketFilters = [
   <ReferenceInput source="assigneeId" reference="staff">
     <AutocompleteInput 
       placeholder="Filter by assignee" 
-      label={false} 
+      label="" 
       optionText={(record) => `${record.firstName} ${record.lastName}`}
     />
   </ReferenceInput>,
@@ -75,7 +75,7 @@ export const TicketsList = () => (
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "open" }}
     filters={ticketFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

@@ -24,22 +24,22 @@ export const FilterCategory: React.FC<FilterCategoryProps> = ({
   const translate = useTranslate();
 
   return (
-    <div className={cn("border-b border-gray-200 dark:border-gray-700", className)}>
+    <div className={cn("border-b border-border", className)}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors"
       >
         <div className="flex items-center gap-2">
-          {icon && <span className="text-gray-500 dark:text-gray-400">{icon}</span>}
-          <span className="font-medium text-sm text-gray-700 dark:text-gray-300">
+          {icon && <span className="text-muted-foreground">{icon}</span>}
+          <span className="font-medium text-sm text-foreground">
             {translate(label, { _: label })}
           </span>
         </div>
         {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-gray-400" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-gray-400" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         )}
       </button>
       {isOpen && (

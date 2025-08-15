@@ -29,12 +29,12 @@ const storeKeyByType = {
 
 // Label-less filters with placeholders
 const roomFilters = [
-  <TextInput source="q" placeholder="Search rooms..." label={false} alwaysOn />,
-  <TextInput source="building" placeholder="Filter by building" label={false} />,
+  <TextInput source="q" placeholder="Search rooms..." label="" alwaysOn />,
+  <TextInput source="building" placeholder="Filter by building" label="" />,
   <SelectInput 
     source="type" 
     placeholder="Filter by type" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'classroom', name: 'Classroom' },
       { id: 'laboratory', name: 'Laboratory' },
@@ -46,9 +46,9 @@ const roomFilters = [
       { id: 'other', name: 'Other' }
     ]} 
   />,
-  <NumberInput source="floor" placeholder="Filter by floor" label={false} />,
-  <NumberInput source="capacity_gte" placeholder="Min capacity" label={false} />,
-  <BooleanInput source="isActive" label={false} />,
+  <NumberInput source="floor" placeholder="Filter by floor" label="" />,
+  <NumberInput source="capacity_gte" placeholder="Min capacity" label="" />,
+  <BooleanInput source="isActive" label="" />,
 ];
 
 export const RoomsList = () => {
@@ -57,7 +57,7 @@ export const RoomsList = () => {
       sort={{ field: "building", order: "ASC" }}
       filterDefaultValues={{ isActive: true }}
       filters={roomFilters}
-      perPage={25}
+      perPage={10}
     >
       <TabbedDataTable />
     </List>

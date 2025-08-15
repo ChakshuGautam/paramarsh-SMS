@@ -38,11 +38,21 @@ export abstract class BaseCrudService<T> {
     const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? 25)));
     const skip = (page - 1) * perPage;
 
+    // Extract distinct parameter before building where clause
+    const distinctField = params.filter?._distinct;
+    const filterWithoutDistinct = { ...params.filter };
+    delete filterWithoutDistinct._distinct;
+
     // Build where clause from filters
-    const where = this.buildWhereClause(params.filter);
+    const where = this.buildWhereClause(filterWithoutDistinct);
 
     // Build order by from sort
     const orderBy = this.buildOrderBy(params.sort);
+
+    // Handle distinct queries
+    if (distinctField) {
+      return this.getDistinctList(distinctField, where, orderBy, skip, perPage);
+    }
 
     const [data, total] = await Promise.all([
       (this.prisma as any)[this.modelName].findMany({
@@ -177,10 +187,77 @@ export abstract class BaseCrudService<T> {
   }
 
   /**
+   * Get distinct values for a field with filtering
+   */
+  protected async getDistinctList(
+    field: string,
+    where: any,
+    orderBy: any,
+    skip: number,
+    take: number,
+  ): Promise<ListResponse<T>> {
+    try {
+      // For sections, get unique names with one representative from each
+      if (this.modelName === 'section' && field === 'name') {
+        // Get all unique section names first
+        const distinctNames = await (this.prisma as any).section.groupBy({
+          by: [field],
+          where,
+          orderBy: { [field]: 'asc' },
+          _count: true,
+        });
+
+        // Get one representative record for each unique name
+        const representatives = await Promise.all(
+          distinctNames.slice(skip, skip + take).map(async (group: any) => {
+            return (this.prisma as any).section.findFirst({
+              where: { ...where, [field]: group[field] },
+              orderBy,
+            });
+          })
+        );
+
+        return { 
+          data: representatives.filter(Boolean),
+          total: distinctNames.length 
+        };
+      }
+
+      // Fallback to regular query for other models/fields
+      const data = await (this.prisma as any)[this.modelName].findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+      });
+
+      const total = await (this.prisma as any)[this.modelName].count({ where });
+      return { data, total };
+    } catch (error) {
+      console.warn('Distinct query failed, falling back to regular query:', error);
+      // If distinct fails, fallback to regular query
+      const data = await (this.prisma as any)[this.modelName].findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+      });
+
+      const total = await (this.prisma as any)[this.modelName].count({ where });
+      return { data, total };
+    }
+  }
+
+  /**
    * Build where clause from filter params
    */
   protected buildWhereClause(filter?: Record<string, any>): any {
     const where: any = {};
+
+    // Debug log for students
+    if (this.modelName === 'student' && filter) {
+      console.log('Student filter received:', JSON.stringify(filter, null, 2));
+    }
 
     if (filter) {
       Object.entries(filter).forEach(([key, value]) => {
@@ -189,11 +266,42 @@ export abstract class BaseCrudService<T> {
           if (key === 'q' || key === 'search') {
             // Global search - override in specific services
             where.OR = this.buildSearchClause(value);
+          } else if (key.includes('.')) {
+            // Nested relationship filter (e.g., "class.gradeLevel_gte")
+            this.buildNestedFilter(where, key, value);
+          } else if (key.endsWith('_gte')) {
+            // Greater than or equal filter
+            const field = key.replace('_gte', '');
+            const numericValue = this.convertToNumber(value);
+            where[field] = { ...where[field], gte: numericValue ?? value };
+          } else if (key.endsWith('_lte')) {
+            // Less than or equal filter
+            const field = key.replace('_lte', '');
+            const numericValue = this.convertToNumber(value);
+            where[field] = { ...where[field], lte: numericValue ?? value };
+          } else if (key.endsWith('_gt')) {
+            // Greater than filter
+            const field = key.replace('_gt', '');
+            const numericValue = this.convertToNumber(value);
+            where[field] = { ...where[field], gt: numericValue ?? value };
+          } else if (key.endsWith('_lt')) {
+            // Less than filter
+            const field = key.replace('_lt', '');
+            const numericValue = this.convertToNumber(value);
+            where[field] = { ...where[field], lt: numericValue ?? value };
+          } else if (key.endsWith('_in')) {
+            // In array filter
+            const field = key.replace('_in', '');
+            where[field] = { in: Array.isArray(value) ? value : [value] };
+          } else if (key.endsWith('_contains')) {
+            // Text contains filter (case insensitive)
+            const field = key.replace('_contains', '');
+            where[field] = { contains: value, mode: 'insensitive' };
           } else if (Array.isArray(value)) {
             // Array filter (e.g., status in ['ACTIVE', 'PENDING'])
             where[key] = { in: value };
           } else if (typeof value === 'object' && value.gte !== undefined) {
-            // Range filter
+            // Range filter object
             where[key] = value;
           } else {
             // Exact match
@@ -213,6 +321,54 @@ export abstract class BaseCrudService<T> {
     }
 
     return where;
+  }
+
+  /**
+   * Build nested relationship filters (e.g., "class.gradeLevel_gte")
+   */
+  protected buildNestedFilter(where: any, key: string, value: any): void {
+    const parts = key.split('.');
+    if (parts.length !== 2) return;
+
+    const [relation, fieldWithOperator] = parts;
+    
+    // Debug log
+    if (this.modelName === 'student') {
+      console.log(`Building nested filter for student: ${relation}.${fieldWithOperator} = ${value}`);
+    }
+    let field = fieldWithOperator;
+    let operator = 'equals';
+    let operatorValue = value;
+
+    // Extract operator from field name
+    if (fieldWithOperator.endsWith('_gte')) {
+      field = fieldWithOperator.replace('_gte', '');
+      operator = 'gte';
+    } else if (fieldWithOperator.endsWith('_lte')) {
+      field = fieldWithOperator.replace('_lte', '');
+      operator = 'lte';
+    } else if (fieldWithOperator.endsWith('_gt')) {
+      field = fieldWithOperator.replace('_gt', '');
+      operator = 'gt';
+    } else if (fieldWithOperator.endsWith('_lt')) {
+      field = fieldWithOperator.replace('_lt', '');
+      operator = 'lt';
+    } else if (fieldWithOperator.endsWith('_in')) {
+      field = fieldWithOperator.replace('_in', '');
+      operator = 'in';
+      operatorValue = Array.isArray(value) ? value : [value];
+    }
+
+    // Build nested where clause
+    if (!where[relation]) {
+      where[relation] = {};
+    }
+
+    if (operator === 'equals') {
+      where[relation][field] = operatorValue;
+    } else {
+      where[relation][field] = { [operator]: operatorValue };
+    }
   }
 
   /**
@@ -252,5 +408,17 @@ export abstract class BaseCrudService<T> {
    */
   protected supportsBranchScoping(): boolean {
     return false;
+  }
+
+  /**
+   * Convert string values to numbers for numeric filters
+   */
+  private convertToNumber(value: any): number | null {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const parsed = parseInt(value, 10);
+      return isNaN(parsed) ? null : parsed;
+    }
+    return null;
   }
 }

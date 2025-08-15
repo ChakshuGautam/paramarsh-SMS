@@ -1,26 +1,36 @@
 "use client";
 
-import { Create, SimpleForm, TextInput } from "@/components/admin";
-import { ReferenceInput } from "@/components/admin/reference-input";
-import { AutocompleteInput } from "@/components/admin/autocomplete-input";
+import { Create, SimpleForm, TextInput, SelectInput } from "@/components/admin";
 
 export const EnrollmentsCreate = () => (
   <Create>
     <SimpleForm>
-      <ReferenceInput reference="students" source="studentId" label="Student">
-        <AutocompleteInput optionText="firstName" />
-      </ReferenceInput>
-      <ReferenceInput reference="sections" source="sectionId" label="Section">
-        <AutocompleteInput optionText="name" />
-      </ReferenceInput>
-      <TextInput source="status" label="Status" />
-      <TextInput source="startDate" label="Start" />
-      <TextInput source="endDate" label="End" />
+      <TextInput source="studentId" label="Student ID" />
+      <TextInput source="classId" label="Class ID" />
+      <TextInput source="sectionId" label="Section ID" />
+      <SelectInput 
+        source="status" 
+        label="Status" 
+        choices={[
+          { id: 'enrolled', name: 'Enrolled' },
+          { id: 'active', name: 'Active' },
+          { id: 'inactive', name: 'Inactive' },
+          { id: 'graduated', name: 'Graduated' },
+          { id: 'transferred', name: 'Transferred' },
+          { id: 'dropped', name: 'Dropped' },
+          { id: 'suspended', name: 'Suspended' },
+          { id: 'completed', name: 'Completed' },
+        ]}
+        defaultValue="enrolled"
+      />
+      <TextInput source="startDate" label="Start Date" />
+      <TextInput source="endDate" label="End Date" />
     </SimpleForm>
   </Create>
 );
 
 export default EnrollmentsCreate;
+
 
 
 

@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional, ApiOperation } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
-import { IsOptional, IsString, IsUUID, IsDateString } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsDateString, IsNumber } from 'class-validator';
 
 class UpsertAttendanceDto {
   @ApiProperty({
@@ -61,6 +61,51 @@ class UpsertAttendanceDto {
   source?: string;
 }
 
+class GenerateDummyAttendanceDto {
+  @ApiPropertyOptional({
+    description: 'Date for which to generate attendance (defaults to today)',
+    example: '2024-08-15',
+    format: 'date'
+  })
+  @IsOptional()
+  @IsString()
+  @IsDateString()
+  date?: string;
+
+  @ApiPropertyOptional({
+    description: 'Percentage of students to mark as present (0-100)',
+    example: 85,
+    default: 85,
+    minimum: 0,
+    maximum: 100
+  })
+  @IsOptional()
+  @IsNumber()
+  presentPercentage?: number;
+
+  @ApiPropertyOptional({
+    description: 'Percentage of absent students who are marked as sick',
+    example: 20,
+    default: 20,
+    minimum: 0,
+    maximum: 100
+  })
+  @IsOptional()
+  @IsNumber()
+  sickPercentage?: number;
+
+  @ApiPropertyOptional({
+    description: 'Percentage of present students who are marked as late',
+    example: 10,
+    default: 10,
+    minimum: 0,
+    maximum: 100
+  })
+  @IsOptional()
+  @IsNumber()
+  latePercentage?: number;
+}
+
 @ApiTags('Attendance')
 @Controller('attendance/records')
 export class AttendanceController {
@@ -94,5 +139,43 @@ export class AttendanceController {
   @DeleteDocs('Delete attendance record')
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  @Post('generate-dummy')
+  @ApiOperation({ 
+    summary: 'Generate dummy attendance data',
+    description: 'Generates realistic attendance records for all active students for a given date. Useful for development and testing.'
+  })
+  @CreateDocs('Generate dummy attendance')
+  generateDummy(@Body() body: GenerateDummyAttendanceDto) {
+    return this.service.generateDummyAttendance(body);
+  }
+
+  @Get('student/:studentId/summary')
+  @ApiOperation({
+    summary: 'Get student attendance summary',
+    description: 'Get period-based attendance summary for a student within a date range'
+  })
+  @ApiQuery({ name: 'startDate', required: true, example: '2024-01-01' })
+  @ApiQuery({ name: 'endDate', required: true, example: '2024-12-31' })
+  getStudentSummary(
+    @Param('studentId') studentId: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.service.getStudentAttendanceSummary(studentId, startDate, endDate);
+  }
+
+  @Get('section/:sectionId/report')
+  @ApiOperation({
+    summary: 'Get section attendance report',
+    description: 'Get attendance matrix for all students in a section for a specific date'
+  })
+  @ApiQuery({ name: 'date', required: true, example: '2024-08-15' })
+  getSectionReport(
+    @Param('sectionId') sectionId: string,
+    @Query('date') date: string,
+  ) {
+    return this.service.getSectionAttendanceReport(sectionId, date);
   }
 }

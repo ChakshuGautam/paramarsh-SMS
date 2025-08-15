@@ -60,9 +60,9 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen flex">
       <div className="container relative grid flex-col items-center justify-center sm:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex overflow-hidden">
-          <div className="absolute inset-0 bg-zinc-900" />
-          <div className="relative z-20 flex items-center text-lg font-medium">
+        <div className="relative hidden h-full flex-col bg-muted p-10 dark:border-r lg:flex overflow-hidden">
+          <div className="absolute inset-0 bg-primary dark:bg-zinc-900" />
+          <div className="relative z-20 flex items-center text-lg font-medium text-primary-foreground">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -79,8 +79,8 @@ export const LoginPage = () => {
           </div>
           {/* Feature bullets */}
           <div className="relative z-20 mt-8 space-y-4">
-            <h2 className="text-xl font-semibold">Why Paramarsh SMS?</h2>
-            <ul className="space-y-3 text-sm text-zinc-200">
+            <h2 className="text-xl font-semibold text-primary-foreground">Why Paramarsh SMS?</h2>
+            <ul className="space-y-3 text-sm text-primary-foreground/90">
               <li className="flex items-start gap-2">
                 <span className="mt-1 inline-block h-2 w-2 rounded-full bg-emerald-400" />
                 Unified Admissions, Attendance, Exams, and Fees in one place

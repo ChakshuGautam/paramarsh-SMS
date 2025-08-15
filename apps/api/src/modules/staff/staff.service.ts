@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export type Staff = {
+  branchId?: string;
   firstName: string;
   lastName: string;
   email?: string;
@@ -25,6 +26,7 @@ export class StaffService {
     const where: any = {};
     if (params.department) where.department = params.department;
     if (params.status) where.status = params.status;
+    // Add branchId filtering from request scope
     const { branchId } = PrismaService.getScope();
     if (branchId) where.branchId = branchId;
 
@@ -40,7 +42,9 @@ export class StaffService {
   }
 
   async create(input: Staff) {
+    const { branchId } = PrismaService.getScope();
     const created = await this.prisma.staff.create({ data: {
+      branchId: branchId ?? undefined,
       firstName: input.firstName,
       lastName: input.lastName,
       email: input.email ?? null,

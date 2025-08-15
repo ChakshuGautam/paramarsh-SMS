@@ -1,12 +1,14 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
   TextInput,
   SelectInput,
   Count,
+  ReferenceField,
+  TextField,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -35,11 +37,11 @@ const getGradeLevelFilter = (level: string) => {
 
 // Label-less filters with placeholders
 const classFilters = [
-  <TextInput source="q" placeholder="Search classes..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search classes..." label="" alwaysOn />,
   <SelectInput 
     source="gradeLevel" 
     placeholder="Filter by grade" 
-    label={false} 
+    label="" 
     choices={[
       { id: 1, name: 'Grade 1' },
       { id: 2, name: 'Grade 2' },
@@ -61,7 +63,7 @@ export const ClassesList = () => (
   <List
     sort={{ field: "gradeLevel", order: "ASC" }}
     filters={classFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -156,12 +158,16 @@ const ClassesTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
+    <DataTable.Col label="Class Teacher" className="hidden md:table-cell">
+      <ClassTeacher />
+    </DataTable.Col>
     <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
 );
 
-const GradeBadge = ({ record }: { record?: any }) => {
-  if (!record) return null;
+const GradeBadge = () => {
+  const record = useRecordContext();
+  if (!record || record.gradeLevel === null || record.gradeLevel === undefined) return null;
   
   const getGradeColor = (grade: number) => {
     if (grade <= 5) return 'text-blue-700 bg-blue-100';
@@ -173,6 +179,20 @@ const GradeBadge = ({ record }: { record?: any }) => {
     <Badge className={getGradeColor(record.gradeLevel)}>
       Grade {record.gradeLevel}
     </Badge>
+  );
+};
+
+const ClassTeacher = () => {
+  const record = useRecordContext();
+  if (!record) return null;
+  
+  // Get the first section of this class to find its homeroom teacher
+  // In a real app, you might want to have a dedicated class teacher field
+  return (
+    <span className="text-gray-500 text-sm">
+      {/* This would need to be implemented with proper data */}
+      <em>No teacher assigned</em>
+    </span>
   );
 };
 

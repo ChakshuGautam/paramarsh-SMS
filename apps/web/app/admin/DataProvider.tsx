@@ -278,6 +278,8 @@ function resourceToPath(resource: string): string {
     
     // Attendance
     attendanceRecords: "attendance/records",
+    attendanceSessions: "attendance/sessions", 
+    teacherAttendance: "teacher-attendance",
     
     // Exams & Marks
     exams: "exams",
@@ -297,9 +299,11 @@ function resourceToPath(resource: string): string {
     subjects: "subjects",
     rooms: "rooms",
     timetablePeriods: "timetable/periods",
+    timetableGrid: "timetable/grid", // Special grid view endpoint
     timeSlots: "timetable/time-slots",
     substitutions: "timetable/substitutions",
     sectionTimetables: "sections", // Maps to sections API to get section data
+    timetables: "sections", // Main timetable resource maps to sections for CRUD operations
     
     // Communications
     templates: "comms/templates",

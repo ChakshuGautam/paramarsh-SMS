@@ -21,9 +21,9 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const staffFilters = [
-  <TextInput source="q" placeholder="Search staff..." label={false} alwaysOn />,
-  <TextInput source="department" placeholder="Filter by department" label={false} />,
-  <TextInput source="designation" placeholder="Filter by designation" label={false} />,
+  <TextInput source="q" placeholder="Search staff..." label="" alwaysOn />,
+  <TextInput source="department" placeholder="Filter by department" label="" />,
+  <TextInput source="designation" placeholder="Filter by designation" label="" />,
 ];
 
 export const StaffList = () => (
@@ -31,7 +31,7 @@ export const StaffList = () => (
     sort={{ field: "firstName", order: "ASC" }}
     filterDefaultValues={{ status: "active" }}
     filters={staffFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

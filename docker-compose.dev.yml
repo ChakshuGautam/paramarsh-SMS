@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # NestJS API Service - Development
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: paramarsh-api-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:/app/data/dev.db
+      - PORT=8080
+      - SWAGGER_ENABLED=true
+    volumes:
+      # Mount SQLite database to persist data
+      - sqlite_data:/app/data
+      # Mount source for hot reload (optional)
+      - ./apps/api/src:/app/src:ro
+      - ./apps/api/prisma:/app/prisma
+    restart: unless-stopped
+    command: ["pnpm", "start:dev"]
+
+  # Next.js Web Application - Development
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: paramarsh-web-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    volumes:
+      # Mount source for hot reload (optional)
+      - ./apps/web:/app:ro
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+    restart: unless-stopped
+    command: ["pnpm", "dev"]
+
+volumes:
+  sqlite_data:
+    driver: local
+
+networks:
+  default:
+    name: paramarsh-dev-network

@@ -77,19 +77,28 @@ const resourceGroups = {
       teachers: UserCheck,
     }
   },
-  'Attendance & Exams': {
+  'Attendance': {
     icon: ClipboardCheck,
-    resources: ['attendanceRecords', 'exams', 'marks'],
+    resources: ['attendanceRecords', 'attendanceSessions', 'teacherAttendance'],
     resourceIcons: {
       attendanceRecords: UserCheck,
+      attendanceSessions: Clock,
+      teacherAttendance: Users,
+    }
+  },
+  'Exams': {
+    icon: FileSpreadsheet,
+    resources: ['exams', 'marks'],
+    resourceIcons: {
       exams: FileSpreadsheet,
       marks: Award,
     }
   },
   'Timetable': {
     icon: Calendar,
-    resources: ['timetable', 'sectionTimetables', 'timeSlots', 'rooms', 'substitutions'],
+    resources: ['timetables', 'timetable', 'sectionTimetables', 'timeSlots', 'rooms', 'substitutions'],
     resourceIcons: {
+      timetables: CalendarDays,
       timetable: Calendar,
       sectionTimetables: CalendarDays,
       timeSlots: Clock,
