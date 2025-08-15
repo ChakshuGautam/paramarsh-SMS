@@ -27,11 +27,11 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const messageFilters = [
-  <TextInput source="q" placeholder="Search messages..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search messages..." label="" alwaysOn />,
   <SelectInput 
     source="channel" 
     placeholder="Filter by channel" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'SMS', name: 'SMS' },
       { id: 'EMAIL', name: 'Email' },
@@ -40,13 +40,13 @@ const messageFilters = [
     ]} 
   />,
   <ReferenceInput source="templateId" reference="templates">
-    <AutocompleteInput placeholder="Filter by template" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by template" label="" optionText="name" />
   </ReferenceInput>,
   <ReferenceInput source="campaignId" reference="campaigns">
-    <AutocompleteInput placeholder="Filter by campaign" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by campaign" label="" optionText="name" />
   </ReferenceInput>,
-  <TextInput source="to" placeholder="Filter by recipient" label={false} />,
-  <DateInput source="sentAt_gte" placeholder="Sent after" label={false} />,
+  <TextInput source="to" placeholder="Filter by recipient" label="" />,
+  <DateInput source="sentAt_gte" placeholder="Sent after" label="" />,
 ];
 
 export const MessagesList = () => (
@@ -54,7 +54,7 @@ export const MessagesList = () => (
     sort={{ field: "sentAt", order: "DESC" }}
     filterDefaultValues={{ status: "sent" }}
     filters={messageFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -26,22 +26,22 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const enrollmentFilters = [
-  <TextInput source="q" placeholder="Search enrollments..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search enrollments..." label="" alwaysOn />,
   <ReferenceInput source="studentId" reference="students">
     <AutocompleteInput 
       placeholder="Filter by student" 
-      label={false} 
+      label="" 
       optionText={(record) => `${record.firstName} ${record.lastName}`}
     />
   </ReferenceInput>,
   <ReferenceInput source="sectionId" reference="sections">
-    <AutocompleteInput placeholder="Filter by section" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by section" label="" optionText="name" />
   </ReferenceInput>,
   <DateRangeInput 
     source="enrollment"
     sourceFrom="startDate_gte"
     sourceTo="endDate_lte"
-    label={false}
+    label=""
     placeholder="Select enrollment period"
   />,
 ];
@@ -51,7 +51,7 @@ export const EnrollmentsList = () => (
     sort={{ field: "startDate", order: "DESC" }}
     filterDefaultValues={{ status: "active" }}
     filters={enrollmentFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -124,7 +124,7 @@ const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
     rowClassName={(record) => {
       const statusColors = {
         active: 'border-l-4 border-l-green-500',
-        inactive: 'border-l-4 border-l-gray-400',
+        inactive: 'border-l-4 border-l-muted-foreground',
         transferred: 'border-l-4 border-l-blue-500',
         graduated: 'border-l-4 border-l-purple-500',
         dropped: 'border-l-4 border-l-red-500',
@@ -141,7 +141,9 @@ const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
     <DataTable.Col source="status" label="Status">
       <StatusBadge />
     </DataTable.Col>
-    <DataTable.Col source="startDate" label="Start Date" />
+    <DataTable.Col source="startDate" label="Start Date">
+      <TextField source="startDate" />
+    </DataTable.Col>
     
     {/* Desktop-only columns */}
     <DataTable.Col label="Section" className="hidden md:table-cell">
@@ -149,28 +151,37 @@ const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
-    <DataTable.Col source="endDate" label="End Date" className="hidden lg:table-cell" />
+    <DataTable.Col source="endDate" label="End Date" className="hidden lg:table-cell">
+      <EndDateField />
+    </DataTable.Col>
     <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
 );
 
-const StatusBadge = ({ record }: { record?: any }) => {
-  if (!record) return null;
+const StatusBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.status) return null;
   
   const variants = {
+    enrolled: 'default',
     active: 'default',
     inactive: 'secondary',
     transferred: 'secondary',
     graduated: 'default',
     dropped: 'destructive',
+    suspended: 'destructive',
+    completed: 'default',
   } as const;
   
   const colors = {
+    enrolled: 'text-blue-700 bg-blue-100',
     active: 'text-green-700 bg-green-100',
-    inactive: 'text-gray-700 bg-gray-100',
-    transferred: 'text-blue-700 bg-blue-100',
+    inactive: 'text-muted-foreground bg-muted',
+    transferred: 'text-orange-700 bg-orange-100',
     graduated: 'text-purple-700 bg-purple-100',
     dropped: 'text-red-700 bg-red-100',
+    suspended: 'text-yellow-700 bg-yellow-100',
+    completed: 'text-indigo-700 bg-indigo-100',
   } as const;
   
   return (
@@ -181,6 +192,18 @@ const StatusBadge = ({ record }: { record?: any }) => {
       {record.status}
     </Badge>
   );
+};
+
+const EndDateField = () => {
+  const record = useRecordContext();
+  if (!record) return null;
+  
+  if (record.endDate) {
+    return <span>{record.endDate}</span>;
+  }
+  
+  // Show a dash or "Current" for null end dates (active enrollments)
+  return <span className="text-muted-foreground">Current</span>;
 };
 
 export default EnrollmentsList;

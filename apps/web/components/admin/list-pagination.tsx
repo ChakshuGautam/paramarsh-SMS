@@ -88,7 +88,7 @@ export const ListPagination = ({
       className={`flex items-center justify-end space-x-2 gap-4 ${className}`}
     >
       <div className="hidden md:flex items-center space-x-2">
-        <p className="text-sm font-medium">
+        <p className="text-sm font-medium text-foreground">
           <Translate i18nKey="ra.navigation.page_rows_per_page">
             Rows per page
           </Translate>
@@ -139,7 +139,7 @@ export const ListPagination = ({
                 _: "Previous",
               })}
             >
-              <ChevronLeftIcon />
+              <ChevronLeftIcon className="h-4 w-4" />
             </PaginationLink>
           </PaginationItem>
           {startPages.map((pageNumber) => (
@@ -216,7 +216,7 @@ export const ListPagination = ({
               )}
               aria-label={translate("ra.navigation.next", { _: "Next" })}
             >
-              <ChevronRightIcon />
+              <ChevronRightIcon className="h-4 w-4" />
             </PaginationLink>
           </PaginationItem>
         </PaginationContent>

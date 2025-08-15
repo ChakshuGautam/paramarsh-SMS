@@ -141,8 +141,8 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
       <div
         key={`${dayOfWeek}-${slotOrder}`}
         className={`
-          min-h-[80px] p-2 border border-gray-200 transition-all duration-200
-          ${isEmpty ? 'bg-gray-50 hover:bg-gray-100' : 'bg-white hover:bg-blue-50'}
+          min-h-[80px] p-2 border border-border transition-all duration-200
+          ${isEmpty ? 'bg-muted hover:bg-muted/80' : 'bg-card hover:bg-accent'}
           ${isClickable ? 'cursor-pointer' : ''}
           ${!period?.isActive ? 'opacity-50' : ''}
         `}
@@ -162,17 +162,17 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
             </div>
             
             <div className="space-y-0.5">
-              <div className="font-medium text-sm text-gray-900 truncate">
+              <div className="font-medium text-sm text-foreground truncate">
                 {period.subject.name}
               </div>
               
-              <div className="flex items-center text-xs text-gray-600">
+              <div className="flex items-center text-xs text-muted-foreground">
                 <User className="w-3 h-3 mr-1" />
                 <span className="truncate">{period.teacher.name}</span>
               </div>
               
               {period.room && (
-                <div className="flex items-center text-xs text-gray-600">
+                <div className="flex items-center text-xs text-muted-foreground">
                   <MapPin className="w-3 h-3 mr-1" />
                   <span className="truncate">{period.room.code}</span>
                 </div>
@@ -180,7 +180,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
+          <div className="flex items-center justify-center h-full text-muted-foreground">
             {editable ? (
               <div className="text-center">
                 <div className="text-xs">Click to add</div>
@@ -247,8 +247,8 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           <div className="overflow-x-auto">
             <div className="min-w-[800px]">
               {/* Header row with time periods */}
-              <div className="grid grid-cols-[120px_repeat(auto-fit,minmax(150px,1fr))] bg-gray-100 border-b">
-                <div className="p-3 font-semibold text-gray-700 border-r">
+              <div className="grid grid-cols-[120px_repeat(auto-fit,minmax(150px,1fr))] bg-muted border-b">
+                <div className="p-3 font-semibold text-muted-foreground border-r">
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
                     Day / Period
@@ -258,7 +258,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                 {sortedPeriods.map((period, index) => (
                   <div key={period.id} className="p-3 text-center border-r border-gray-200">
                     <div className="font-semibold text-sm">Period {index + 1}</div>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-muted-foreground">
                       {period.startTime} - {period.endTime}
                     </div>
                   </div>
@@ -269,7 +269,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
               {DAYS.map(day => (
                 <div key={day.value} className="grid grid-cols-[120px_repeat(auto-fit,minmax(150px,1fr))] border-b">
                   {/* Day label */}
-                  <div className="p-3 bg-gray-50 border-r font-medium text-gray-700">
+                  <div className="p-3 bg-muted/50 border-r font-medium text-muted-foreground">
                     <div>{day.label}</div>
                     <div className="text-xs text-gray-500">{day.short}</div>
                   </div>
@@ -298,7 +298,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
               <span>Scheduled Period</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-gray-50 border border-gray-200 rounded"></div>
+              <div className="w-4 h-4 bg-muted/50 border border-gray-200 rounded"></div>
               <span>Free Period</span>
             </div>
             <div className="flex items-center gap-2">

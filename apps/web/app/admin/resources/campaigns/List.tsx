@@ -28,14 +28,14 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const campaignFilters = [
-  <TextInput source="q" placeholder="Search campaigns..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search campaigns..." label="" alwaysOn />,
   <ReferenceInput source="templateId" reference="templates">
-    <AutocompleteInput placeholder="Filter by template" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by template" label="" optionText="name" />
   </ReferenceInput>,
   <SelectInput 
     source="status" 
     placeholder="Filter by status" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'draft', name: 'Draft' },
       { id: 'scheduled', name: 'Scheduled' },
@@ -44,7 +44,7 @@ const campaignFilters = [
       { id: 'paused', name: 'Paused' }
     ]} 
   />,
-  <DateInput source="schedule_gte" placeholder="Scheduled after" label={false} />,
+  <DateInput source="schedule_gte" placeholder="Scheduled after" label="" />,
 ];
 
 export const CampaignsList = () => (
@@ -52,7 +52,7 @@ export const CampaignsList = () => (
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "draft" }}
     filters={campaignFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

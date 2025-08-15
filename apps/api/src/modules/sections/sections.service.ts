@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type Section = { id?: string; classId: string; name: string; capacity?: number };
+export type Section = { id?: string; branchId?: string; classId: string; name: string; capacity?: number };
 
 @Injectable()
 export class SectionsService {
@@ -14,14 +14,34 @@ export class SectionsService {
 
     const where: any = {};
     if (params.classId) where.classId = params.classId;
+    // Add branchId filtering from request scope
     const { branchId } = PrismaService.getScope();
     if (branchId) where.branchId = branchId;
-    const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ id: 'asc' }];
+    
+    // Handle sorting, including nested field sorting
+    let orderBy: any = [{ id: 'asc' }]; // default
+    if (params.sort) {
+      const sortField = params.sort.startsWith('-') ? params.sort.slice(1) : params.sort;
+      const sortDirection = params.sort.startsWith('-') ? 'desc' : 'asc';
+      
+      // Handle nested sorting for class.gradeLevel
+      if (sortField === 'class.gradeLevel') {
+        orderBy = [{ class: { gradeLevel: sortDirection } }];
+      } else {
+        orderBy = [{ [sortField]: sortDirection }];
+      }
+    }
 
     const [data, total] = await Promise.all([
-      this.prisma.section.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.section.findMany({ 
+        where, 
+        skip, 
+        take: pageSize, 
+        orderBy,
+        include: {
+          class: true,
+        }
+      }),
       this.prisma.section.count({ where }),
     ]);
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
@@ -30,6 +50,9 @@ export class SectionsService {
   async findOne(id: string) {
     const section = await this.prisma.section.findUnique({
       where: { id },
+      include: {
+        class: true,
+      }
     });
     if (!section) {
       throw new NotFoundException('Section not found');
@@ -38,8 +61,14 @@ export class SectionsService {
   }
 
   async create(input: Section) {
+    const { branchId } = PrismaService.getScope();
     const created = await this.prisma.section.create({
-      data: { classId: input.classId, name: input.name, capacity: input.capacity ?? null },
+      data: { 
+        branchId: branchId ?? undefined,
+        classId: input.classId, 
+        name: input.name, 
+        capacity: input.capacity ?? null 
+      },
     });
     return { data: created };
   }

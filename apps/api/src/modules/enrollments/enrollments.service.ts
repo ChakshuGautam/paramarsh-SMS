@@ -31,7 +31,10 @@ export class EnrollmentsService {
     const where: any = {};
     if (params.sectionId) where.sectionId = params.sectionId;
     if (params.studentId) where.studentId = params.studentId;
-    if (params.status) where.status = params.status;
+    // Map 'active' to 'enrolled' for backward compatibility
+    if (params.status) {
+      where.status = params.status === 'active' ? 'enrolled' : params.status;
+    }
     
     // Date filters
     if (params.startDateGte) {
@@ -40,6 +43,7 @@ export class EnrollmentsService {
     if (params.endDateLte) {
       where.endDate = { ...where.endDate, lte: new Date(params.endDateLte) };
     }
+    // Add branchId filtering from request scope
     const { branchId } = PrismaService.getScope();
     if (branchId) where.branchId = branchId;
 
@@ -77,10 +81,12 @@ export class EnrollmentsService {
       // Close any active enrollment
       await tx.enrollment.updateMany({ where: { studentId: input.studentId, endDate: null }, data: { endDate: input.startDate ?? new Date().toISOString().slice(0, 10), status: 'transferred' } });
       // Create new enrollment
+      const { branchId } = PrismaService.getScope();
       const enr = await tx.enrollment.create({ data: {
+        branchId: branchId ?? undefined,
         studentId: input.studentId,
         sectionId: input.sectionId,
-        status: input.status ?? 'active',
+        status: input.status ?? 'enrolled',
         startDate: input.startDate ?? new Date().toISOString().slice(0, 10),
         endDate: input.endDate ?? null,
       }});

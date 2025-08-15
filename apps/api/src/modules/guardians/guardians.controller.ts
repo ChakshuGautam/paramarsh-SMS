@@ -68,14 +68,14 @@ export class GuardiansController {
 
   @Get()
   @ListDocs('List guardians')
-  @ApiQuery({ name: 'studentId', required: false })
+  @ApiQuery({ name: 'relation', required: false })
   list(
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
-    @Query('studentId') studentId?: string,
+    @Query('relation') relation?: string,
   ) {
-    return this.service.list({ page, pageSize, sort, studentId });
+    return this.service.list({ page, pageSize, sort, relation });
   }
 
   @Get(':id')

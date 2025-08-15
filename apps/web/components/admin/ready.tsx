@@ -23,7 +23,7 @@ export const Ready = () => (
         &lt;Admin&gt;&lt;/Admin&gt;
       </div>
     </div>
-    <div className="flex h-[20vh] bg-zinc-100 text-black items-center justify-evenly">
+    <div className="flex h-[20vh] bg-muted text-foreground items-center justify-evenly">
       <div className="text-xl">
         <a href="https://github.com/marmelab/shadcn-admin-kit/tree/main/docs">
           <BookOpenText className="inline mr-4 w-10 h-10" />

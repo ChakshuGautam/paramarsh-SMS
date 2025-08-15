@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { BaseCrudService } from '../../common/base-crud.service';
 import PdfPrinter from 'pdfmake';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
@@ -12,12 +13,13 @@ export type Invoice = {
 };
 
 @Injectable()
-export class InvoicesService {
+export class InvoicesService extends BaseCrudService<any> {
   private readonly printer: PdfPrinter;
   private readonly s3: S3Client;
   private readonly bucket: string;
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(prisma: PrismaService) {
+    super(prisma, 'invoice');
     // pdfmake setup with Roboto (or any available font files)
     this.printer = new PdfPrinter({
       Roboto: {
@@ -36,25 +38,86 @@ export class InvoicesService {
     this.bucket = process.env.S3_BUCKET || 'paramarsh-dev';
   }
 
+  /**
+   * Override getList to add calculated fields and enhanced filtering
+   */
+  async getList(params: any) {
+    // Handle overdue status calculation
+    if (params.filter?.status === 'overdue') {
+      const today = new Date().toISOString().split('T')[0];
+      params.filter.dueDate_lt = today;
+      params.filter.status = { in: ['pending', 'partial'] }; // Only pending/partial can be overdue
+      delete params.filter.status; // Remove to use the object form
+    }
+
+    const result = await super.getList(params);
+    
+    // Add calculated fields to each invoice
+    const enhancedData = result.data.map(invoice => ({
+      ...invoice,
+      isOverdue: this.isInvoiceOverdue(invoice),
+      daysPastDue: this.getDaysPastDue(invoice),
+    }));
+
+    return { data: enhancedData, total: result.total };
+  }
+
+  /**
+   * Check if invoice is overdue
+   */
+  private isInvoiceOverdue(invoice: any): boolean {
+    if (!invoice.dueDate || invoice.status === 'paid' || invoice.status === 'cancelled') {
+      return false;
+    }
+    const today = new Date();
+    const dueDate = new Date(invoice.dueDate);
+    return dueDate < today;
+  }
+
+  /**
+   * Calculate days past due
+   */
+  private getDaysPastDue(invoice: any): number {
+    if (!this.isInvoiceOverdue(invoice)) return 0;
+    const today = new Date();
+    const dueDate = new Date(invoice.dueDate);
+    const diffTime = today.getTime() - dueDate.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  /**
+   * Override to support search
+   */
+  protected buildSearchClause(search: string): any[] {
+    return [
+      { period: { contains: search, mode: 'insensitive' } },
+      { status: { contains: search, mode: 'insensitive' } },
+      { student: { firstName: { contains: search, mode: 'insensitive' } } },
+      { student: { lastName: { contains: search, mode: 'insensitive' } } },
+      { student: { admissionNo: { contains: search, mode: 'insensitive' } } },
+    ];
+  }
+
+  /**
+   * Invoices support branch scoping
+   */
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  /**
+   * Legacy list method for backward compatibility
+   */
   async list(params: { page?: number; pageSize?: number; sort?: string; studentId?: string; status?: string }) {
-    const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
-
-    const where: any = {};
-    if (params.studentId) where.studentId = params.studentId;
-    if (params.status) where.status = params.status;
-    const { branchId } = PrismaService.getScope();
-    if (branchId) where.branchId = branchId;
-    const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ id: 'asc' }];
-
-    const [data, total] = await Promise.all([
-      this.prisma.invoice.findMany({ where, skip, take: pageSize, orderBy }),
-      this.prisma.invoice.count({ where }),
-    ]);
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return this.getList({
+      page: params.page,
+      perPage: params.pageSize,
+      sort: params.sort,
+      filter: {
+        studentId: params.studentId,
+        status: params.status,
+      }
+    });
   }
 
   async create(input: { studentId: string; period?: string; dueDate?: string; amount?: number; status?: string; withPayment?: boolean }) {

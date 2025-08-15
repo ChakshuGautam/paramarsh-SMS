@@ -1,16 +1,28 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useEffect, useState } from "react";
+import { useListContext, useRecordContext, useDataProvider } from "ra-core";
 import {
   DataTable,
   List,
-  TextInput,
-  DateRangeInput,
+  SelectInput,
+  ReferenceInput,
+  ReferenceField,
+  AutocompleteInput,
   Count,
+  TextField,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format, isAfter, isBefore, isWithinInterval } from "date-fns";
+import { 
+  BookOpen, 
+  Calendar, 
+  GraduationCap, 
+  FileText, 
+  ClipboardCheck,
+  Percent
+} from "lucide-react";
 
 // Store keys for different time periods
 const storeKeyByPeriod = {
@@ -37,27 +49,74 @@ const getTimeFilter = (period: string) => {
   }
 };
 
-// Label-less filters with placeholders
+// Simplified filters - only academic year and exam type as requested
 const examFilters = [
-  <TextInput source="q" placeholder="Search exams..." label={false} alwaysOn />,
-  <DateRangeInput 
-    source="examPeriod"
-    sourceFrom="startDate_gte"
-    sourceTo="endDate_lte"
-    label={false}
-    placeholder="Select exam date range"
+  <ReferenceInput 
+    source="academicYearId" 
+    reference="academicYears" 
+    label=""
+    alwaysOn
+  >
+    <AutocompleteInput 
+      placeholder="Select academic year" 
+      optionText="name"
+      defaultValue="2025-26"
+    />
+  </ReferenceInput>,
+  <SelectInput 
+    source="examType" 
+    label=""
+    placeholder="Filter by exam type"
+    choices={[
+      { id: 'UNIT_TEST', name: 'Unit Test' },
+      { id: 'MONTHLY_TEST', name: 'Monthly Test' },
+      { id: 'QUARTERLY', name: 'Quarterly Exam' },
+      { id: 'HALF_YEARLY', name: 'Half Yearly' },
+      { id: 'ANNUAL', name: 'Annual/Final' },
+      { id: 'BOARD_EXAM', name: 'Board Exam' },
+      { id: 'ENTRANCE_EXAM', name: 'Entrance Exam' },
+      { id: 'MOCK_TEST', name: 'Mock Test' },
+      { id: 'REMEDIAL_TEST', name: 'Remedial Test' },
+      { id: 'SURPRISE_TEST', name: 'Surprise Test' },
+    ]}
   />,
 ];
 
-export const ExamsList = () => (
-  <List
-    sort={{ field: "startDate", order: "ASC" }}
-    filters={examFilters}
-    perPage={25}
-  >
-    <TabbedDataTable />
-  </List>
-);
+export const ExamsList = () => {
+  const [currentAcademicYear, setCurrentAcademicYear] = useState<string | null>(null);
+  const dataProvider = useDataProvider();
+  
+  useEffect(() => {
+    // Fetch the current active academic year
+    dataProvider.getList('academicYears', {
+      filter: { isActive: true },
+      pagination: { page: 1, perPage: 1 },
+      sort: { field: 'name', order: 'DESC' },
+    }).then(({ data }) => {
+      if (data && data.length > 0) {
+        setCurrentAcademicYear(data[0].id);
+      }
+    }).catch(error => {
+      console.error('Error fetching current academic year:', error);
+    });
+  }, [dataProvider]);
+  
+  // Set default filter to show current academic year's exams
+  const defaultFilter = currentAcademicYear ? {
+    academicYearId: currentAcademicYear
+  } : {};
+  
+  return (
+    <List
+      sort={{ field: "startDate", order: "ASC" }}
+      filters={examFilters}
+      filterDefaultValues={defaultFilter}
+      perPage={10}
+    >
+      <TabbedDataTable />
+    </List>
+  );
+};
 
 const TabbedDataTable = () => {
   const listContext = useListContext();
@@ -141,15 +200,34 @@ const ExamsTable = ({ storeKey }: { storeKey: string }) => (
   >
     {/* Always visible columns */}
     <DataTable.Col source="name" label="Exam Name" />
+    <DataTable.Col source="examType" label="Type">
+      <ExamTypeBadge />
+    </DataTable.Col>
     <DataTable.Col source="startDate" label="Start Date">
       <DateBadge source="startDate" />
     </DataTable.Col>
     <DataTable.Col source="endDate" label="End Date">
       <DateBadge source="endDate" />
     </DataTable.Col>
+    <DataTable.Col source="status" label="Status">
+      <StatusBadge />
+    </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col source="term" label="Term" className="hidden lg:table-cell">
+      <TermDisplay />
+    </DataTable.Col>
+    <DataTable.Col source="weightagePercent" label="Weightage" className="hidden lg:table-cell">
+      <WeightageDisplay />
+    </DataTable.Col>
+    <DataTable.Col source="maxMarks" label="Max Marks" className="hidden xl:table-cell">
+      <TextField source="maxMarks" />
+    </DataTable.Col>
+    <DataTable.Col source="academicYearId" label="Academic Year" className="hidden xl:table-cell">
+      <ReferenceField source="academicYearId" reference="academicYears" link={false}>
+        <TextField source="name" />
+      </ReferenceField>
+    </DataTable.Col>
   </DataTable>
 );
 
@@ -169,6 +247,86 @@ const DateBadge = ({ record, source }: { record?: any; source: string }) => {
     <Badge className={getDateColor()}>
       {format(date, 'MMM dd, yyyy')}
     </Badge>
+  );
+};
+
+const ExamTypeBadge = () => {
+  const record = useRecordContext();
+  if (!record?.examType) return <span className="text-muted-foreground">-</span>;
+  
+  const typeConfig: Record<string, { label: string; color: string; icon: any }> = {
+    UNIT_TEST: { label: 'Unit Test', color: 'bg-blue-100 text-blue-700', icon: FileText },
+    MONTHLY_TEST: { label: 'Monthly', color: 'bg-purple-100 text-purple-700', icon: Calendar },
+    QUARTERLY: { label: 'Quarterly', color: 'bg-indigo-100 text-indigo-700', icon: BookOpen },
+    HALF_YEARLY: { label: 'Half Yearly', color: 'bg-orange-100 text-orange-700', icon: ClipboardCheck },
+    ANNUAL: { label: 'Annual', color: 'bg-red-100 text-red-700', icon: GraduationCap },
+    BOARD_EXAM: { label: 'Board', color: 'bg-yellow-100 text-yellow-700', icon: GraduationCap },
+    ENTRANCE_EXAM: { label: 'Entrance', color: 'bg-green-100 text-green-700', icon: GraduationCap },
+    MOCK_TEST: { label: 'Mock', color: 'bg-gray-100 text-gray-700', icon: FileText },
+    REMEDIAL_TEST: { label: 'Remedial', color: 'bg-pink-100 text-pink-700', icon: BookOpen },
+    SURPRISE_TEST: { label: 'Surprise', color: 'bg-cyan-100 text-cyan-700', icon: FileText },
+  };
+  
+  const config = typeConfig[record.examType] || { label: record.examType, color: 'bg-gray-100 text-gray-700', icon: FileText };
+  const Icon = config.icon;
+  
+  return (
+    <Badge className={`${config.color} flex items-center gap-1`}>
+      <Icon className="h-3 w-3" />
+      <span>{config.label}</span>
+    </Badge>
+  );
+};
+
+const StatusBadge = () => {
+  const record = useRecordContext();
+  if (!record?.status) return <span className="text-muted-foreground">-</span>;
+  
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    SCHEDULED: { label: 'Scheduled', color: 'bg-blue-100 text-blue-700' },
+    ONGOING: { label: 'Ongoing', color: 'bg-green-100 text-green-700' },
+    COMPLETED: { label: 'Completed', color: 'bg-gray-100 text-gray-700' },
+    CANCELLED: { label: 'Cancelled', color: 'bg-red-100 text-red-700' },
+    POSTPONED: { label: 'Postponed', color: 'bg-yellow-100 text-yellow-700' },
+  };
+  
+  const config = statusConfig[record.status] || { label: record.status, color: 'bg-gray-100 text-gray-700' };
+  
+  return (
+    <Badge className={config.color}>
+      {config.label}
+    </Badge>
+  );
+};
+
+const TermDisplay = () => {
+  const record = useRecordContext();
+  if (!record?.term) return <span className="text-muted-foreground">-</span>;
+  
+  const termLabels: Record<number, string> = {
+    1: 'Term 1',
+    2: 'Term 2',
+    3: 'Term 3',
+  };
+  
+  return (
+    <Badge variant="outline">
+      {termLabels[record.term] || `Term ${record.term}`}
+    </Badge>
+  );
+};
+
+const WeightageDisplay = () => {
+  const record = useRecordContext();
+  if (record?.weightagePercent === undefined || record?.weightagePercent === null) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+  
+  return (
+    <div className="flex items-center gap-1">
+      <Percent className="h-3 w-3 text-muted-foreground" />
+      <span className="font-medium">{record.weightagePercent}%</span>
+    </div>
   );
 };
 

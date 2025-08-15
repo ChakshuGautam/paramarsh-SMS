@@ -1,7 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type Exam = { id?: string; name: string; startDate?: string; endDate?: string };
+export type Exam = { 
+  id?: string; 
+  name: string; 
+  startDate?: string; 
+  endDate?: string;
+  examType?: string;
+  academicYearId?: string;
+  term?: number;
+  weightagePercent?: number;
+  minPassingMarks?: number;
+  maxMarks?: number;
+  status?: string;
+};
 
 @Injectable()
 export class ExamsService {
@@ -16,6 +28,10 @@ export class ExamsService {
     startDateLte?: string;
     endDateGte?: string;
     endDateLte?: string;
+    examType?: string;
+    academicYearId?: string;
+    term?: number | string;
+    status?: string;
   }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
@@ -28,17 +44,37 @@ export class ExamsService {
       where.name = { contains: params.q, mode: 'insensitive' };
     }
     
-    // Date filters
+    // Date filters - dates are stored as strings in the database
     if (params.startDateGte || params.startDateLte) {
       where.startDate = {};
-      if (params.startDateGte) where.startDate.gte = new Date(params.startDateGte);
-      if (params.startDateLte) where.startDate.lte = new Date(params.startDateLte);
+      if (params.startDateGte) where.startDate.gte = params.startDateGte;
+      if (params.startDateLte) where.startDate.lte = params.startDateLte;
     }
     
     if (params.endDateGte || params.endDateLte) {
       where.endDate = {};
-      if (params.endDateGte) where.endDate.gte = new Date(params.endDateGte);
-      if (params.endDateLte) where.endDate.lte = new Date(params.endDateLte);
+      if (params.endDateGte) where.endDate.gte = params.endDateGte;
+      if (params.endDateLte) where.endDate.lte = params.endDateLte;
+    }
+    
+    // Exam type filter
+    if (params.examType) {
+      where.examType = params.examType;
+    }
+    
+    // Academic year filter
+    if (params.academicYearId) {
+      where.academicYearId = params.academicYearId;
+    }
+    
+    // Term filter
+    if (params.term) {
+      where.term = Number(params.term);
+    }
+    
+    // Status filter
+    if (params.status) {
+      where.status = params.status;
     }
     
     // Branch scoping
@@ -58,12 +94,53 @@ export class ExamsService {
   }
 
   async create(input: Exam) {
-    const created = await this.prisma.exam.create({ data: { name: input.name, startDate: input.startDate ?? null, endDate: input.endDate ?? null } });
+    const { branchId } = PrismaService.getScope();
+    
+    const created = await this.prisma.exam.create({ 
+      data: { 
+        branchId,
+        name: input.name,
+        examType: input.examType ?? undefined,
+        academicYearId: input.academicYearId ?? undefined,
+        term: input.term ?? undefined,
+        weightagePercent: input.weightagePercent ?? undefined,
+        minPassingMarks: input.minPassingMarks ?? undefined,
+        maxMarks: input.maxMarks ?? undefined,
+        status: input.status ?? 'SCHEDULED',
+        startDate: input.startDate ?? null,
+        endDate: input.endDate ?? null
+      }
+    });
     return { data: created };
   }
 
   async update(id: string, input: Partial<Exam>) {
-    const updated = await this.prisma.exam.update({ where: { id }, data: { name: input.name ?? undefined, startDate: input.startDate ?? undefined, endDate: input.endDate ?? undefined } });
+    const { branchId } = PrismaService.getScope();
+    
+    // First verify the exam belongs to this branch
+    const exam = await this.prisma.exam.findFirst({
+      where: { id, branchId }
+    });
+    
+    if (!exam) {
+      throw new NotFoundException('Exam not found');
+    }
+    
+    const updated = await this.prisma.exam.update({ 
+      where: { id },
+      data: { 
+        name: input.name ?? undefined,
+        examType: input.examType ?? undefined,
+        academicYearId: input.academicYearId ?? undefined,
+        term: input.term ?? undefined,
+        weightagePercent: input.weightagePercent ?? undefined,
+        minPassingMarks: input.minPassingMarks ?? undefined,
+        maxMarks: input.maxMarks ?? undefined,
+        status: input.status ?? undefined,
+        startDate: input.startDate ?? undefined,
+        endDate: input.endDate ?? undefined
+      }
+    });
     return { data: updated };
   }
 

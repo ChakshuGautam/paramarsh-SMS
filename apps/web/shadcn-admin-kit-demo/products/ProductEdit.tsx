@@ -100,7 +100,7 @@ export const ProductEdit = () => {
             <div className="border rounded-sm p-4 bg-secondary flex-1 ">
               <TextInput
                 source="description"
-                label={false}
+                label=""
                 multiline
                 validate={required()}
                 className="[&>textarea]:bg-white"

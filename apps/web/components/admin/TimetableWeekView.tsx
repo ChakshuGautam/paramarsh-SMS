@@ -225,7 +225,7 @@ export const TimetableWeekView: React.FC<TimetableWeekViewProps> = ({
                   ))}
                   
                   {dayPeriods.length === 0 && (
-                    <div className="text-center text-gray-400 text-sm py-4">
+                    <div className="text-center text-muted-foreground text-sm py-4">
                       No classes
                     </div>
                   )}

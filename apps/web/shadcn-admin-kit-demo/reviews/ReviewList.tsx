@@ -34,20 +34,20 @@ import { useIsMobile } from "../../hooks/use-mobile";
 import type { Review } from "../types";
 
 const filters = [
-  <TextInput source="q" placeholder="Search" label={false} />,
+  <TextInput source="q" placeholder="Search" label="" />,
   <ReferenceInput
     source="customer_id"
     reference="customers"
     sort={{ field: "last_name", order: "ASC" }}
   >
-    <AutocompleteInput placeholder="Filter by customer" label={false} />
+    <AutocompleteInput placeholder="Filter by customer" label="" />
   </ReferenceInput>,
   <ReferenceInput
     source="product_id"
     reference="products"
     sort={{ field: "name", order: "ASC" }}
   >
-    <AutocompleteInput placeholder="Filter by product" label={false} />
+    <AutocompleteInput placeholder="Filter by product" label="" />
   </ReferenceInput>,
   <AutocompleteInput
     source="status"
@@ -72,7 +72,7 @@ const filters = [
         {choice.name}
       </>
     )}
-    label={false}
+    label=""
   />,
 ];
 

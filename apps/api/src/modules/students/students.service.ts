@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseCrudService } from '../../common/base-crud.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { mapDbToSchoolResponse, mapSchoolToDbParams } from '../../common/school-alias.helper';
@@ -10,33 +10,97 @@ export class StudentsService extends BaseCrudService<any> {
   }
 
   /**
-   * Override to add school aliasing
+   * Student model now has branchId field for multi-school support
+   */
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  /**
+   * Override to add school aliasing and fix branchId issue
    */
   async getList(params: any) {
-    const result = await super.getList(params);
-    return {
-      data: result.data.map(mapDbToSchoolResponse),
-      total: result.total,
-    };
+    // Try completely bypassing parent and doing it directly
+    try {
+      const page = Math.max(1, Number(params.page ?? 1));
+      const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? 25)));
+      const skip = (page - 1) * perPage;
+
+      // Build simple where clause
+      const where: any = {};
+      if (params.filter?.status) {
+        where.status = params.filter.status;
+      }
+
+      console.log('Direct student query - where:', JSON.stringify(where, null, 2));
+
+      const [data, total] = await Promise.all([
+        this.prisma.student.findMany({ 
+          where, 
+          skip, 
+          take: perPage,
+          include: {
+            guardians: {
+              include: {
+                guardian: true
+              }
+            }
+          }
+        }),
+        this.prisma.student.count({ where }),
+      ]);
+
+      return {
+        data: data.map(mapDbToSchoolResponse),
+        total,
+      };
+    } catch (error) {
+      console.error('Error in student getList:', error);
+      throw error;
+    }
   }
 
   /**
-   * Override to add school aliasing
+   * Override to add school aliasing and include guardians
    */
   async getOne(id: string) {
-    const result = await super.getOne(id);
+    const data = await (this.prisma as any)[this.modelName].findUnique({
+      where: { id },
+      include: {
+        guardians: {
+          include: {
+            guardian: true
+          }
+        }
+      }
+    });
+
+    if (!data) {
+      throw new NotFoundException(`${this.modelName} not found`);
+    }
+
     return {
-      data: mapDbToSchoolResponse(result.data),
+      data: mapDbToSchoolResponse(data),
     };
   }
 
   /**
-   * Override to add school aliasing
+   * Override to add school aliasing and include guardians
    */
   async getMany(ids: string[]) {
-    const result = await super.getMany(ids);
+    const data = await (this.prisma as any)[this.modelName].findMany({
+      where: { id: { in: ids } },
+      include: {
+        guardians: {
+          include: {
+            guardian: true
+          }
+        }
+      }
+    });
+
     return {
-      data: result.data.map(mapDbToSchoolResponse),
+      data: data.map(mapDbToSchoolResponse),
     };
   }
 
@@ -84,10 +148,4 @@ export class StudentsService extends BaseCrudService<any> {
     ];
   }
 
-  /**
-   * Students support branch scoping
-   */
-  protected supportsBranchScoping(): boolean {
-    return true;
-  }
 }

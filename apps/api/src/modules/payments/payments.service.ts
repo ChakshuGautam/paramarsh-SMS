@@ -28,8 +28,19 @@ export class PaymentsService {
     if (branchId) where.branchId = branchId;
 
     const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ id: 'asc' }];
+      ? params.sort.split(',').map((f) => {
+          let field = f.startsWith('-') ? f.slice(1) : f;
+          const direction = f.startsWith('-') ? 'desc' : 'asc';
+          
+          // Ensure field exists in the model
+          const validFields = ['id', 'invoiceId', 'amount', 'status', 'method', 'gateway', 'reference', 'createdAt', 'updatedAt'];
+          if (!validFields.includes(field)) {
+            field = 'id'; // fallback to id if field doesn't exist
+          }
+          
+          return { [field]: direction };
+        })
+      : [{ createdAt: 'desc' }];
 
     const [data, total] = await Promise.all([
       this.prisma.payment.findMany({ where, skip, take: pageSize, orderBy }),

@@ -3,6 +3,7 @@ import {
   BreadcrumbItem,
   BreadcrumbPage,
 } from "@/components/admin/breadcrumb";
+import { BreadcrumbLink } from "@/components/ui/breadcrumb";
 import {
   FilterLiveForm,
   ListBase,
@@ -99,9 +100,11 @@ export const ListView = <RecordType extends RaRecord = RaRecord>(
       <Breadcrumb>
         {hasDashboard && (
           <BreadcrumbItem>
-            <Link to="/">
-              <Translate i18nKey="ra.page.dashboard">Home</Translate>
-            </Link>
+            <BreadcrumbLink asChild>
+              <Link to="/">
+                <Translate i18nKey="ra.page.dashboard">Home</Translate>
+              </Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
         )}
         <BreadcrumbPage>{resourceLabel}</BreadcrumbPage>

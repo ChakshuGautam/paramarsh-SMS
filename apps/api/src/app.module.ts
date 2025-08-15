@@ -23,6 +23,9 @@ import { FilesModule } from './modules/files/files.module';
 import { FeeSchedulesModule } from './modules/fee-schedules/fee-schedules.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
 import { TimetableModule } from './modules/timetable/timetable.module';
+import { AttendanceSessionsModule } from './modules/attendance-sessions/attendance-sessions.module';
+import { TeacherAttendanceModule } from './modules/teacher-attendance/teacher-attendance.module';
+import { AcademicYearsModule } from './modules/academic-years/academic-years.module';
 import { ProblemJsonFilter } from './common/problem.filter';
 import { BranchGuard } from './common/guards/branch.guard';
 import { PrismaService } from './prisma/prisma.service';
@@ -53,6 +56,9 @@ import { RequestLoggingMiddleware } from './common/request-logging.middleware';
     FeeSchedulesModule,
     CommunicationsModule,
     TimetableModule,
+    AttendanceSessionsModule,
+    TeacherAttendanceModule,
+    AcademicYearsModule,
   ],
   controllers: [AppController],
   providers: [

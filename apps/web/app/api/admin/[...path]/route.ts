@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000/api/v1';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080/api/v1';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
+  const resolvedParams = await params;
+  const path = resolvedParams.path.join('/');
   const searchParams = request.nextUrl.searchParams.toString();
   const url = `${BACKEND_URL}/${path}${searchParams ? `?${searchParams}` : ''}`;
 
@@ -18,7 +19,7 @@ export async function GET(
 
     // Forward tenant/branch headers if present
     const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id');
+    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
     
     if (tenantId) headers['X-Tenant-Id'] = tenantId;
     if (branchId) headers['X-Branch-Id'] = branchId;
@@ -42,9 +43,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
+  const resolvedParams = await params;
+  const path = resolvedParams.path.join('/');
   const url = `${BACKEND_URL}/${path}`;
 
   try {
@@ -57,7 +59,7 @@ export async function POST(
 
     // Forward tenant/branch headers if present
     const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id');
+    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
     
     if (tenantId) headers['X-Tenant-Id'] = tenantId;
     if (branchId) headers['X-Branch-Id'] = branchId;
@@ -82,9 +84,10 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
+  const resolvedParams = await params;
+  const path = resolvedParams.path.join('/');
   const url = `${BACKEND_URL}/${path}`;
 
   try {
@@ -97,7 +100,7 @@ export async function PUT(
 
     // Forward tenant/branch headers if present
     const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id');
+    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
     
     if (tenantId) headers['X-Tenant-Id'] = tenantId;
     if (branchId) headers['X-Branch-Id'] = branchId;
@@ -122,9 +125,10 @@ export async function PUT(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
+  const resolvedParams = await params;
+  const path = resolvedParams.path.join('/');
   const url = `${BACKEND_URL}/${path}`;
 
   try {
@@ -137,7 +141,7 @@ export async function PATCH(
 
     // Forward tenant/branch headers if present
     const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id');
+    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
     
     if (tenantId) headers['X-Tenant-Id'] = tenantId;
     if (branchId) headers['X-Branch-Id'] = branchId;
@@ -162,9 +166,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const path = params.path.join('/');
+  const resolvedParams = await params;
+  const path = resolvedParams.path.join('/');
   const url = `${BACKEND_URL}/${path}`;
 
   try {
@@ -175,7 +180,7 @@ export async function DELETE(
 
     // Forward tenant/branch headers if present
     const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id');
+    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
     
     if (tenantId) headers['X-Tenant-Id'] = tenantId;
     if (branchId) headers['X-Branch-Id'] = branchId;

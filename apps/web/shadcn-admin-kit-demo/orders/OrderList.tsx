@@ -21,13 +21,13 @@ const storeKeyByStatus = {
 };
 
 const filters = [
-  <TextInput source="q" placeholder="Search" label={false} />,
+  <TextInput source="q" placeholder="Search" label="" />,
   <ReferenceInput
     source="customer_id"
     reference="customers"
     sort={{ field: "last_name", order: "ASC" }}
   >
-    <AutocompleteInput placeholder="Filter by customer" label={false} />
+    <AutocompleteInput placeholder="Filter by customer" label="" />
   </ReferenceInput>,
 ];
 

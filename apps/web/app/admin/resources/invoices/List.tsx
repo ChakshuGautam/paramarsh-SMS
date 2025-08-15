@@ -27,11 +27,11 @@ const storeKeyByStatus = {
 
 // Label-less filters with placeholders
 const filters = [
-  <TextInput source="q" placeholder="Search invoices..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search invoices..." label="" alwaysOn />,
   <ReferenceInput source="studentId" reference="students">
     <AutocompleteInput 
       placeholder="Filter by student" 
-      label={false}
+      label=""
       optionText={(record: any) => `${record.firstName} ${record.lastName}`}
     />
   </ReferenceInput>,
@@ -39,11 +39,11 @@ const filters = [
     source="dueDate"
     sourceFrom="dueDate_gte"
     sourceTo="dueDate_lte"
-    label={false}
+    label=""
     placeholder="Filter by due date"
   />,
-  <NumberInput source="amount_gte" placeholder="Min amount" label={false} min={0} />,
-  <NumberInput source="amount_lte" placeholder="Max amount" label={false} min={0} />,
+  <NumberInput source="amount_gte" placeholder="Min amount" label="" min={0} />,
+  <NumberInput source="amount_lte" placeholder="Max amount" label="" min={0} />,
 ];
 
 export const InvoicesList = () => (
@@ -51,7 +51,7 @@ export const InvoicesList = () => (
     sort={{ field: "dueDate", order: "DESC" }}
     filterDefaultValues={{ status: "pending" }}
     filters={filters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>

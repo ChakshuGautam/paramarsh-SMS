@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type ClassRow = { name: string; gradeLevel?: number };
+export type ClassRow = { branchId?: string; name: string; gradeLevel?: number };
 
 @Injectable()
 export class ClassesService {
@@ -14,6 +14,7 @@ export class ClassesService {
 
     const where: any = {};
     if (params.q) where.name = { contains: params.q, mode: 'insensitive' };
+    // Add branchId filtering from request scope
     const { branchId } = PrismaService.getScope();
     if (branchId) where.branchId = branchId;
     const orderBy: any = params.sort
@@ -21,8 +22,8 @@ export class ClassesService {
       : [{ id: 'asc' }];
 
     const [data, total] = await Promise.all([
-      this.prisma.class.findMany({ where, skip, take: pageSize, orderBy }),
-      this.prisma.class.count({ where }),
+      this.prisma.class.findMany({ where: { ...where }, skip, take: pageSize, orderBy }),
+      this.prisma.class.count({ where: { ...where } }),
     ]);
     return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
   }
@@ -38,7 +39,14 @@ export class ClassesService {
   }
 
   async create(input: { name: string; gradeLevel?: number }) {
-    const created = await this.prisma.class.create({ data: { name: input.name, gradeLevel: input.gradeLevel ?? null } });
+    const { branchId } = PrismaService.getScope();
+    const created = await this.prisma.class.create({ 
+      data: { 
+        branchId: branchId ?? undefined,
+        name: input.name, 
+        gradeLevel: input.gradeLevel ?? null 
+      } 
+    });
     return { data: created };
   }
 

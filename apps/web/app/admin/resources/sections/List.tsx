@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -43,11 +43,11 @@ const getGradeLevelFilter = (level: string) => {
 
 // Label-less filters with placeholders
 const sectionFilters = [
-  <TextInput source="q" placeholder="Search sections..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search sections..." label="" alwaysOn />,
   <ReferenceInput source="classId" reference="classes">
-    <AutocompleteInput placeholder="Filter by class" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by class" label="" optionText="name" />
   </ReferenceInput>,
-  <NumberInput source="capacity_gte" placeholder="Min capacity" label={false} />,
+  <NumberInput source="capacity_gte" placeholder="Min capacity" label="" />,
 ];
 
 const ViewTimetableButton = ({ record }: { record?: any }) => {
@@ -81,7 +81,7 @@ export const SectionsList = () => (
   <List
     sort={{ field: "name", order: "ASC" }}
     filters={sectionFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -151,10 +151,12 @@ const TabbedDataTable = () => {
 const SectionsTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable storeKey={storeKey}>
     {/* Always visible columns */}
-    <DataTable.Col source="name" label="Section Name" />
-    <DataTable.Col label="Class">
-      <ReferenceField reference="classes" source="classId">
-        <TextField source="name" />
+    <DataTable.Col label="Class & Section">
+      <ClassAndSection />
+    </DataTable.Col>
+    <DataTable.Col label="Homeroom Teacher">
+      <ReferenceField reference="teachers" source="homeroomTeacherId">
+        <TeacherName />
       </ReferenceField>
     </DataTable.Col>
     <DataTable.Col source="capacity" label="Capacity">
@@ -169,8 +171,43 @@ const SectionsTable = ({ storeKey }: { storeKey: string }) => (
   </DataTable>
 );
 
-const CapacityBadge = ({ record }: { record?: any }) => {
+const ClassAndSection = () => {
+  const record = useRecordContext();
   if (!record) return null;
+  
+  return (
+    <div className="flex items-center gap-2">
+      <ReferenceField reference="classes" source="classId" link={false}>
+        <span className="font-medium">
+          <TextField source="name" /> - 
+        </span>
+      </ReferenceField>
+      <span>Section {record.name}</span>
+    </div>
+  );
+};
+
+const TeacherName = () => {
+  const record = useRecordContext();
+  if (!record) return <span className="text-muted-foreground">No teacher assigned</span>;
+  
+  // This assumes the teacher record has been fetched
+  // You might need to adjust based on your teacher data structure
+  return (
+    <div className="flex flex-col">
+      <span className="font-medium">
+        <TextField source="staff.firstName" /> <TextField source="staff.lastName" />
+      </span>
+      <span className="text-xs text-gray-500">
+        <TextField source="subjects" />
+      </span>
+    </div>
+  );
+};
+
+const CapacityBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.capacity) return null;
   
   const getCapacityColor = (capacity: number) => {
     if (capacity >= 40) return 'text-red-700 bg-red-100';

@@ -67,9 +67,9 @@ export class TeachersService extends BaseCrudService<any> {
   }
 
   /**
-   * Teachers support branch scoping through staff
+   * Teachers now have branchId field for multi-school support
    */
   protected supportsBranchScoping(): boolean {
-    return false; // Teachers are linked through staff, not directly
+    return true;
   }
 }

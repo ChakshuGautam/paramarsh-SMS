@@ -8,13 +8,27 @@ export const SubstitutionsList = () => {
   return (
     <List>
       <DataTable>
-        <TextField source="periodId" />
-        <TextField source="date" />
-        <TextField source="substituteTeacherId" />
-        <TextField source="substituteRoomId" />
-        <TextField source="reason" />
-        <TextField source="status" />
-        <TextField source="approvedBy" />
+        <DataTable.Col source="periodId" label="Period ID">
+          <TextField source="periodId" />
+        </DataTable.Col>
+        <DataTable.Col source="date" label="Date">
+          <TextField source="date" />
+        </DataTable.Col>
+        <DataTable.Col source="substituteTeacherId" label="Substitute Teacher">
+          <TextField source="substituteTeacherId" />
+        </DataTable.Col>
+        <DataTable.Col source="substituteRoomId" label="Substitute Room">
+          <TextField source="substituteRoomId" />
+        </DataTable.Col>
+        <DataTable.Col source="reason" label="Reason">
+          <TextField source="reason" />
+        </DataTable.Col>
+        <DataTable.Col source="status" label="Status">
+          <TextField source="status" />
+        </DataTable.Col>
+        <DataTable.Col source="approvedBy" label="Approved By">
+          <TextField source="approvedBy" />
+        </DataTable.Col>
       </DataTable>
     </List>
   );

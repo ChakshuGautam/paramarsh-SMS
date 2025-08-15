@@ -43,14 +43,14 @@ const getDueDateFilter = (status: string) => {
 
 // Label-less filters with placeholders
 const feeScheduleFilters = [
-  <TextInput source="q" placeholder="Search fee schedules..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search fee schedules..." label="" alwaysOn />,
   <ReferenceInput source="feeStructureId" reference="feeStructures">
-    <AutocompleteInput placeholder="Filter by fee structure" label={false} optionText="name" />
+    <AutocompleteInput placeholder="Filter by fee structure" label="" optionText="name" />
   </ReferenceInput>,
   <SelectInput 
     source="frequency" 
     placeholder="Filter by frequency" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'monthly', name: 'Monthly' },
       { id: 'quarterly', name: 'Quarterly' },
@@ -58,7 +58,7 @@ const feeScheduleFilters = [
       { id: 'one_time', name: 'One Time' }
     ]} 
   />,
-  <DateInput source="dueDate" placeholder="Filter by due date" label={false} />,
+  <DateInput source="dueDate" placeholder="Filter by due date" label="" />,
 ];
 
 export const FeeSchedulesList = () => {
@@ -66,7 +66,7 @@ export const FeeSchedulesList = () => {
     <List
       sort={{ field: "dueDate", order: "ASC" }}
       filters={feeScheduleFilters}
-      perPage={25}
+      perPage={10}
     >
       <TabbedDataTable />
     </List>

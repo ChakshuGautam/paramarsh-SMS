@@ -1,17 +1,16 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
   ReferenceField,
   TextField,
   TextInput,
-  ReferenceInput,
-  AutocompleteInput,
   SelectInput,
   Count,
 } from "@/components/admin";
+import { ClassFilter, SectionFilter } from "@/components/admin/dependent-filters";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
@@ -22,19 +21,23 @@ const storeKeyByStatus = {
   graduated: "students.list.graduated",
 };
 
-// Label-less filters with placeholders
+// Enhanced filters with dependency logic
 const studentFilters = [
-  <TextInput source="q" placeholder="Search students..." label={false} alwaysOn />,
-  <ReferenceInput source="classId" reference="classes">
-    <AutocompleteInput placeholder="Filter by class" label={false} optionText="name" />
-  </ReferenceInput>,
-  <ReferenceInput source="sectionId" reference="sections">
-    <AutocompleteInput placeholder="Filter by section" label={false} optionText="name" />
-  </ReferenceInput>,
+  <TextInput key="search" source="q" placeholder="Search students..." label="" alwaysOn />,
+  <ClassFilter key="class" source="classId" placeholder="Filter by class" />,
+  <SectionFilter 
+    key="section"
+    source="sectionId" 
+    classIdSource="classId"
+    placeholder="Filter by section"
+    showUnique={true}
+    hideUntilClassSelected={true}
+  />,
   <SelectInput 
+    key="gender"
     source="gender" 
     placeholder="Filter by gender" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'male', name: 'Male' },
       { id: 'female', name: 'Female' },
@@ -48,7 +51,7 @@ export const StudentsList = () => (
     sort={{ field: "firstName", order: "ASC" }}
     filterDefaultValues={{ status: "active" }}
     filters={studentFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -98,13 +101,57 @@ const TabbedDataTable = () => {
   );
 };
 
+// Component to display guardian phone numbers
+const GuardianPhones = () => {
+  const record = useRecordContext();
+  if (!record?.guardians || record.guardians.length === 0) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+  
+  // Get primary guardian or first guardian
+  // guardians is now an array of StudentGuardian objects with guardian nested
+  const primaryRelation = record.guardians.find((sg: any) => sg.isPrimary) || record.guardians[0];
+  const guardian = primaryRelation?.guardian;
+  
+  if (!guardian) {
+    return <span className="text-muted-foreground">No guardian</span>;
+  }
+  
+  const phoneNumbers = [];
+  if (guardian.phoneNumber) {
+    phoneNumbers.push(guardian.phoneNumber);
+  }
+  if (guardian.alternatePhoneNumber) {
+    phoneNumbers.push(guardian.alternatePhoneNumber);
+  }
+  
+  if (phoneNumbers.length === 0) {
+    return <span className="text-muted-foreground">No phone</span>;
+  }
+  
+  return (
+    <div className="space-y-1">
+      {phoneNumbers.map((phone, index) => (
+        <div key={index} className="text-sm">
+          {phone}
+          {index === 0 && primaryRelation.relation && (
+            <span className="text-xs text-muted-foreground ml-1">
+              ({primaryRelation.relation})
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const StudentsTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
     storeKey={storeKey}
     rowClassName={(record) => {
       const statusColors = {
         active: 'border-l-4 border-l-green-500',
-        inactive: 'border-l-4 border-l-gray-400',
+        inactive: 'border-l-4 border-l-muted-foreground',
         graduated: 'border-l-4 border-l-blue-500',
       };
       return statusColors[record.status] || '';
@@ -127,7 +174,9 @@ const StudentsTable = ({ storeKey }: { storeKey: string }) => (
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col label="Guardian Phone" className="hidden lg:table-cell">
+      <GuardianPhones />
+    </DataTable.Col>
   </DataTable>
 );
 

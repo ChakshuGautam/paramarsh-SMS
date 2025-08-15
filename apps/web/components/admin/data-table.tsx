@@ -57,7 +57,7 @@ export function DataTable<RecordType extends RaRecord = RaRecord>(
       {...rest}
       rowClick={(rest as any).rowClick ?? "edit"}
     >
-      <div className={cn("rounded-md border", className)}>
+      <div className={cn("rounded-md border bg-card", className)}>
         <Table>
           <DataTableRenderContext.Provider value="header">
             <DataTableHead>{children}</DataTableHead>

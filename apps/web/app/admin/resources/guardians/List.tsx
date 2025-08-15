@@ -1,11 +1,13 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
+import { Link } from "react-router-dom";
 import {
   DataTable,
   List,
   TextInput,
   SelectInput,
+  TextField,
   Count,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,11 +25,11 @@ const storeKeyByRelation = {
 
 // Label-less filters with placeholders
 const guardianFilters = [
-  <TextInput source="q" placeholder="Search guardians..." label={false} alwaysOn />,
+  <TextInput source="q" placeholder="Search guardians..." label="" alwaysOn />,
   <SelectInput 
     source="relation" 
     placeholder="Filter by relation" 
-    label={false} 
+    label="" 
     choices={[
       { id: 'father', name: 'Father' },
       { id: 'mother', name: 'Mother' },
@@ -39,15 +41,15 @@ const guardianFilters = [
       { id: 'other', name: 'Other' }
     ]} 
   />,
-  <TextInput source="phone" placeholder="Filter by phone" label={false} />,
-  <TextInput source="email" placeholder="Filter by email" label={false} />,
+  <TextInput source="phone" placeholder="Filter by phone" label="" />,
+  <TextInput source="email" placeholder="Filter by email" label="" />,
 ];
 
 export const GuardiansList = () => (
   <List
     sort={{ field: "name", order: "ASC" }}
     filters={guardianFilters}
-    perPage={25}
+    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -119,6 +121,68 @@ const TabbedDataTable = () => {
   );
 };
 
+// Component to display wards (students) with links
+const WardLinks = () => {
+  const record = useRecordContext();
+  
+  // Handle both old format (record.student) and new format (record.students array)
+  if (!record?.students || record.students.length === 0) {
+    // Fallback to old format if exists
+    if (record?.student) {
+      const student = record.student;
+      const displayName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unknown Student';
+      return (
+        <Link 
+          to={`/admin#/students/${student.id}/show`}
+          className="text-primary hover:underline flex items-center gap-1"
+        >
+          <User className="h-3 w-3" />
+          <span>{displayName}</span>
+          {student.admissionNo && (
+            <span className="text-xs text-muted-foreground ml-1">
+              ({student.admissionNo})
+            </span>
+          )}
+        </Link>
+      );
+    }
+    return <span className="text-muted-foreground">No wards linked</span>;
+  }
+  
+  // Display all linked students (wards)
+  return (
+    <div className="space-y-1">
+      {record.students.map((sg: any, index: number) => {
+        const student = sg.student;
+        if (!student) return null;
+        
+        const displayName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Unknown Student';
+        
+        return (
+          <Link 
+            key={student.id}
+            to={`/admin#/students/${student.id}/show`}
+            className="text-primary hover:underline flex items-center gap-1 text-sm"
+          >
+            <User className="h-3 w-3" />
+            <span>{displayName}</span>
+            {student.admissionNo && (
+              <span className="text-xs text-muted-foreground ml-1">
+                ({student.admissionNo})
+              </span>
+            )}
+            {sg.relation && (
+              <Badge className="ml-1 text-xs py-0 px-1" variant="outline">
+                {sg.relation}
+              </Badge>
+            )}
+          </Link>
+        );
+      })}
+    </div>
+  );
+};
+
 const GuardiansTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
     storeKey={storeKey}
@@ -131,43 +195,46 @@ const GuardiansTable = ({ storeKey }: { storeKey: string }) => (
         grandmother: 'border-l-4 border-l-purple-400',
         uncle: 'border-l-4 border-l-orange-400',
         aunt: 'border-l-4 border-l-orange-400',
-        other: 'border-l-4 border-l-gray-400',
+        other: 'border-l-4 border-l-muted-foreground',
       };
-      return relationColors[record.relation] || 'border-l-4 border-l-gray-400';
+      return relationColors[record.relation] || 'border-l-4 border-l-muted-foreground';
     }}
   >
     {/* Always visible columns */}
     <DataTable.Col source="name" label="Name">
-      <NameWithIcon />
+      <TextField source="name" />
     </DataTable.Col>
     <DataTable.Col source="relation" label="Relation">
       <RelationBadge />
     </DataTable.Col>
     <DataTable.Col source="phone" label="Phone">
-      <PhoneWithIcon />
+      <TextField source="phone" />
     </DataTable.Col>
     
     {/* Desktop-only columns */}
     <DataTable.Col source="email" label="Email" className="hidden md:table-cell">
-      <EmailWithIcon />
+      <TextField source="email" />
     </DataTable.Col>
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col label="Wards/Students" className="hidden lg:table-cell">
+      <WardLinks />
+    </DataTable.Col>
   </DataTable>
 );
 
 const NameWithIcon = ({ record }: { record?: any }) => {
-  if (!record) return null;
+  if (!record || !record.name) return <span className="text-muted-foreground">[No Name]</span>;
   
   return (
     <div className="flex items-center gap-2">
-      <User className="w-4 h-4 text-gray-500" />
+      <User className="w-4 h-4 text-muted-foreground" />
       <span>{record.name}</span>
     </div>
   );
 };
 
-const RelationBadge = ({ record }: { record?: any }) => {
-  if (!record) return null;
+const RelationBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.relation) return null;
   
   const colors = {
     father: 'text-blue-700 bg-blue-100',
@@ -177,11 +244,11 @@ const RelationBadge = ({ record }: { record?: any }) => {
     grandmother: 'text-purple-700 bg-purple-100',
     uncle: 'text-orange-700 bg-orange-100',
     aunt: 'text-orange-700 bg-orange-100',
-    other: 'text-gray-700 bg-gray-100',
+    other: 'text-muted-foreground bg-muted',
   };
   
   return (
-    <Badge className={colors[record.relation as keyof typeof colors] || 'text-gray-700 bg-gray-100'}>
+    <Badge className={colors[record.relation as keyof typeof colors] || 'text-muted-foreground bg-muted'}>
       {record.relation}
     </Badge>
   );
@@ -192,7 +259,7 @@ const PhoneWithIcon = ({ record }: { record?: any }) => {
   
   return (
     <div className="flex items-center gap-2">
-      <Phone className="w-4 h-4 text-gray-500" />
+      <Phone className="w-4 h-4 text-muted-foreground" />
       <span>{record.phone}</span>
     </div>
   );

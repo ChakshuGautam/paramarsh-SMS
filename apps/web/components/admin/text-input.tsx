@@ -28,6 +28,7 @@ export const TextInput = (props: TextInputProps) => {
     className,
     validate: _validateProp,
     format: _formatProp,
+    alwaysOn, // Extract alwaysOn to prevent it from being passed to DOM
     ...rest
   } = props;
   const { id, field, isRequired } = useInput(props);
