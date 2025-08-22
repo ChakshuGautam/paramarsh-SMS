@@ -59,7 +59,7 @@ export function usePermissions() {
         const rls = rowLevelSecurity[role]?.[resource] || 
                    rowLevelSecurity[role]?.['*'];
         if (!rls) return false;
-        return rls(userId, record);
+        return rls(String(userId), record);
       });
     },
     
