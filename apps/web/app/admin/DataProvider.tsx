@@ -97,7 +97,7 @@ function mapListParams(resource: string, params: ListParams) {
   const path = resourceToPath(resource);
   const { pagination = {}, sort = {}, filter = {} } = params || {};
   const page = Number(pagination.page ?? 1);
-  const pageSize = Number(pagination.perPage ?? pagination.pageSize ?? 25);
+  const pageSize = Number(pagination.perPage ?? pagination.pageSize ?? 10);
   const field = sort.field as string | undefined;
   const order = ((sort.order as string | undefined)?.toUpperCase() || "ASC") as
     | "ASC"
