@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { StudentsModule } from './modules/students/students.module';
@@ -29,6 +30,7 @@ import { AcademicYearsModule } from './modules/academic-years/academic-years.mod
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { ProblemJsonFilter } from './common/problem.filter';
 import { BranchGuard } from './common/guards/branch.guard';
+import { ClerkAuthGuard } from './auth/clerk-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -38,6 +40,7 @@ import { RequestLoggingMiddleware } from './common/request-logging.middleware';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    AuthModule,
     HealthModule,
     TenantsModule,
     StudentsModule,
@@ -68,6 +71,7 @@ import { RequestLoggingMiddleware } from './common/request-logging.middleware';
     AppService,
     PrismaService,
     { provide: APP_FILTER, useClass: ProblemJsonFilter },
+    { provide: APP_GUARD, useClass: ClerkAuthGuard },
     { provide: APP_GUARD, useClass: BranchGuard },
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
   ],
