@@ -272,6 +272,7 @@ function resourceToPath(resource: string): string {
     classes: "classes",
     sections: "sections",
     enrollments: "enrollments",
+    academicYears: "academic-years", // Added missing academic years
     
     // Admissions
     admissionsApplications: "admissions/applications",
@@ -285,19 +286,20 @@ function resourceToPath(resource: string): string {
     exams: "exams",
     marks: "marks",
     
-    // Fees & Payments
+    // Fees & Payments - Fixed to match backend paths
     feeStructures: "fees/structures",
     feeSchedules: "fees/schedules",
-    invoices: "fees/invoices",
-    payments: "fees/payments",
+    invoices: "invoices", // Fixed: backend has /invoices not /fees/invoices
+    payments: "payments", // Fixed: backend has /payments not /fees/payments
     
-    // HR & Staff
+    // HR & Staff - Fixed to match backend paths
     staff: "hr/staff",
-    teachers: "hr/teachers",
+    teachers: "teachers", // Fixed: backend has /teachers not /hr/teachers
     
     // Timetable
     subjects: "subjects",
     rooms: "rooms",
+    timetable: "timetable", // Added main timetable endpoint
     timetablePeriods: "timetable/periods",
     timetableGrid: "timetable/grid", // Special grid view endpoint
     timeSlots: "timetable/time-slots",
@@ -305,12 +307,15 @@ function resourceToPath(resource: string): string {
     sectionTimetables: "sections", // Maps to sections API to get section data
     timetables: "sections", // Main timetable resource maps to sections for CRUD operations
     
-    // Communications
+    // Communications - Fixed tickets path
     templates: "comms/templates",
     campaigns: "comms/campaigns",
     messages: "comms/messages",
     preferences: "comms/preferences",
-    tickets: "helpdesk/tickets",
+    tickets: "comms/tickets", // Fixed: backend has /comms/tickets not /helpdesk/tickets
+    
+    // Files & Documents
+    files: "files", // Added missing files endpoint
     
     // System
     tenants: "tenants",

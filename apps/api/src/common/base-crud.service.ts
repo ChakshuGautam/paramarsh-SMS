@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface ListParams {
@@ -115,11 +115,24 @@ export abstract class BaseCrudService<T> {
    * Returns: { data: T }
    */
   async create(data: any): Promise<SingleResponse<T>> {
-    const created = await (this.prisma as any)[this.modelName].create({
-      data,
-    });
+    try {
+      const created = await (this.prisma as any)[this.modelName].create({
+        data,
+      });
 
-    return { data: created };
+      return { data: created };
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        // Unique constraint violation
+        throw new ConflictException(`A record with this ${error.meta?.target?.join(' or ')} already exists`);
+      }
+      if (error.code === 'P2003') {
+        // Foreign key constraint violation
+        throw new BadRequestException('Invalid reference to related record');
+      }
+      // Re-throw other errors as-is
+      throw error;
+    }
   }
 
   /**
@@ -156,16 +169,28 @@ export abstract class BaseCrudService<T> {
   }
 
   /**
-   * Delete item - React Admin delete
+   * Delete item - React Admin delete (soft delete if supported)
    * Returns: { data: T } (the deleted item)
    */
-  async delete(id: string): Promise<SingleResponse<T>> {
+  async delete(id: string, userId?: string): Promise<SingleResponse<T>> {
     try {
-      const deleted = await (this.prisma as any)[this.modelName].delete({
-        where: { id },
-      });
-
-      return { data: deleted };
+      if (this.supportsSoftDelete()) {
+        // Soft delete - just update the deletedAt timestamp
+        const updated = await (this.prisma as any)[this.modelName].update({
+          where: { id },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId || 'system',
+          },
+        });
+        return { data: updated };
+      } else {
+        // Hard delete for models without soft delete support
+        const deleted = await (this.prisma as any)[this.modelName].delete({
+          where: { id },
+        });
+        return { data: deleted };
+      }
     } catch (error: any) {
       if (error.code === 'P2025') {
         throw new NotFoundException(`${this.modelName} not found`);
@@ -175,13 +200,25 @@ export abstract class BaseCrudService<T> {
   }
 
   /**
-   * Delete many items - React Admin deleteMany
+   * Delete many items - React Admin deleteMany (soft delete if supported)
    * Returns: { data: string[] } (IDs of deleted items)
    */
-  async deleteMany(ids: string[]): Promise<{ data: string[] }> {
-    await (this.prisma as any)[this.modelName].deleteMany({
-      where: { id: { in: ids } },
-    });
+  async deleteMany(ids: string[], userId?: string): Promise<{ data: string[] }> {
+    if (this.supportsSoftDelete()) {
+      // Soft delete - update deletedAt timestamp for all records
+      await (this.prisma as any)[this.modelName].updateMany({
+        where: { id: { in: ids } },
+        data: {
+          deletedAt: new Date(),
+          deletedBy: userId || 'system',
+        },
+      });
+    } else {
+      // Hard delete for models without soft delete support
+      await (this.prisma as any)[this.modelName].deleteMany({
+        where: { id: { in: ids } },
+      });
+    }
 
     return { data: ids };
   }
@@ -254,9 +291,9 @@ export abstract class BaseCrudService<T> {
   protected buildWhereClause(filter?: Record<string, any>): any {
     const where: any = {};
 
-    // Debug log for students
-    if (this.modelName === 'student' && filter) {
-      console.log('Student filter received:', JSON.stringify(filter, null, 2));
+    // Exclude soft deleted records by default
+    if (this.supportsSoftDelete()) {
+      where.deletedAt = null;
     }
 
     if (filter) {
@@ -294,15 +331,15 @@ export abstract class BaseCrudService<T> {
             const field = key.replace('_in', '');
             where[field] = { in: Array.isArray(value) ? value : [value] };
           } else if (key.endsWith('_contains')) {
-            // Text contains filter (case insensitive)
+            // Text contains filter (SQLite doesn't support mode: 'insensitive')
             const field = key.replace('_contains', '');
-            where[field] = { contains: value, mode: 'insensitive' };
+            where[field] = { contains: value };
           } else if (Array.isArray(value)) {
             // Array filter (e.g., status in ['ACTIVE', 'PENDING'])
             where[key] = { in: value };
-          } else if (typeof value === 'object' && value.gte !== undefined) {
-            // Range filter object
-            where[key] = value;
+          } else if (typeof value === 'object' && value !== null) {
+            // Handle complex filter objects like { $contains: "value" }
+            this.buildComplexFilter(where, key, value);
           } else {
             // Exact match
             where[key] = value;
@@ -320,7 +357,39 @@ export abstract class BaseCrudService<T> {
       where.branchId = scope.branchId;
     }
 
+
     return where;
+  }
+
+  /**
+   * Build complex filter objects like { $contains: "value" }
+   */
+  protected buildComplexFilter(where: any, key: string, value: any): void {
+    try {
+      if (value.$contains !== undefined) {
+        // SQLite doesn't support 'mode: insensitive' for contains
+        // Use case-insensitive contains without the mode option
+        where[key] = { contains: value.$contains };
+      } else if (value.$gte !== undefined) {
+        where[key] = { ...where[key], gte: this.convertToNumber(value.$gte) ?? value.$gte };
+      } else if (value.$lte !== undefined) {
+        where[key] = { ...where[key], lte: this.convertToNumber(value.$lte) ?? value.$lte };
+      } else if (value.$gt !== undefined) {
+        where[key] = { ...where[key], gt: this.convertToNumber(value.$gt) ?? value.$gt };
+      } else if (value.$lt !== undefined) {
+        where[key] = { ...where[key], lt: this.convertToNumber(value.$lt) ?? value.$lt };
+      } else if (value.$in !== undefined) {
+        where[key] = { in: Array.isArray(value.$in) ? value.$in : [value.$in] };
+      } else if (value.$ne !== undefined) {
+        where[key] = { not: value.$ne };
+      } else {
+        // Range filter object with direct operators
+        where[key] = value;
+      }
+    } catch (error) {
+      console.error(`Error in buildComplexFilter for ${key}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -408,6 +477,84 @@ export abstract class BaseCrudService<T> {
    */
   protected supportsBranchScoping(): boolean {
     return false;
+  }
+
+  /**
+   * Override in specific services if they support soft delete
+   * Returns true if the model has deletedAt field
+   */
+  protected supportsSoftDelete(): boolean {
+    // Models with soft delete support
+    const softDeleteModels = [
+      'student',
+      'guardian',
+      'invoice',
+      'payment',
+      'staff',
+      'teacher',
+    ];
+    return softDeleteModels.includes(this.modelName.toLowerCase());
+  }
+
+  /**
+   * Restore soft-deleted item
+   * Returns: { data: T } (the restored item)
+   */
+  async restore(id: string): Promise<SingleResponse<T>> {
+    if (!this.supportsSoftDelete()) {
+      throw new BadRequestException(`${this.modelName} does not support soft delete`);
+    }
+
+    try {
+      const restored = await (this.prisma as any)[this.modelName].update({
+        where: { id },
+        data: {
+          deletedAt: null,
+          deletedBy: null,
+        },
+      });
+
+      return { data: restored };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(`${this.modelName} not found`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get deleted items (soft deleted only)
+   * Returns: { data: T[], total: number }
+   */
+  async getDeleted(params: ListParams): Promise<ListResponse<T>> {
+    if (!this.supportsSoftDelete()) {
+      return { data: [], total: 0 };
+    }
+
+    const page = Math.max(1, Number(params.page ?? 1));
+    const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? 25)));
+    const skip = (page - 1) * perPage;
+
+    // Build where clause for deleted items
+    const where = {
+      ...this.buildWhereClause(params.filter),
+      deletedAt: { not: null },
+    };
+
+    const orderBy = this.buildOrderBy(params.sort);
+
+    const [data, total] = await Promise.all([
+      (this.prisma as any)[this.modelName].findMany({
+        where,
+        skip,
+        take: perPage,
+        orderBy,
+      }),
+      (this.prisma as any)[this.modelName].count({ where }),
+    ]);
+
+    return { data, total };
   }
 
   /**

@@ -30,6 +30,9 @@ model Student {
   status           String?            @default("active") // active | inactive | graduated
   rollNumber       String?            // Add roll number for attendance display
   photoUrl         String?            // Add photo URL for visual identification
+  // Soft delete fields
+  deletedAt        DateTime?          // Null if not deleted, timestamp if soft deleted
+  deletedBy        String?            // User ID who deleted the record
   // Note: branchId is used internally but represents schoolId in the API layer
   // This allows multi-school support where each school is a separate branch
   guardians        StudentGuardian[]  // Many-to-many relationship via junction table
@@ -41,6 +44,7 @@ model Student {
   marks            Mark[]  // New exam marks
 
   @@unique([admissionNo])
+  @@index([deletedAt])
 }
 
 model Guardian {
@@ -52,12 +56,16 @@ model Guardian {
   alternatePhoneNumber String?           // Secondary phone number
   address              String?
   occupation           String?           // Guardian's occupation
+  // Soft delete fields
+  deletedAt            DateTime?         // Null if not deleted, timestamp if soft deleted
+  deletedBy            String?           // User ID who deleted the record
   // Many-to-many relationship with students
   students             StudentGuardian[]
   
   @@index([branchId])
   @@index([email])
   @@index([phoneNumber])
+  @@index([deletedAt])
 }
 
 // Junction table for many-to-many relationship between students and guardians
@@ -144,10 +152,14 @@ model Invoice {
   dueDate   String?
   amount    Int?
   status    String?
+  // Soft delete fields
+  deletedAt DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy String?   // User ID who deleted the record
   student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   payments  Payment[]
 
   @@unique([studentId, period])
+  @@index([deletedAt])
 }
 
 model Application {
@@ -212,12 +224,16 @@ model Payment {
   status    String?
   reference String?
   method    String?
+  // Soft delete fields
+  deletedAt DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy String?   // User ID who deleted the record
   invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 
   @@unique([reference])
   @@index([invoiceId])
+  @@index([deletedAt])
 }
 
 model ExamSession {
@@ -271,7 +287,12 @@ model Staff {
   employmentType String?
   joinDate       String?
   status         String?
+  // Soft delete fields
+  deletedAt      DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy      String?   // User ID who deleted the record
   Teacher        Teacher?
+  
+  @@index([deletedAt])
 }
 
 model Teacher {
@@ -281,6 +302,9 @@ model Teacher {
   subjects        String?
   qualifications  String?
   experienceYears Int?
+  // Soft delete fields
+  deletedAt       DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy       String?   // User ID who deleted the record
   staff           Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
   homeroomSections Section[]
   periods         TimetablePeriod[]
@@ -293,6 +317,8 @@ model Teacher {
   markedAttendance    StudentPeriodAttendance[] @relation("MarkedAttendance")
   dailyAttendance     TeacherDailyAttendance[] @relation("TeacherAttendance")
   substitutingFor     TeacherDailyAttendance[] @relation("SubstituteFor")
+  
+  @@index([deletedAt])
 }
 
 // Communications Module
@@ -737,5 +763,32 @@ model GradingScale {
   updatedAt      DateTime @updatedAt
   
   @@index([branchId, isDefault])
+}
+
+// ========== Audit Log ==========
+model AuditLog {
+  id             String   @id @default(uuid())
+  branchId       String?  // Branch/School where action occurred
+  userId         String?  // User who performed the action
+  userEmail      String?  // User email for reference
+  action         String   // CREATE, UPDATE, DELETE, SOFT_DELETE, RESTORE, LOGIN, LOGOUT
+  method         String   // GET, POST, PUT, PATCH, DELETE
+  endpoint       String   // API endpoint path
+  entityType     String?  // Model/Entity type affected
+  entityId       String?  // ID of the affected entity
+  oldData        String?  // JSON string of old data (for updates/deletes)
+  newData        String?  // JSON string of new data (for creates/updates)
+  ipAddress      String?  // Client IP address
+  userAgent      String?  // Browser/client user agent
+  statusCode     Int?     // HTTP response status code
+  errorMessage   String?  // Error message if request failed
+  duration       Int?     // Request duration in milliseconds
+  createdAt      DateTime @default(now())
+  
+  @@index([branchId])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
 }
 

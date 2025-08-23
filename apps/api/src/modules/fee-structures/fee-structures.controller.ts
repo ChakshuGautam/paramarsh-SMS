@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FeeStructuresService } from './fee-structures.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -65,43 +65,44 @@ export class FeeStructuresController {
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
+    @Headers('x-branch-id') branchId = 'branch1',
   ) {
-    return this.service.list({ page, pageSize, sort });
+    return this.service.list({ page, pageSize, sort, branchId });
   }
 
   @Post()
   @CreateDocs('Create fee structure')
-  createStructure(@Body() body: CreateStructureDto) {
-    return this.service.createStructure(body);
+  createStructure(@Body() body: CreateStructureDto, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.createStructure(body, branchId);
   }
 
   @Patch(':id')
   @UpdateDocs('Update fee structure')
-  updateStructure(@Param('id') id: string, @Body() body: CreateStructureDto) {
-    return this.service.updateStructure(id, body);
+  updateStructure(@Param('id') id: string, @Body() body: CreateStructureDto, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.updateStructure(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete fee structure')
-  removeStructure(@Param('id') id: string) {
-    return this.service.removeStructure(id);
+  removeStructure(@Param('id') id: string, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.removeStructure(id, branchId);
   }
 
   @Post('components')
   @CreateDocs('Create fee component')
-  createComponent(@Body() body: CreateComponentDto) {
-    return this.service.createComponent(body);
+  createComponent(@Body() body: CreateComponentDto, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.createComponent(body, branchId);
   }
 
   @Patch('components/:id')
   @UpdateDocs('Update fee component')
-  updateComponent(@Param('id') id: string, @Body() body: Partial<CreateComponentDto>) {
-    return this.service.updateComponent(id, body);
+  updateComponent(@Param('id') id: string, @Body() body: Partial<CreateComponentDto>, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.updateComponent(id, body, branchId);
   }
 
   @Delete('components/:id')
   @DeleteDocs('Delete fee component')
-  removeComponent(@Param('id') id: string) {
-    return this.service.removeComponent(id);
+  removeComponent(@Param('id') id: string, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.removeComponent(id, branchId);
   }
 }

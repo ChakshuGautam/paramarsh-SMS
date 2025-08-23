@@ -1,79 +1,164 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Campaign, Prisma } from '@prisma/client';
+import { BaseCrudService } from '../../common/base-crud.service';
 import { MessagesService } from './messages.service';
 
 @Injectable()
-export class CampaignsService {
+export class CampaignsService extends BaseCrudService<Campaign> {
   constructor(
-    private prisma: PrismaService,
+    prisma: PrismaService,
     private messagesService: MessagesService,
-  ) {}
-
-  async create(data: Prisma.CampaignCreateInput): Promise<Campaign> {
-    const { branchId } = PrismaService.getScope();
-    return this.prisma.campaign.create({
-      data: {
-        ...data,
-        branchId: branchId ?? undefined,
-      },
-    });
+  ) {
+    super(prisma, 'campaign');
   }
 
-  async findAll(params?: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.CampaignWhereInput;
-    orderBy?: Prisma.CampaignOrderByWithRelationInput;
-  }): Promise<Campaign[]> {
-    const { skip, take, where, orderBy } = params || {};
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  protected buildSearchClause(search: string): any[] {
+    // SQLite doesn't support mode: 'insensitive' for contains
+    return [
+      { name: { contains: search } },
+      { description: { contains: search } },
+    ];
+  }
+
+  // Override create to add branchId
+  async create(data: any): Promise<{ data: Campaign }> {
     const { branchId } = PrismaService.getScope();
-    const finalWhere = {
-      ...where,
-      ...(branchId ? { branchId } : {}),
+    const createData = {
+      ...data,
+      branchId: branchId || null,
     };
-    return this.prisma.campaign.findMany({
-      skip,
-      take,
-      where: finalWhere,
-      orderBy,
-      include: {
-        template: true,
-        _count: {
-          select: { messages: true },
+    
+    try {
+      const created = await this.prisma.campaign.create({
+        data: createData,
+        include: {
+          template: true,
         },
-      },
-    });
+      });
+      return { data: created };
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('A campaign with this name already exists');
+      }
+      throw error;
+    }
   }
 
-  async findOne(id: string): Promise<Campaign | null> {
-    return this.prisma.campaign.findUnique({
-      where: { id },
+  // Override getOne to respect branch scoping
+  async getOne(id: string): Promise<{ data: Campaign }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    const data = await this.prisma.campaign.findUnique({
+      where,
       include: {
         template: true,
         messages: {
-          take: 10,
+          take: 5,
           orderBy: { createdAt: 'desc' },
         },
       },
     });
+    
+    if (!data) {
+      throw new NotFoundException(`Campaign not found`);
+    }
+    
+    return { data };
   }
 
-  async update(
-    id: string,
-    data: Prisma.CampaignUpdateInput,
-  ): Promise<Campaign> {
-    return this.prisma.campaign.update({
-      where: { id },
-      data,
+  // Override getOneWithIncludes for include support
+  async getOneWithIncludes(id: string, include?: string): Promise<{ data: Campaign }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    const includeOptions: any = {};
+    
+    if (include) {
+      const includes = include.split(',');
+      includes.forEach(inc => {
+        if (inc === 'template') {
+          includeOptions.template = true;
+        }
+        if (inc === 'messages') {
+          includeOptions.messages = {
+            take: 10,
+            orderBy: { createdAt: 'desc' },
+          };
+        }
+      });
+    }
+
+    const data = await this.prisma.campaign.findUnique({
+      where,
+      include: includeOptions,
     });
+    
+    if (!data) {
+      throw new NotFoundException(`Campaign not found`);
+    }
+    
+    return { data };
   }
 
-  async remove(id: string): Promise<Campaign> {
-    return this.prisma.campaign.delete({
-      where: { id },
-    });
+  // Override update to respect branch scoping
+  async update(id: string, data: any): Promise<{ data: Campaign }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    try {
+      const updated = await this.prisma.campaign.update({
+        where,
+        data,
+        include: {
+          template: true,
+        },
+      });
+      return { data: updated };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Campaign not found');
+      }
+      throw error;
+    }
   }
+
+  // Override delete to respect branch scoping
+  async delete(id: string): Promise<{ data: Campaign }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    try {
+      const deleted = await this.prisma.campaign.delete({
+        where,
+      });
+      return { data: deleted };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Campaign not found');
+      }
+      throw error;
+    }
+  }
+
+  // Custom campaign methods
 
   async execute(campaignId: string): Promise<{ messageCount: number }> {
     const campaign = await this.prisma.campaign.findUnique({

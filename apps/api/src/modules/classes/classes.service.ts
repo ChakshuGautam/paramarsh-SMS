@@ -7,16 +7,26 @@ export type ClassRow = { branchId?: string; name: string; gradeLevel?: number };
 export class ClassesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; q?: string }) {
+  async list(params: { page?: number; perPage?: number; sort?: string; q?: string; branchId: string; filter?: any; ids?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
+    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
     if (params.q) where.name = { contains: params.q, mode: 'insensitive' };
-    // Add branchId filtering from request scope
-    const { branchId } = PrismaService.getScope();
-    if (branchId) where.branchId = branchId;
+    
+    // Handle filter parameter
+    if (params.filter) {
+      Object.assign(where, params.filter);
+    }
+    
+    // Handle ids parameter
+    if (params.ids) {
+      where.id = { in: params.ids.split(',') };
+    }
+    
+    // Add branchId filtering
+    where.branchId = params.branchId;
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
       : [{ id: 'asc' }];
@@ -25,12 +35,12 @@ export class ClassesService {
       this.prisma.class.findMany({ where: { ...where }, skip, take: pageSize, orderBy }),
       this.prisma.class.count({ where: { ...where } }),
     ]);
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { data, total };
   }
 
-  async findOne(id: string) {
-    const entity = await this.prisma.class.findUnique({
-      where: { id },
+  async findOne(id: string, branchId: string) {
+    const entity = await this.prisma.class.findFirst({
+      where: { id, branchId },
     });
     if (!entity) {
       throw new NotFoundException('Class not found');
@@ -38,11 +48,10 @@ export class ClassesService {
     return { data: entity };
   }
 
-  async create(input: { name: string; gradeLevel?: number }) {
-    const { branchId } = PrismaService.getScope();
+  async create(input: { name: string; gradeLevel?: number; branchId: string }) {
     const created = await this.prisma.class.create({ 
       data: { 
-        branchId: branchId ?? undefined,
+        branchId: input.branchId,
         name: input.name, 
         gradeLevel: input.gradeLevel ?? null 
       } 
@@ -50,17 +59,35 @@ export class ClassesService {
     return { data: created };
   }
 
-  async update(id: string, input: { name?: string; gradeLevel?: number }) {
-    const updated = await this.prisma.class.update({ where: { id }, data: { name: input.name ?? undefined, gradeLevel: input.gradeLevel ?? undefined } });
+  async update(id: string, input: { name?: string; gradeLevel?: number }, branchId: string) {
+    // First check if the class exists with the given branchId
+    const existing = await this.prisma.class.findFirst({
+      where: { id, branchId }
+    });
+    if (!existing) {
+      throw new NotFoundException('Class not found');
+    }
+    
+    const updated = await this.prisma.class.update({ 
+      where: { id }, 
+      data: { 
+        name: input.name ?? undefined, 
+        gradeLevel: input.gradeLevel ?? undefined 
+      } 
+    });
     return { data: updated };
   }
 
-  async remove(id: string) {
-    try {
-      await this.prisma.class.delete({ where: { id } });
-    } catch {
+  async remove(id: string, branchId: string) {
+    // First check if the class exists with the given branchId
+    const existing = await this.prisma.class.findFirst({
+      where: { id, branchId }
+    });
+    if (!existing) {
       throw new NotFoundException('Class not found');
     }
-    return { success: true };
+    
+    await this.prisma.class.delete({ where: { id } });
+    return { data: { id } };
   }
 }

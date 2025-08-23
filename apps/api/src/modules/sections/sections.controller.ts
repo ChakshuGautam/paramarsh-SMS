@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SectionsService } from './sections.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -50,31 +50,56 @@ export class SectionsController {
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('classId') classId?: string,
+    @Query('filter') filterStr?: string,
+    @Query('ids') ids?: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
   ) {
-    return this.service.list({ page, pageSize, sort, classId });
+    const filter = filterStr ? JSON.parse(filterStr) : undefined;
+    
+    if (ids) {
+      const idList = ids.split(',');
+      return this.service.list({ branchId }).then(response => ({
+        data: response.data.filter(item => idList.includes(item.id))
+      }));
+    }
+    
+    return this.service.list({ page, pageSize, sort, classId, filter, branchId });
   }
 
   @Get(':id')
   @ApiQuery({ name: 'id', required: true })
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  findOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.findOne(id, branchId);
   }
 
   @Post()
   @CreateDocs('Create section')
-  create(@Body() body: UpsertSectionDto) {
-    return this.service.create(body);
+  create(
+    @Body() body: UpsertSectionDto,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.create({ ...body, branchId });
   }
 
   @Patch(':id')
   @UpdateDocs('Update section')
-  update(@Param('id') id: string, @Body() body: Partial<UpsertSectionDto>) {
-    return this.service.update(id, body);
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<UpsertSectionDto>,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.update(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete section')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.remove(id, branchId);
   }
 }

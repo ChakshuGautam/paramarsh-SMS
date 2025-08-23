@@ -88,8 +88,13 @@ export class FeeSchedulesController {
   constructor(private readonly service: FeeSchedulesService) {}
 
   @Get()
-  list(@Query('page') page?: number, @Query('pageSize') pageSize?: number, @Query('sort') sort?: string) {
-    return this.service.list({ page, pageSize, sort });
+  list(@Query('page') page?: number, @Query('perPage') perPage?: number, @Query('sort') sort?: string) {
+    return this.service.list({ page, perPage, sort });
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
   }
 
   @Post()

@@ -4,9 +4,13 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   Query,
+  Headers,
+  NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { SubjectsService } from './subjects.service';
@@ -25,8 +29,19 @@ export class SubjectsController {
     description: 'Creates a new subject with code, name, and optional details like credits and prerequisites'
   })
   @CreateDocs('Subject created successfully')
-  create(@Body() createSubjectDto: CreateSubjectDto) {
-    return this.subjectsService.create(createSubjectDto);
+  async create(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Body() createSubjectDto: CreateSubjectDto,
+  ) {
+    try {
+      const data = await this.subjectsService.create(createSubjectDto);
+      return { data };
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('Subject code already exists');
+      }
+      throw error;
+    }
   }
 
   @Get()
@@ -35,27 +50,40 @@ export class SubjectsController {
     description: 'Retrieves a list of all subjects with optional filtering and pagination'
   })
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
-  @ApiQuery({ name: 'pageSize', required: false, description: 'Number of items per page', example: 10 })
-  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'name:asc' })
-  @ApiQuery({ name: 'q', required: false, description: 'Search query for name and code', example: 'math' })
-  @ApiQuery({ name: 'credits', required: false, description: 'Filter by credit hours', example: '3' })
-  @ApiQuery({ name: 'isActive', required: false, description: 'Filter by active status', example: 'true' })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Number of items per page', example: 25 })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'name' })
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter JSON string' })
+  @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated IDs for getMany' })
   @ListDocs('List of all subjects')
   findAll(
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
-    @Query('q') q?: string,
-    @Query('credits') credits?: string,
-    @Query('isActive') isActive?: string,
+    @Query('filter') filterStr?: string,
+    @Query('ids') idsStr?: string,
   ) {
+    // Parse filter
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = JSON.parse(filterStr);
+      } catch {
+        filter = {};
+      }
+    }
+
+    // Handle getMany (ids provided)
+    if (idsStr) {
+      const ids = idsStr.split(',');
+      return this.subjectsService.findMany(ids);
+    }
+
     return this.subjectsService.findAll({
-      page,
-      pageSize,
+      page: page ? parseInt(page) : 1,
+      perPage: perPage ? parseInt(perPage) : 25,
       sort,
-      q,
-      credits: credits ? parseInt(credits) : undefined,
-      isActive: isActive ? isActive === 'true' : undefined,
+      ...filter,
     });
   }
 
@@ -77,8 +105,15 @@ export class SubjectsController {
   })
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @ListDocs('Subject details')
-  findOne(@Param('id') id: string) {
-    return this.subjectsService.findOne(id);
+  async findOne(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+  ) {
+    const data = await this.subjectsService.findOne(id);
+    if (!data) {
+      throw new NotFoundException('Subject not found');
+    }
+    return { data };
   }
 
   @Get(':id/load')
@@ -92,18 +127,50 @@ export class SubjectsController {
     return this.subjectsService.getSubjectLoad(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiOperation({ 
-    summary: 'Update subject',
+    summary: 'Update subject (full replacement)',
     description: 'Updates an existing subject with new information'
   })
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @UpdateDocs('Subject updated successfully')
-  update(
+  async update(
+    @Headers('x-branch-id') branchId = 'branch1',
     @Param('id') id: string,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
-    return this.subjectsService.update(id, updateSubjectDto);
+    try {
+      const data = await this.subjectsService.update(id, updateSubjectDto);
+      return { data };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Subject not found');
+      }
+      throw error;
+    }
+  }
+
+  @Patch(':id')
+  @ApiOperation({ 
+    summary: 'Update subject (partial)',
+    description: 'Partially updates an existing subject'
+  })
+  @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
+  @UpdateDocs('Subject updated successfully')
+  async patch(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+    @Body() updateSubjectDto: UpdateSubjectDto,
+  ) {
+    try {
+      const data = await this.subjectsService.update(id, updateSubjectDto);
+      return { data };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Subject not found');
+      }
+      throw error;
+    }
   }
 
   @Delete(':id')
@@ -113,8 +180,19 @@ export class SubjectsController {
   })
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @DeleteDocs('Subject deleted successfully')
-  remove(@Param('id') id: string) {
-    return this.subjectsService.remove(id);
+  async remove(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+  ) {
+    try {
+      const data = await this.subjectsService.remove(id);
+      return { data };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Subject not found');
+      }
+      throw error;
+    }
   }
 
   @Post(':id/constraints')

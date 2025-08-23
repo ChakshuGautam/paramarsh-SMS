@@ -15,7 +15,7 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { ListDocs, CreateDocs, UpdateDocs, DeleteDocs } from '../../common/swagger.decorators';
 
 @ApiTags('Helpdesk Tickets')
-@Controller('helpdesk/tickets')
+@Controller('comms/tickets')
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
@@ -34,31 +34,43 @@ export class TicketsController {
     summary: 'Get all tickets',
     description: 'Retrieves all helpdesk tickets with optional filtering by status, assignee, priority, and category'
   })
-  @ApiQuery({ name: 'skip', required: false, description: 'Number of records to skip', example: '0' })
-  @ApiQuery({ name: 'take', required: false, description: 'Number of records to take', example: '20' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: '1' })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Number of records per page', example: '20' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by ticket status', example: 'open' })
   @ApiQuery({ name: 'assigneeId', required: false, description: 'Filter by assigned staff member ID', example: 'staff-456' })
   @ApiQuery({ name: 'priority', required: false, description: 'Filter by priority level', example: 'high' })
   @ApiQuery({ name: 'category', required: false, description: 'Filter by ticket category', example: 'technical' })
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter JSON string' })
   @ListDocs('List of helpdesk tickets')
   findAll(
-    @Query('skip') skip?: string,
-    @Query('take') take?: string,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
     @Query('status') status?: string,
     @Query('assigneeId') assigneeId?: string,
     @Query('priority') priority?: string,
     @Query('category') category?: string,
+    @Query('filter') filterStr?: string,
   ) {
     const where: any = {};
     if (status) where.status = status;
     if (assigneeId) where.assigneeId = assigneeId;
     if (priority) where.priority = priority;
     if (category) where.category = category;
+    
+    // Parse additional filter
+    if (filterStr) {
+      try {
+        const additionalFilter = JSON.parse(filterStr);
+        Object.assign(where, additionalFilter);
+      } catch (error) {
+        // Ignore invalid JSON
+      }
+    }
 
-    return this.ticketsService.findAll({
-      skip: skip ? Number(skip) : undefined,
-      take: take ? Number(take) : undefined,
-      where,
+    return this.ticketsService.getList({
+      page: page ? parseInt(page) : 1,
+      perPage: perPage ? parseInt(perPage) : 20,
+      filter: where,
     });
   }
 
@@ -90,7 +102,7 @@ export class TicketsController {
   @ApiParam({ name: 'id', description: 'Ticket ID', example: 'ticket-123' })
   @ListDocs('Ticket details with messages and attachments')
   findOne(@Param('id') id: string) {
-    return this.ticketsService.findOne(id);
+    return this.ticketsService.getOne(id);
   }
 
   @Patch(':id')
@@ -115,7 +127,7 @@ export class TicketsController {
   @ApiParam({ name: 'id', description: 'Ticket ID', example: 'ticket-123' })
   @DeleteDocs('Ticket deleted successfully')
   remove(@Param('id') id: string) {
-    return this.ticketsService.remove(id);
+    return this.ticketsService.delete(id);
   }
 
   @Post(':id/reply')
