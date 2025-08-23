@@ -51,7 +51,7 @@ class GenerateDummyAttendanceDto {
 }
 
 @ApiTags('Attendance')
-@Controller('api/v1/attendance')
+@Controller('attendance')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
