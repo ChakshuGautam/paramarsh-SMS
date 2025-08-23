@@ -1,354 +1,377 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
 
-describe('Teacher Attendance API (e2e)', () => {
+describe('TeacherAttendance (e2e)', () => {
   let app: INestApplication;
+  let prisma: PrismaService;
+  let teacherAttendanceId: string;
+  let teacherId: string;
 
   beforeAll(async () => {
-    process.env.PORT = '0';
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-        validationError: { target: false },
-      }),
-    );
+    prisma = moduleFixture.get<PrismaService>(PrismaService);
     await app.init();
-    
-    // IMPORTANT: Tests rely on seed data from apps/api/prisma/seed.ts
-    // The seed script creates data for 'branch1' tenant
-    // Run: cd apps/api && npx prisma db seed
+
+    // Get a teacher from seed data for testing
+    const teacher = await prisma.teacher.findFirst({
+      where: { branchId: 'branch1' }
+    });
+    expect(teacher).toBeDefined();
+    teacherId = teacher.id;
   });
 
   afterAll(async () => {
+    // Clean up test data
+    if (teacherAttendanceId) {
+      await prisma.teacherAttendance.deleteMany({
+        where: { branchId: 'branch1' }
+      });
+    }
     await app.close();
   });
 
   describe('GET /api/v1/teacher-attendance', () => {
-    it('should return paginated list with correct format', async () => {
+    it('should return paginated teacher attendance records for branch1', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teacher-attendance')
-        .set('X-Branch-Id', 'branch1');
+        .query({ page: 1, pageSize: 10 })
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
 
-      // Due to authentication guards, we might get 401 or 403
-      // Let's check if we can bypass auth or if it's configured to allow tests
-      expect([200, 401, 403]).toContain(response.status);
-      
-      if (response.status === 200) {
-        expect(response.body).toHaveProperty('data');
-        expect(Array.isArray(response.body.data)).toBe(true);
-      }
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(typeof response.body.total).toBe('number');
     });
 
-    it('should support filtering by date', async () => {
+    it('should return filtered teacher attendance records by teacherId', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/teacher-attendance?date=2025-08-22')
-        .set('X-Branch-Id', 'branch1');
+        .get('/api/v1/teacher-attendance')
+        .query({ 
+          page: 1, 
+          pageSize: 10,
+          filter: JSON.stringify({ teacherId })
+        })
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
 
-      expect([200, 401, 403]).toContain(response.status);
-      
-      if (response.status === 200) {
-        expect(response.body).toHaveProperty('data');
-        expect(Array.isArray(response.body.data)).toBe(true);
-      }
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
     });
 
-    it('should support filtering by teacherId', async () => {
-      // First get a teacher ID
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
-
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teacherId = teachersResponse.body.data[0].id;
-
-        const response = await request(app.getHttpServer())
-          .get(`/api/v1/teacher-attendance?teacherId=${teacherId}`)
-          .set('X-Branch-Id', 'branch1');
-
-        expect([200, 401, 403]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-          expect(Array.isArray(response.body.data)).toBe(true);
-        }
-      }
-    });
-
-    it('should support filtering by date range', async () => {
+    it('should return sorted teacher attendance records', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/teacher-attendance?startDate=2025-08-01&endDate=2025-08-31')
-        .set('X-Branch-Id', 'branch1');
+        .get('/api/v1/teacher-attendance')
+        .query({ 
+          page: 1, 
+          pageSize: 10,
+          sort: JSON.stringify({ field: 'date', order: 'DESC' })
+        })
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
 
-      expect([200, 401, 403]).toContain(response.status);
-      
-      if (response.status === 200) {
-        expect(response.body).toHaveProperty('data');
-        expect(Array.isArray(response.body.data)).toBe(true);
-      }
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+    });
+
+    it('should isolate data by branch', async () => {
+      const branch1Response = await request(app.getHttpServer())
+        .get('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      const branch2Response = await request(app.getHttpServer())
+        .get('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch2')
+        .expect(200);
+
+      // Data should be isolated by branch
+      expect(branch1Response.body.data).not.toEqual(branch2Response.body.data);
     });
   });
 
-  describe('GET /api/v1/teacher-attendance/today/:teacherId', () => {
-    it('should get today attendance for teacher', async () => {
-      // First get a teacher ID
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+  describe('POST /api/v1/teacher-attendance', () => {
+    it('should create a new teacher attendance record', async () => {
+      const newTeacherAttendance = {
+        teacherId,
+        date: '2024-01-15',
+        checkIn: '08:00',
+        checkOut: '16:00',
+        status: 'PRESENT',
+        remarks: 'On time'
+      };
 
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teacherId = teachersResponse.body.data[0].id;
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch1')
+        .send(newTeacherAttendance)
+        .expect(201);
 
-        const response = await request(app.getHttpServer())
-          .get(`/api/v1/teacher-attendance/today/${teacherId}`)
-          .set('X-Branch-Id', 'branch1');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toMatchObject({
+        teacherId,
+        date: '2024-01-15',
+        checkIn: '08:00',
+        checkOut: '16:00',
+        status: 'PRESENT',
+        remarks: 'On time',
+        branchId: 'branch1'
+      });
 
-        expect([200, 401, 403, 404]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-        }
-      }
+      teacherAttendanceId = response.body.data.id;
     });
-  });
 
-  describe('GET /api/v1/teacher-attendance/report/:teacherId', () => {
-    it('should get attendance report for teacher', async () => {
-      // First get a teacher ID
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+    it('should create teacher attendance record with leave type', async () => {
+      const leaveRecord = {
+        teacherId,
+        date: '2024-01-16',
+        status: 'ON_LEAVE',
+        leaveType: 'SICK',
+        remarks: 'Medical leave'
+      };
 
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teacherId = teachersResponse.body.data[0].id;
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch1')
+        .send(leaveRecord)
+        .expect(201);
 
-        const response = await request(app.getHttpServer())
-          .get(`/api/v1/teacher-attendance/report/${teacherId}?startDate=2025-08-01&endDate=2025-08-31`)
-          .set('X-Branch-Id', 'branch1');
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toMatchObject({
+        teacherId,
+        date: '2024-01-16',
+        status: 'ON_LEAVE',
+        leaveType: 'SICK',
+        remarks: 'Medical leave',
+        branchId: 'branch1'
+      });
+    });
 
-        expect([200, 401, 403, 404]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-        }
-      }
+    it('should enforce branch isolation on create', async () => {
+      const uniqueDate = new Date().toISOString().split('T')[0]; // Use today's date to avoid conflicts
+      const newRecord = {
+        teacherId,
+        date: uniqueDate,
+        status: 'PRESENT'
+      };
+
+      const response = await request(app.getHttpServer())
+        .post('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch2')
+        .send(newRecord)
+        .expect(201);
+
+      expect(response.body.data.branchId).toBe('branch2');
+    });
+
+    it('should validate required fields', async () => {
+      const invalidData = {
+        // Missing teacherId, date, and status (required fields)
+        checkIn: '08:00',
+        remarks: 'Test'
+      };
+      
+      await request(app.getHttpServer())
+        .post('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch1')
+        .send(invalidData)
+        .expect(422);
     });
   });
 
   describe('GET /api/v1/teacher-attendance/:id', () => {
-    it('should return attendance record with correct format', async () => {
+    it('should return a single teacher attendance record', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/teacher-attendance/test-id')
-        .set('X-Branch-Id', 'branch1');
+        .get(`/api/v1/teacher-attendance/${teacherAttendanceId}`)
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
 
-      expect([200, 401, 403, 404]).toContain(response.status);
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toMatchObject({
+        id: teacherAttendanceId,
+        teacherId,
+        date: '2024-01-15',
+        status: 'PRESENT',
+        branchId: 'branch1'
+      });
+    });
+
+    it('should enforce branch isolation', async () => {
+      await request(app.getHttpServer())
+        .get(`/api/v1/teacher-attendance/${teacherAttendanceId}`)
+        .set('X-Branch-Id', 'branch2')
+        .expect(404);
+    });
+
+    it('should return 404 for non-existent id', async () => {
+      await request(app.getHttpServer())
+        .get('/api/v1/teacher-attendance/non-existent-id')
+        .set('X-Branch-Id', 'branch1')
+        .expect(404);
+    });
+  });
+
+  describe('PUT /api/v1/teacher-attendance/:id', () => {
+    it('should update a teacher attendance record', async () => {
+      const updateData = {
+        checkOut: '17:00',
+        status: 'LATE',
+        remarks: 'Left early due to emergency'
+      };
+
+      const response = await request(app.getHttpServer())
+        .put(`/api/v1/teacher-attendance/${teacherAttendanceId}`)
+        .set('X-Branch-Id', 'branch1')
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toMatchObject({
+        id: teacherAttendanceId,
+        checkOut: '17:00',
+        status: 'LATE',
+        remarks: 'Left early due to emergency'
+      });
+    });
+
+    it('should enforce branch isolation on update', async () => {
+      await request(app.getHttpServer())
+        .put(`/api/v1/teacher-attendance/${teacherAttendanceId}`)
+        .set('X-Branch-Id', 'branch2')
+        .send({ status: 'ABSENT' })
+        .expect(404);
+    });
+
+    it('should return 404 for non-existent id', async () => {
+      await request(app.getHttpServer())
+        .put('/api/v1/teacher-attendance/non-existent-id')
+        .set('X-Branch-Id', 'branch1')
+        .send({ status: 'PRESENT' })
+        .expect(404);
+    });
+  });
+
+  describe('DELETE /api/v1/teacher-attendance/:id', () => {
+    it('should delete a teacher attendance record', async () => {
+      const response = await request(app.getHttpServer())
+        .delete(`/api/v1/teacher-attendance/${teacherAttendanceId}`)
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data.id).toBe(teacherAttendanceId);
+
+      // Verify record is deleted
+      await request(app.getHttpServer())
+        .get(`/api/v1/teacher-attendance/${teacherAttendanceId}`)
+        .set('X-Branch-Id', 'branch1')
+        .expect(404);
+    });
+
+    it('should enforce branch isolation on delete', async () => {
+      // Create a new record to test deletion with wrong branch
+      const createResponse = await request(app.getHttpServer())
+        .post('/api/v1/teacher-attendance')
+        .set('X-Branch-Id', 'branch1')
+        .send({
+          teacherId,
+          date: '2024-01-20',
+          status: 'PRESENT'
+        })
+        .expect(201);
+
+      const newId = createResponse.body.data.id;
+
+      // Try to delete with wrong branch
+      await request(app.getHttpServer())
+        .delete(`/api/v1/teacher-attendance/${newId}`)
+        .set('X-Branch-Id', 'branch2')
+        .expect(404);
+
+      // Verify record still exists in correct branch
+      await request(app.getHttpServer())
+        .get(`/api/v1/teacher-attendance/${newId}`)
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      // Clean up
+      await request(app.getHttpServer())
+        .delete(`/api/v1/teacher-attendance/${newId}`)
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+    });
+
+    it('should return 404 for non-existent id', async () => {
+      await request(app.getHttpServer())
+        .delete('/api/v1/teacher-attendance/non-existent-id')
+        .set('X-Branch-Id', 'branch1')
+        .expect(404);
+    });
+  });
+
+  describe('GET /api/v1/teacher-attendance (GetMany)', () => {
+    let recordIds: string[] = [];
+
+    beforeAll(async () => {
+      // Create multiple records for getMany testing
+      const records = [
+        { teacherId, date: '2024-01-21', status: 'PRESENT' },
+        { teacherId, date: '2024-01-22', status: 'LATE' },
+        { teacherId, date: '2024-01-23', status: 'ABSENT' }
+      ];
+
+      for (const record of records) {
+        const response = await request(app.getHttpServer())
+          .post('/api/v1/teacher-attendance')
+          .set('X-Branch-Id', 'branch1')
+          .send(record)
+          .expect(201);
+        recordIds.push(response.body.data.id);
+      }
+    });
+
+    afterAll(async () => {
+      // Clean up
+      for (const id of recordIds) {
+        await request(app.getHttpServer())
+          .delete(`/api/v1/teacher-attendance/${id}`)
+          .set('X-Branch-Id', 'branch1');
+      }
+    });
+
+    it('should return multiple specific records when ids are provided', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/teacher-attendance')
+        .query({ id: recordIds })
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBe(recordIds.length);
       
-      if (response.status === 200) {
-        expect(response.body).toHaveProperty('data');
-      }
-    });
-  });
-
-  describe('POST /api/v1/teacher-attendance/check-in', () => {
-    it('should handle check-in request', async () => {
-      // First get a teacher ID
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
-
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teacherId = teachersResponse.body.data[0].id;
-
-        const checkInData = {
-          teacherId: teacherId,
-          date: new Date().toISOString(),
-          checkIn: new Date().toISOString()
-        };
-
-        const response = await request(app.getHttpServer())
-          .post('/api/v1/teacher-attendance/check-in')
-          .set('X-Branch-Id', 'branch1')
-          .send(checkInData);
-
-        expect([200, 400, 401, 403]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-          expect(response.body).toHaveProperty('message');
-        }
-      }
+      const returnedIds = response.body.data.map((record: any) => record.id);
+      recordIds.forEach(id => {
+        expect(returnedIds).toContain(id);
+      });
     });
 
-    it('should validate check-in data', async () => {
-      const invalidData = {};
-
+    it('should enforce branch isolation for getMany', async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/v1/teacher-attendance/check-in')
-        .set('X-Branch-Id', 'branch1')
-        .send(invalidData);
+        .get('/api/v1/teacher-attendance')
+        .query({ id: recordIds })
+        .set('X-Branch-Id', 'branch2')
+        .expect(200);
 
-      expect([400, 401, 403, 422]).toContain(response.status);
-    });
-  });
-
-  describe('POST /api/v1/teacher-attendance/check-out', () => {
-    it('should handle check-out request', async () => {
-      // First get a teacher ID
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
-
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teacherId = teachersResponse.body.data[0].id;
-
-        const checkOutData = {
-          teacherId: teacherId,
-          date: new Date().toISOString(),
-          checkOut: new Date().toISOString()
-        };
-
-        const response = await request(app.getHttpServer())
-          .post('/api/v1/teacher-attendance/check-out')
-          .set('X-Branch-Id', 'branch1')
-          .send(checkOutData);
-
-        expect([200, 400, 401, 403]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-          expect(response.body).toHaveProperty('message');
-        }
-      }
-    });
-  });
-
-  describe('POST /api/v1/teacher-attendance/mark-absent/:teacherId', () => {
-    it('should mark teacher as absent', async () => {
-      // First get a teacher ID
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
-
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teacherId = teachersResponse.body.data[0].id;
-
-        const response = await request(app.getHttpServer())
-          .post(`/api/v1/teacher-attendance/mark-absent/${teacherId}`)
-          .set('X-Branch-Id', 'branch1')
-          .send({ date: new Date().toISOString() });
-
-        expect([200, 400, 401, 403, 404]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-          expect(response.body).toHaveProperty('message');
-        }
-      }
-    });
-  });
-
-  describe('POST /api/v1/teacher-attendance/bulk', () => {
-    it('should handle bulk attendance marking', async () => {
-      // First get teacher IDs
-      const teachersResponse = await request(app.getHttpServer())
-        .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
-
-      if (teachersResponse.status === 200 && teachersResponse.body.data?.length > 0) {
-        const teachers = teachersResponse.body.data.slice(0, 2);
-        
-        const bulkData = {
-          records: teachers.map(teacher => ({
-            teacherId: teacher.id,
-            date: new Date().toISOString(),
-            status: 'present',
-            checkIn: new Date().toISOString()
-          }))
-        };
-
-        const response = await request(app.getHttpServer())
-          .post('/api/v1/teacher-attendance/bulk')
-          .set('X-Branch-Id', 'branch1')
-          .send(bulkData);
-
-        expect([200, 400, 401, 403]).toContain(response.status);
-        
-        if (response.status === 200) {
-          expect(response.body).toHaveProperty('data');
-          expect(response.body).toHaveProperty('message');
-        }
-      }
-    });
-
-    it('should validate bulk attendance data', async () => {
-      const invalidData = { records: [] };
-
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/teacher-attendance/bulk')
-        .set('X-Branch-Id', 'branch1')
-        .send(invalidData);
-
-      expect([200, 400, 401, 403, 422]).toContain(response.status);
-    });
-  });
-
-  describe('POST /api/v1/teacher-attendance/generate-dummy', () => {
-    it('should generate dummy attendance data', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/teacher-attendance/generate-dummy')
-        .set('X-Branch-Id', 'branch1')
-        .send({ date: new Date().toISOString() });
-
-      expect([200, 400, 401, 403]).toContain(response.status);
-      
-      if (response.status === 200) {
-        expect(response.body).toBeDefined();
-      }
-    });
-
-    it('should validate date for dummy data generation', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/teacher-attendance/generate-dummy')
-        .set('X-Branch-Id', 'branch1')
-        .send({ date: 'invalid-date' });
-
-      expect([200, 400, 401, 403, 422, 500]).toContain(response.status);
-    });
-  });
-
-  describe('Teacher Attendance multi-tenancy', () => {
-    it('should isolate attendance between tenants (if auth allows)', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
-        request(app.getHttpServer())
-          .get('/api/v1/teacher-attendance')
-          .set('X-Branch-Id', 'branch1'),
-        request(app.getHttpServer())
-          .get('/api/v1/teacher-attendance')
-          .set('X-Branch-Id', 'branch2')
-      ]);
-
-      // If both succeed, verify isolation
-      if (branch1Response.status === 200 && branch2Response.status === 200) {
-        const branch1Ids = branch1Response.body.data.map(item => item.id);
-        const branch2Ids = branch2Response.body.data.map(item => item.id);
-        const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
-        
-        expect(intersection.length).toBe(0);
-        
-        // Verify branchId
-        branch1Response.body.data.forEach(item => {
-          expect(item.branchId).toBe('branch1');
-        });
-      }
+      expect(response.body.data).toEqual([]);
     });
   });
 });

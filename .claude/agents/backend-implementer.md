@@ -161,44 +161,68 @@ export class [Module]Module {}
 ❌ **NEVER** skip any of the 6 endpoints
 ❌ **NEVER** miss the data wrapper
 
-## Validation Before Completion
+## TDD Workflow (CRITICAL CHANGE)
 
-Run these commands:
+**NEVER start the server during development!** Use Test-Driven Development:
+
+### Step 1: Write E2E Tests FIRST
+Before implementing the controller/service:
 ```bash
-# Test the implementation
-cd apps/api && PORT=8080 bun run start:dev
-
-# In another terminal, test endpoints
-curl -X GET "http://localhost:8080/api/v1/[modules]?page=1&pageSize=10" \
-  -H "X-Branch-Id: branch1"
+# Create test file: test/[module].e2e-spec.ts
+# Write tests that define the expected behavior
 ```
+
+### Step 2: Implement to Pass Tests
+1. Create controller/service/DTOs
+2. Run tests to verify implementation:
+```bash
+cd apps/api && bun run test:e2e --testNamePattern="[Module]"
+```
+
+### Step 3: Iterate Until All Tests Pass
+- Fix implementation based on test failures
+- Never use `bun run start:dev` during development
+- Never use CURL commands for validation
 
 ## Testing Integration
 
-**IMPORTANT**: After implementing any backend module, you MUST:
+**TDD WORKFLOW - MANDATORY**:
 
-1. **Automatically invoke test-writer agent**:
+1. **FIRST create E2E tests**:
+   ```bash
+   # Create test/[module].e2e-spec.ts BEFORE implementation
+   # Define all 6 endpoint behaviors in tests
    ```
-   Use test-writer agent to create comprehensive E2E tests for [module]
-   ```
 
-2. **Ensure tests validate against seed data**:
-   - Tests must use actual data from `apps/api/prisma/seed.ts`
-   - Verify the seed script includes data for your module
-   - Test with 'branch1' tenant data
+2. **THEN implement to satisfy tests**:
+   - Write minimal code to pass tests
+   - Let test failures guide implementation
+   - Tests are the specification
 
-3. **Run the tests**:
+3. **Validate with tests only**:
    ```bash
    cd apps/api && bun run test:e2e --testNamePattern="[Module]"
    ```
 
+## Why TDD?
+
+✅ **Faster feedback** - No server startup needed
+✅ **Better coverage** - Tests become documentation
+✅ **Repository growth** - Each module adds to test suite
+✅ **Regression prevention** - Tests catch breaking changes
+
 ## Validation Script Replacement
 
-**NEVER use validation scripts with CURL commands**. Instead:
+**NEVER use these anti-patterns**:
+❌ Starting the dev server to test
+❌ Using CURL commands for validation
+❌ Manual testing via browser/Postman
+❌ Writing implementation before tests
 
-1. Create proper E2E tests using test-writer agent
-2. Run tests to validate implementation
-3. Tests provide better coverage than CURL scripts
+**ALWAYS use TDD**:
+✅ Write E2E tests first
+✅ Run tests to validate
+✅ Tests are the source of truth
 
 ## Output
 

@@ -1,44 +1,33 @@
-import { IsString, IsNotEmpty, IsOptional, IsDate, IsArray, ValidateNested, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
-export class CheckInDto {
-  @IsString()
-  @IsNotEmpty()
-  teacherId: string;
-}
-
-export class CheckOutDto {
-  @IsString()
-  @IsNotEmpty()
-  teacherId: string;
-}
-
-export class AttendanceRecordDto {
+export class CreateTeacherAttendanceDto {
   @IsString()
   @IsNotEmpty()
   teacherId: string;
 
-  @IsDate()
-  @Type(() => Date)
-  date: Date;
+  @IsString()
+  @IsNotEmpty()
+  date: string; // Date in YYYY-MM-DD format
 
-  @IsEnum(['present', 'absent', 'late', 'half-day'])
+  @IsOptional()
+  @IsString()
+  checkIn?: string; // Time in HH:MM format
+
+  @IsOptional()
+  @IsString()
+  checkOut?: string; // Time in HH:MM format
+
+  @IsEnum(['PRESENT', 'ABSENT', 'LATE', 'HALF_DAY', 'ON_LEAVE'])
   status: string;
 
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  checkIn?: Date;
+  @IsEnum(['CASUAL', 'SICK', 'EARNED', 'UNPAID'])
+  leaveType?: string; // Only required when status is ON_LEAVE
 
   @IsOptional()
-  @IsDate()
-  @Type(() => Date)
-  checkOut?: Date;
+  @IsString()
+  remarks?: string;
 }
 
-export class BulkAttendanceDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AttendanceRecordDto)
-  records: AttendanceRecordDto[];
-}
+export class UpdateTeacherAttendanceDto extends PartialType(CreateTeacherAttendanceDto) {}

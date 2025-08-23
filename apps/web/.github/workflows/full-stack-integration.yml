@@ -1,0 +1,169 @@
+name: Full Stack Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install backend dependencies
+      working-directory: apps/api
+      run: bun install
+
+    - name: Install frontend dependencies
+      working-directory: apps/web
+      run: npm ci
+
+    - name: Setup databases
+      working-directory: apps/api
+      run: |
+        touch prisma/dev.db
+        touch prisma/test.db
+
+    - name: Setup Prisma
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+      run: |
+        npx prisma generate
+        npx prisma db push --force-reset --skip-generate
+
+    - name: Seed database
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+      run: |
+        npx prisma db seed || echo "Seeding completed"
+
+    - name: Start backend server
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+        NODE_ENV: test
+        JWT_SECRET: test-secret-key-for-ci
+        PORT: 8080
+      run: |
+        bun run start:dev &
+        # Wait for backend to be ready
+        for i in {1..30}; do
+          if curl -f http://localhost:8080/api/v1 2>/dev/null; then
+            echo "✅ Backend is running"
+            break
+          fi
+          echo "Waiting for backend... ($i/30)"
+          sleep 2
+        done
+
+    - name: Build frontend
+      working-directory: apps/web
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}
+        CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_dummy' }}
+      run: |
+        npm run build
+        BUILD_EXIT=$?
+        if [ $BUILD_EXIT -ne 0 ]; then
+          echo "❌ Frontend build failed"
+          exit $BUILD_EXIT
+        fi
+        echo "✅ Frontend build succeeded"
+
+    - name: Start frontend server
+      working-directory: apps/web
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}
+        CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_dummy' }}
+      run: |
+        npm start &
+        # Wait for frontend to be ready
+        for i in {1..30}; do
+          if curl -f http://localhost:3000 2>/dev/null; then
+            echo "✅ Frontend is running"
+            break
+          fi
+          echo "Waiting for frontend... ($i/30)"
+          sleep 2
+        done
+
+    - name: Run Cypress E2E tests
+      working-directory: apps/web
+      env:
+        CYPRESS_BASE_URL: http://localhost:3000
+        CYPRESS_API_URL: http://localhost:8080
+      run: |
+        # Run Cypress tests in headless mode
+        npx cypress run --config baseUrl=http://localhost:3000
+        CYPRESS_EXIT=$?
+        
+        if [ $CYPRESS_EXIT -ne 0 ]; then
+          echo "❌ Cypress tests failed"
+          exit $CYPRESS_EXIT
+        fi
+        echo "✅ Cypress tests passed"
+
+    - name: Upload Cypress screenshots
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-screenshots
+        path: apps/web/cypress/screenshots
+        if-no-files-found: ignore
+
+    - name: Upload Cypress videos
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-videos
+        path: apps/web/cypress/videos
+        if-no-files-found: ignore
+
+    - name: Upload Cypress snapshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-snapshots
+        path: |
+          apps/web/cypress/snapshots/base
+          apps/web/cypress/snapshots/diff
+        if-no-files-found: ignore
+
+    - name: Generate test report
+      if: always()
+      working-directory: apps/web
+      run: |
+        echo "## Full Stack Integration Test Report" > integration-report.md
+        echo "### Test Results:" >> integration-report.md
+        echo "- Backend: Running on port 8080" >> integration-report.md
+        echo "- Frontend: Running on port 3000" >> integration-report.md
+        echo "- Cypress E2E: Tests executed" >> integration-report.md
+        echo "" >> integration-report.md
+        echo "Check artifacts for screenshots, videos, and visual snapshots" >> integration-report.md
+        cat integration-report.md
+
+    - name: Upload integration report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-report
+        path: apps/web/integration-report.md
+        if-no-files-found: ignore

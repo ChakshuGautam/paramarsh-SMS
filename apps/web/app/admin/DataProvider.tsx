@@ -29,12 +29,26 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 
 function getScopeHeaders(): Record<string, string> {
   const scope: { [k: string]: string | undefined } = {};
-  // Get branch ID from localStorage (set during login)
+  
+  // Get composite branch ID (e.g., "dps-main", "kvs-central")
   const branchId = typeof window !== "undefined" 
-    ? localStorage.getItem('selectedBranchId') || 'branch1'
-    : 'branch1';
+    ? localStorage.getItem('selectedBranchId') || 'dps-main'
+    : 'dps-main';
   
   scope["X-Branch-Id"] = branchId;
+  
+  // Also send school and branch info separately if needed
+  if (typeof window !== "undefined") {
+    const schoolId = localStorage.getItem('selectedSchoolId');
+    const branchName = localStorage.getItem('selectedBranchName');
+    const schoolName = localStorage.getItem('selectedSchoolName');
+    const branchDisplayName = localStorage.getItem('selectedBranchDisplayName');
+    
+    if (schoolId) scope["X-School-Id"] = schoolId;
+    if (branchName) scope["X-Branch-Name"] = branchName;
+    if (schoolName) scope["X-School-Name"] = schoolName;
+    if (branchDisplayName) scope["X-Branch-Display-Name"] = branchDisplayName;
+  }
   
   // Optional tenant ID
   const win = (typeof window !== "undefined" ? (window as unknown as any) : undefined) || {};

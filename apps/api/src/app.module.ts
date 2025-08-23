@@ -12,7 +12,7 @@ import { GuardiansModule } from './modules/guardians/guardians.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ExamsModule } from './modules/exams/exams.module';
-import { ApplicationsModule } from './modules/applications/applications.module';
+import { ApplicationsModule } from './modules/admissions/applications.module';
 import { EnrollmentsModule } from './modules/enrollments/enrollments.module';
 import { MarksModule } from './modules/marks/marks.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
