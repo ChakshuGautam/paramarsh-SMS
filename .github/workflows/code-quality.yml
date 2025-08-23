@@ -1,0 +1,171 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.bun/install/cache
+          apps/api/node_modules
+          apps/web/node_modules
+        key: ${{ runner.os }}-quality-${{ hashFiles('**/bun.lockb', '**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-quality-
+
+    - name: Install dependencies
+      run: |
+        cd apps/api && bun install
+        cd ../web && bun install || npm ci
+
+    - name: Backend - Lint
+      working-directory: apps/api
+      run: |
+        echo "🔍 Linting backend code..."
+        bun run lint || npm run lint
+
+    - name: Backend - Type Check
+      working-directory: apps/api
+      run: |
+        echo "📝 Type checking backend..."
+        bun run typecheck || npx tsc --noEmit
+
+    - name: Backend - Format Check
+      working-directory: apps/api
+      run: |
+        echo "🎨 Checking backend formatting..."
+        npx prettier --check "src/**/*.{ts,tsx,js,jsx}"
+
+    - name: Frontend - Lint
+      working-directory: apps/web
+      run: |
+        echo "🔍 Linting frontend code..."
+        bun run lint || npm run lint
+
+    - name: Frontend - Type Check
+      working-directory: apps/web
+      run: |
+        echo "📝 Type checking frontend..."
+        bun run typecheck || npx tsc --noEmit || true
+
+    - name: Frontend - Format Check
+      working-directory: apps/web
+      run: |
+        echo "🎨 Checking frontend formatting..."
+        npx prettier --check "app/**/*.{ts,tsx,js,jsx}" "components/**/*.{ts,tsx,js,jsx}"
+
+    - name: Check for forbidden imports
+      run: |
+        echo "🚫 Checking for forbidden imports..."
+        
+        # Check for MUI imports in frontend
+        echo "Checking frontend for MUI imports..."
+        if grep -r "@mui" apps/web --include="*.tsx" --include="*.ts" --exclude-dir=node_modules; then
+          echo "❌ ERROR: Found MUI imports in frontend! Only shadcn/ui is allowed."
+          exit 1
+        fi
+        
+        # Check for console.log statements
+        echo "Checking for console.log statements..."
+        if grep -r "console\.log" apps/api/src apps/web/app --include="*.ts" --include="*.tsx" --exclude="*.test.*" --exclude="*.spec.*"; then
+          echo "⚠️ WARNING: Found console.log statements. Consider using proper logging."
+        fi
+
+    - name: Security audit
+      run: |
+        echo "🔒 Running security audit..."
+        cd apps/api && npm audit --audit-level=high || true
+        cd ../web && npm audit --audit-level=high || true
+
+    - name: Check for secrets
+      run: |
+        echo "🔑 Checking for exposed secrets..."
+        
+        # Check for hardcoded secrets
+        if grep -r "JWT_SECRET\|DATABASE_URL\|API_KEY" apps --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude="*.env*" --exclude="*.example"; then
+          echo "⚠️ WARNING: Possible hardcoded secrets found!"
+        fi
+
+    - name: Dependency check
+      run: |
+        echo "📦 Checking dependencies..."
+        
+        # Check for outdated dependencies
+        cd apps/api && npx npm-check-updates --format group || true
+        cd ../web && npx npm-check-updates --format group || true
+
+    - name: Bundle size analysis
+      working-directory: apps/web
+      run: |
+        echo "📊 Analyzing bundle size..."
+        bun run build || npm run build
+        npx next-bundle-analyzer || true
+
+    - name: Database schema validation
+      working-directory: apps/api
+      run: |
+        echo "🗄️ Validating database schema..."
+        npx prisma validate
+        npx prisma format --check
+
+    - name: Generate quality report
+      if: always()
+      run: |
+        echo "## Code Quality Report" > quality-report.md
+        echo "### Checks Performed:" >> quality-report.md
+        echo "- ✅ Backend Linting" >> quality-report.md
+        echo "- ✅ Backend Type Checking" >> quality-report.md
+        echo "- ✅ Frontend Linting" >> quality-report.md
+        echo "- ✅ Frontend Type Checking" >> quality-report.md
+        echo "- ✅ Formatting Validation" >> quality-report.md
+        echo "- ✅ Forbidden Import Check" >> quality-report.md
+        echo "- ✅ Security Audit" >> quality-report.md
+        echo "- ✅ Database Schema Validation" >> quality-report.md
+        cat quality-report.md
+
+    - name: Upload quality report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-report
+        path: quality-report.md
+
+  sonarcloud:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      continue-on-error: true

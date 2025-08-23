@@ -1,98 +1,168 @@
-# Documentation Index — School Management System
+# Paramarsh SMS Documentation
 
-This index lists all documentation included under docs/.
+## 📚 Documentation Structure
 
-Core
-- PRD: PRD.md
-- Architecture  ERD: Architecture_and_ERD.md
-- Tech Stack Overview: Tech_Stack.md
-Frontend Architecture: Frontend/Architecture.md
-- Frontend Experiments: Frontend/Experiments/README.md
-- Backend Architecture: Backend/Architecture.md
-- Testing Strategy: Testing/Strategy.md
-- Data Dictionary: DataModel/Data_Dictionary.md
-- Permissions  Roles: Permissions_and_Roles.md
-- Localization/Compliance/Accessibility: Localization_Compliance_Accessibility.md
+This documentation is organized into two main categories:
 
-UX/UI
-- UI/UX Specification (global components, patterns): UX_UI_Spec.md
-- Screen-by-screen specs:
-  - SCREENFLOWS/Admissions.md
-  - SCREENFLOWS/SIS.md
-  - SCREENFLOWS/Academics.md
-  - SCREENFLOWS/Exams.md
-  - SCREENFLOWS/Fees.md
-  - SCREENFLOWS/Communication.md
-  - SCREENFLOWS/Reporting.md
-  - SCREENFLOWS/Transport.md
-  - SCREENFLOWS/Library.md
-  - SCREENFLOWS/Hostel.md
+### 1. **Global Documentation** (Horizontal - Across All Modules)
+Core documentation that applies to the entire system and all modules.
 
-Delivery & Quality
-- User Stories & Acceptance Criteria: User_Stories_and_Acceptance.md
-- Test Plan: TestPlan.md
+### 2. **Module Documentation** (Vertical - Module-Specific)
+Detailed implementation guides for each individual module.
 
-APIs
-- API Endpoints Outline: API/Endpoints.md
-- API Schemas: API/Schemas.md
-- Error Codes & Problem Details: API/Error_Codes.md
+---
 
-Workflows  Reports
-- Workflows: Workflows.md
-- Reports  Dashboards: Reports_and_Dashboards.md
+## 🌍 Global Documentation (Start Here)
 
-Modules (Detailed Specs)
-- Modules index: Modules/README.md
-- SIS: Modules/SIS.md
-- Admissions: Modules/Admissions.md
-- Attendance: Modules/Attendance.md
-- Exams: Modules/Exams.md
-- Fees: Modules/Fees.md
-- Timetable: Modules/Timetable.md
-- Communications: Modules/Communications.md
-- Analytics: Modules/Analytics.md
-- HR  Payroll: Modules/HR_Payroll.md
-- Transport: Modules/Transport.md
-- Library: Modules/Library.md
-- Hostel: Modules/Hostel.md
-- Inventory  Procurement: Modules/Inventory_Procurement.md
-- Portals  Apps: Modules/Portals_Apps.md
-- LMS Integrations: Modules/LMS_Integrations.md
-- Superadmin/Tenant: Modules/Superadmin_Tenant.md
-- Health/Counseling/Discipline: Modules/Health_Counseling_Discipline.md
-- Data Governance: Modules/Data_Governance.md
+### Foundation Layer
+1. **[00-GETTING-STARTED.md](global/00-GETTING-STARTED.md)** - Quick start guide
+2. **[01-ARCHITECTURE.md](global/01-ARCHITECTURE.md)** - System architecture & design patterns
+3. **[02-TECH-STACK.md](global/02-TECH-STACK.md)** - Technology decisions & stack
+4. **[03-PROJECT-STRUCTURE.md](global/03-PROJECT-STRUCTURE.md)** - Monorepo organization
 
-Governance  Operations
-- RACI: Governance/RACI.md
-- Risk Register: Governance/Risk_Register.md
-- Compliance: Compliance/Compliance.md
-- Operations Runbooks: Operations/Runbooks.md
-- Data Migrations: Operations/Migrations.md
-- Project Plan: Project/Plan.md
+### API & Data Layer
+5. **[04-API-CONVENTIONS.md](global/04-API-CONVENTIONS.md)** - REST API standards & React Admin spec
+6. **[05-DATABASE-DESIGN.md](global/05-DATABASE-DESIGN.md)** - Schema patterns & multi-tenancy
+7. **[06-DATA-MODELS.md](global/06-DATA-MODELS.md)** - Entity relationships & ERD
 
-Tenancy
-- Multi-tenant Strategy: Tenancy/Strategy.md
+### Implementation Standards
+8. **[07-CODING-STANDARDS.md](global/07-CODING-STANDARDS.md)** - Code style & best practices
+9. **[08-TESTING-STRATEGY.md](global/08-TESTING-STRATEGY.md)** - Test patterns & coverage requirements
+10. **[09-UI-GUIDELINES.md](global/09-UI-GUIDELINES.md)** - Frontend patterns & shadcn/ui usage
 
-UI
-- Design System: UI/Design_System.md
-- UI Flows: UI/Flows.md
-- Wireframes (legacy snapshots): Wireframes/legacy/README.md
+### Operations & Deployment
+11. **[10-SECURITY.md](global/10-SECURITY.md)** - Security patterns & RBAC
+12. **[11-DEPLOYMENT.md](global/11-DEPLOYMENT.md)** - Deployment & environment setup
+13. **[12-MONITORING.md](global/12-MONITORING.md)** - Logging & observability
 
-API Snapshots
-- Current (3.1): API/openapi.yaml
-- Legacy (0.3 from docs-cursor): API/openapi.cursor.yaml
+### Regional & Compliance
+14. **[13-INDIAN-CONTEXT.md](global/13-INDIAN-CONTEXT.md)** - CBSE compliance & Indian education system
+15. **[14-LOCALIZATION.md](global/14-LOCALIZATION.md)** - Multi-language & regional settings
 
-Legacy-to-Current Mapping
-- Older docs in docs-cursor/ have been imported and mapped into docs/ as follows:
-  - docs-cursor/modules/* → docs/Modules/*
-  - docs-cursor/ui/design-system.md → docs/UI/Design_System.md
-  - docs-cursor/ui/flows.md → docs/UI/Flows.md
-  - docs-cursor/ui/wireframes → docs/Wireframes/legacy
-  - docs-cursor/compliance.md → docs/Compliance/Compliance.md
-  - docs-cursor/operations.md → docs/Operations/Runbooks.md
-  - docs-cursor/migrations.md → docs/Operations/Migrations.md
-  - docs-cursor/project-plan.md → docs/Project/Plan.md
-  - docs-cursor/raci.md → docs/Governance/RACI.md
-  - docs-cursor/risk-register.md → docs/Governance/Risk_Register.md
-  - docs-cursor/api/openapi.yaml → docs/API/openapi.cursor.yaml
+---
 
+## 📦 Module Documentation
+
+Each module follows this standard structure:
+- **Overview** - Module purpose & scope
+- **Data Models** - Entities & relationships
+- **API Endpoints** - Complete API specification
+- **Business Logic** - Core functionality & rules
+- **Frontend Components** - UI implementation
+- **Test Coverage** - Testing requirements
+- **Seed Data** - Demo data requirements
+
+### Core Modules
+
+#### Student Information System
+- **[students/](modules/students/)** - Student management
+- **[guardians/](modules/guardians/)** - Parent/guardian management
+- **[enrollments/](modules/enrollments/)** - Student enrollment & registration
+- **[classes/](modules/classes/)** - Class & section management
+
+#### Academic Management
+- **[teachers/](modules/teachers/)** - Teacher management
+- **[subjects/](modules/subjects/)** - Subject & curriculum
+- **[timetable/](modules/timetable/)** - Schedule management
+- **[academic-years/](modules/academic-years/)** - Academic calendar
+
+#### Assessment & Evaluation
+- **[exams/](modules/exams/)** - Examination management
+- **[marks/](modules/marks/)** - Marks & grading
+- **[attendance/](modules/attendance/)** - Attendance tracking
+
+#### Financial Management
+- **[fees/](modules/fees/)** - Fee structures & schedules
+- **[invoices/](modules/invoices/)** - Invoice generation
+- **[payments/](modules/payments/)** - Payment processing
+
+#### Human Resources
+- **[staff/](modules/staff/)** - Staff management
+- **[payroll/](modules/payroll/)** - Salary & payroll
+
+#### Communication
+- **[communications/](modules/communications/)** - Messaging & notifications
+- **[templates/](modules/templates/)** - Message templates
+- **[campaigns/](modules/campaigns/)** - Bulk communications
+- **[tickets/](modules/tickets/)** - Support tickets
+
+#### Additional Modules
+- **[admissions/](modules/admissions/)** - Admission process
+- **[transport/](modules/transport/)** - Transport management
+- **[library/](modules/library/)** - Library management
+- **[hostel/](modules/hostel/)** - Hostel management
+- **[health/](modules/health/)** - Health records
+- **[discipline/](modules/discipline/)** - Disciplinary records
+- **[events/](modules/events/)** - Event management
+- **[reports/](modules/reports/)** - Reporting & analytics
+
+---
+
+## 🚀 Quick Navigation
+
+### For Developers
+1. Start with **[00-GETTING-STARTED.md](global/00-GETTING-STARTED.md)**
+2. Review **[04-API-CONVENTIONS.md](global/04-API-CONVENTIONS.md)**
+3. Check module-specific guide in **[modules/](modules/)**
+
+### For Implementers
+1. Review **[01-ARCHITECTURE.md](global/01-ARCHITECTURE.md)**
+2. Understand **[05-DATABASE-DESIGN.md](global/05-DATABASE-DESIGN.md)**
+3. Follow **[07-CODING-STANDARDS.md](global/07-CODING-STANDARDS.md)**
+
+### For Testers
+1. Read **[08-TESTING-STRATEGY.md](global/08-TESTING-STRATEGY.md)**
+2. Check module test requirements in respective module docs
+
+### For DevOps
+1. Review **[11-DEPLOYMENT.md](global/11-DEPLOYMENT.md)**
+2. Setup **[12-MONITORING.md](global/12-MONITORING.md)**
+3. Implement **[10-SECURITY.md](global/10-SECURITY.md)**
+
+---
+
+## 📋 Implementation Checklist
+
+When implementing a new module, ensure you have:
+
+- [ ] Read global documentation (especially API conventions)
+- [ ] Reviewed module-specific documentation
+- [ ] Created backend service extending BaseCrudService
+- [ ] Implemented all 6 REST endpoints
+- [ ] Added multi-tenancy support (X-Branch-Id)
+- [ ] Created frontend components (List, Create, Edit)
+- [ ] Used only shadcn/ui components (no MUI!)
+- [ ] Written E2E tests
+- [ ] Added seed data
+- [ ] Updated documentation
+
+---
+
+## 🔍 Search Documentation
+
+Looking for something specific?
+
+- **API Specs**: See [global/04-API-CONVENTIONS.md](global/04-API-CONVENTIONS.md)
+- **Database Schema**: See [global/05-DATABASE-DESIGN.md](global/05-DATABASE-DESIGN.md)
+- **Module Details**: See [modules/](modules/) directory
+- **Indian Context**: See [global/13-INDIAN-CONTEXT.md](global/13-INDIAN-CONTEXT.md)
+- **Testing**: See [global/08-TESTING-STRATEGY.md](global/08-TESTING-STRATEGY.md)
+
+---
+
+## 📁 Legacy Documentation
+
+Previous documentation structure is preserved in:
+- **API**: [API/](API/) - OpenAPI specs and schemas
+- **Modules**: [Modules/](Modules/) - Original module documentation
+- **SCREENFLOWS**: [SCREENFLOWS/](SCREENFLOWS/) - UI flow documentation
+- **Wireframes**: [Wireframes/](Wireframes/) - UI mockups
+
+---
+
+## 🔄 Migration from Old Structure
+
+We are transitioning to a cleaner structure:
+- Old: Scattered documentation across multiple directories
+- New: Organized into `global/` (horizontal) and `modules/` (vertical)
+- Status: In progress - both structures currently coexist

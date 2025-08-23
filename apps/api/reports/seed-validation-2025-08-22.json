@@ -1,0 +1,496 @@
+{
+  "timestamp": "2025-08-22T17:32:57.182Z",
+  "database": "dev.db",
+  "branchId": "branch1",
+  "overall": {
+    "status": "FAIL",
+    "healthScore": 54,
+    "totalChecks": 68,
+    "passed": 37,
+    "failed": 27,
+    "warnings": 4
+  },
+  "entityCounts": [
+    {
+      "entity": "Student",
+      "current": 0,
+      "required": 500,
+      "status": "FAIL",
+      "message": "❌ Student: 0 records (required: 500)"
+    },
+    {
+      "entity": "Teacher",
+      "current": 0,
+      "required": 30,
+      "status": "FAIL",
+      "message": "❌ Teacher: 0 records (required: 30)"
+    },
+    {
+      "entity": "Class",
+      "current": 0,
+      "required": 10,
+      "status": "FAIL",
+      "message": "❌ Class: 0 records (required: 10)"
+    },
+    {
+      "entity": "Section",
+      "current": 0,
+      "required": 20,
+      "status": "FAIL",
+      "message": "❌ Section: 0 records (required: 20)"
+    },
+    {
+      "entity": "Subject",
+      "current": 0,
+      "required": 10,
+      "status": "FAIL",
+      "message": "❌ Subject: 0 records (required: 10)"
+    },
+    {
+      "entity": "Staff",
+      "current": 0,
+      "required": 40,
+      "status": "FAIL",
+      "message": "❌ Staff: 0 records (required: 40)"
+    },
+    {
+      "entity": "Guardian",
+      "current": 0,
+      "required": 800,
+      "status": "FAIL",
+      "message": "❌ Guardian: 0 records (required: 800)"
+    },
+    {
+      "entity": "StudentGuardian",
+      "current": 0,
+      "required": 800,
+      "status": "FAIL",
+      "message": "❌ StudentGuardian: 0 records (required: 800)"
+    },
+    {
+      "entity": "AcademicYear",
+      "current": 0,
+      "required": 1,
+      "status": "FAIL",
+      "message": "❌ AcademicYear: 0 records (required: 1)"
+    },
+    {
+      "entity": "Enrollment",
+      "current": 0,
+      "required": 500,
+      "status": "FAIL",
+      "message": "❌ Enrollment: 0 records (required: 500)"
+    },
+    {
+      "entity": "Exam",
+      "current": 0,
+      "required": 40,
+      "status": "FAIL",
+      "message": "❌ Exam: 0 records (required: 40)"
+    },
+    {
+      "entity": "ExamSession",
+      "current": 0,
+      "required": 200,
+      "status": "FAIL",
+      "message": "❌ ExamSession: 0 records (required: 200)"
+    },
+    {
+      "entity": "Mark",
+      "current": 0,
+      "required": 5000,
+      "status": "FAIL",
+      "message": "❌ Mark: 0 records (required: 5000)"
+    },
+    {
+      "entity": "FeeStructure",
+      "current": 0,
+      "required": 10,
+      "status": "FAIL",
+      "message": "❌ FeeStructure: 0 records (required: 10)"
+    },
+    {
+      "entity": "FeeComponent",
+      "current": 0,
+      "required": 50,
+      "status": "FAIL",
+      "message": "❌ FeeComponent: 0 records (required: 50)"
+    },
+    {
+      "entity": "Invoice",
+      "current": 0,
+      "required": 100,
+      "status": "FAIL",
+      "message": "❌ Invoice: 0 records (required: 100)"
+    },
+    {
+      "entity": "Payment",
+      "current": 0,
+      "required": 100,
+      "status": "FAIL",
+      "message": "❌ Payment: 0 records (required: 100)"
+    },
+    {
+      "entity": "AttendanceRecord",
+      "current": 0,
+      "required": 5000,
+      "status": "FAIL",
+      "message": "❌ AttendanceRecord: 0 records (required: 5000)"
+    },
+    {
+      "entity": "AttendanceSession",
+      "current": 0,
+      "required": 1000,
+      "status": "FAIL",
+      "message": "❌ AttendanceSession: 0 records (required: 1000)"
+    },
+    {
+      "entity": "Room",
+      "current": 0,
+      "required": 15,
+      "status": "FAIL",
+      "message": "❌ Room: 0 records (required: 15)"
+    },
+    {
+      "entity": "TimeSlot",
+      "current": 0,
+      "required": 30,
+      "status": "FAIL",
+      "message": "❌ TimeSlot: 0 records (required: 30)"
+    },
+    {
+      "entity": "TimetablePeriod",
+      "current": 0,
+      "required": 200,
+      "status": "FAIL",
+      "message": "❌ TimetablePeriod: 0 records (required: 200)"
+    },
+    {
+      "entity": "Template",
+      "current": 0,
+      "required": 10,
+      "status": "FAIL",
+      "message": "❌ Template: 0 records (required: 10)"
+    },
+    {
+      "entity": "Campaign",
+      "current": 0,
+      "required": 5,
+      "status": "FAIL",
+      "message": "❌ Campaign: 0 records (required: 5)"
+    },
+    {
+      "entity": "Ticket",
+      "current": 0,
+      "required": 10,
+      "status": "FAIL",
+      "message": "❌ Ticket: 0 records (required: 10)"
+    },
+    {
+      "entity": "Application",
+      "current": 0,
+      "required": 50,
+      "status": "FAIL",
+      "message": "❌ Application: 0 records (required: 50)"
+    }
+  ],
+  "referentialIntegrity": [
+    {
+      "relationship": "StudentGuardian.studentId → Student.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "StudentGuardian.guardianId → Guardian.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "Enrollment.studentId → Student.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "Enrollment.sectionId → Section.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "Invoice.studentId → Student.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "Payment.invoiceId → Invoice.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "Mark.studentId → Student.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "Mark.examId → Exam.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "TimetablePeriod.teacherId → Teacher.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    },
+    {
+      "relationship": "TimetablePeriod.sectionId → Section.id",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned records"
+    }
+  ],
+  "indianContext": [
+    {
+      "entity": "Subject",
+      "field": "Hindi",
+      "status": "FAIL",
+      "message": "❌ Hindi subject missing"
+    },
+    {
+      "entity": "Student",
+      "field": "IndianNames",
+      "current": null,
+      "status": "WARNING",
+      "message": "⚠️ NaN% Indian names"
+    },
+    {
+      "entity": "Guardian",
+      "field": "IndianPhones",
+      "current": 0,
+      "status": "WARNING",
+      "message": "⚠️ 0% Indian phone numbers (+91)"
+    }
+  ],
+  "multiTenancy": [
+    {
+      "entity": "Student",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Teacher",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Class",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Section",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Subject",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Staff",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Guardian",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "StudentGuardian",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "AcademicYear",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Enrollment",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Exam",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "ExamSession",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Mark",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "FeeStructure",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "FeeComponent",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Invoice",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Payment",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "AttendanceRecord",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "AttendanceSession",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Room",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "TimeSlot",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "TimetablePeriod",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Template",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Campaign",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Ticket",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    },
+    {
+      "entity": "Application",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All records have branchId"
+    }
+  ],
+  "dataQuality": [
+    {
+      "entity": "Student",
+      "field": "GenderDistribution",
+      "status": "WARNING",
+      "message": "⚠️ Gender: 0%M / 0%F",
+      "details": {
+        "male": 0,
+        "female": 0
+      }
+    },
+    {
+      "entity": "Payment",
+      "field": "CollectionRate",
+      "current": 0,
+      "status": "WARNING",
+      "message": "⚠️ Fee collection: 0%"
+    },
+    {
+      "entity": "Teacher",
+      "field": "StudentRatio",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ Teacher-student ratio: 1:0"
+    }
+  ],
+  "recommendations": [
+    "Increase seed data volume for entities below minimum requirements",
+    "Enhance Indian cultural context in names, subjects, and addresses",
+    "Overall health score below 90% - consider comprehensive data review"
+  ]
+}

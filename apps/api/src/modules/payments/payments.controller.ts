@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -62,7 +62,7 @@ class UpsertPaymentDto {
 }
 
 @ApiTags('Payments')
-@Controller('fees/payments')
+@Controller('payments')
 export class PaymentsController {
   constructor(private readonly service: PaymentsService) {}
 
@@ -73,30 +73,70 @@ export class PaymentsController {
   @ApiQuery({ name: 'invoiceId', required: false })
   list(
     @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('perPage') perPage?: number,
     @Query('sort') sort?: string,
     @Query('status') status?: string,
     @Query('method') method?: string,
     @Query('invoiceId') invoiceId?: string,
+    @Query('filter') filterStr?: string,
+    @Query('ids') ids?: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
   ) {
-    return this.service.list({ page, pageSize, sort, status, method, invoiceId });
+    const filter = filterStr ? JSON.parse(filterStr) : undefined;
+    
+    if (ids) {
+      const idList = ids.split(',');
+      return this.service.list({ branchId }).then(response => ({
+        data: response.data.filter(item => idList.includes(item.id))
+      }));
+    }
+    return this.service.list({ page, perPage, sort, status, method, invoiceId, filter, branchId });
+  }
+
+  @Get(':id')
+  @ApiTags('Payments')
+  getOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.getOne(id, branchId);
   }
 
   @Post()
   @CreateDocs('Create payment')
-  create(@Body() body: UpsertPaymentDto) {
-    return this.service.create(body);
+  create(
+    @Body() body: UpsertPaymentDto,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.create({ ...body, branchId });
   }
 
   @Patch(':id')
   @UpdateDocs('Update payment')
-  update(@Param('id') id: string, @Body() body: Partial<UpsertPaymentDto>) {
-    return this.service.update(id, body);
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<UpsertPaymentDto>,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.update(id, body, branchId);
+  }
+
+  @Put(':id')
+  @UpdateDocs('Update payment (PUT)')
+  updateFull(
+    @Param('id') id: string,
+    @Body() body: Partial<UpsertPaymentDto>,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.update(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete payment')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.remove(id, branchId);
   }
 }

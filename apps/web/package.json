@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:resources": "jest test/resources/resource-validation.test.tsx",
+    "test:validate": "jest test/resources/resource-validation.test.tsx --verbose"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.3.0",
@@ -66,6 +70,7 @@
     "@tailwindcss/postcss": "^4.1.12",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.14",
     "@types/node": "20.19.11",
     "@types/react": "18.3.23",

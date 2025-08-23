@@ -1,0 +1,43 @@
+module.exports = {
+  apps: [
+    {
+      name: 'paramarsh-api',
+      cwd: '/root/paramarsh-sms/apps/api',
+      script: 'bun',
+      args: 'run start:dev',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 10011,
+        DATABASE_URL: process.env.DATABASE_URL || 'file:./prisma/dev.db',
+        JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key',
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: '/root/logs/paramarsh-api-error.log',
+      out_file: '/root/logs/paramarsh-api-out.log',
+      log_file: '/root/logs/paramarsh-api-combined.log',
+      time: true,
+    },
+    {
+      name: 'paramarsh-web',
+      cwd: '/root/paramarsh-sms/apps/web',
+      script: 'bun',
+      args: 'run start',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 10010,
+        NEXT_PUBLIC_API_URL: 'https://api.paramarsh-sms.theflywheel.in',
+      },
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: '/root/logs/paramarsh-web-error.log',
+      out_file: '/root/logs/paramarsh-web-out.log',
+      log_file: '/root/logs/paramarsh-web-combined.log',
+      time: true,
+    },
+  ],
+};

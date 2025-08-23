@@ -9,16 +9,18 @@ export type Attendance = {
   reason?: string;
   markedBy?: string;
   source?: string;
+  branchId?: string;
 };
 
 @Injectable()
 export class AttendanceService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; studentId?: string }) {
+  async list(params: { page?: number; perPage?: number; pageSize?: number; sort?: string; studentId?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
+    // Support both perPage (React Admin) and pageSize for backwards compatibility
+    const perPage = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
+    const skip = (page - 1) * perPage;
 
     const where: any = {};
     if (params.studentId) where.studentId = params.studentId;
@@ -29,14 +31,17 @@ export class AttendanceService {
       : [{ date: 'desc' }];
 
     const [data, total] = await Promise.all([
-      this.prisma.attendanceRecord.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.attendanceRecord.findMany({ where, skip, take: perPage, orderBy }),
       this.prisma.attendanceRecord.count({ where }),
     ]);
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    
+    // Return standard React Admin format
+    return { data, total };
   }
 
   async create(input: Attendance) {
     const created = await this.prisma.attendanceRecord.create({ data: {
+      branchId: input.branchId ?? null,
       studentId: input.studentId,
       date: input.date,
       status: input.status ?? null,
@@ -48,23 +53,52 @@ export class AttendanceService {
   }
 
   async update(id: string, input: Partial<Attendance>) {
-    const updated = await this.prisma.attendanceRecord.update({ where: { id }, data: {
-      date: input.date ?? undefined,
-      status: input.status ?? undefined,
-      reason: input.reason ?? undefined,
-      markedBy: input.markedBy ?? undefined,
-      source: input.source ?? undefined,
-    }});
-    return { data: updated };
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
+    try {
+      // First check if the record exists and belongs to the correct branch
+      const existing = await this.prisma.attendanceRecord.findFirst({ where });
+      if (!existing) {
+        throw new NotFoundException('Attendance record not found');
+      }
+      
+      const updated = await this.prisma.attendanceRecord.update({ 
+        where: { id }, 
+        data: {
+          date: input.date ?? undefined,
+          status: input.status ?? undefined,
+          reason: input.reason ?? undefined,
+          markedBy: input.markedBy ?? undefined,
+          source: input.source ?? undefined,
+        }
+      });
+      return { data: updated };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new NotFoundException('Attendance record not found');
+    }
   }
 
   async remove(id: string) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
     try {
+      // First check if the record exists and belongs to the correct branch
+      const existing = await this.prisma.attendanceRecord.findFirst({ where });
+      if (!existing) {
+        throw new NotFoundException('Attendance record not found');
+      }
+      
       await this.prisma.attendanceRecord.delete({ where: { id } });
-    } catch {
+      return { success: true };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new NotFoundException('Attendance record not found');
     }
-    return { success: true };
   }
 
   async getStudentAttendanceSummary(studentId: string, startDate: string, endDate: string) {

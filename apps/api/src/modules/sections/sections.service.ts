@@ -7,16 +7,26 @@ export type Section = { id?: string; branchId?: string; classId: string; name: s
 export class SectionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; classId?: string }) {
+  async list(params: { page?: number; pageSize?: number; sort?: string; classId?: string; branchId: string; filter?: any; ids?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
     if (params.classId) where.classId = params.classId;
-    // Add branchId filtering from request scope
-    const { branchId } = PrismaService.getScope();
-    if (branchId) where.branchId = branchId;
+    
+    // Handle filter parameter
+    if (params.filter) {
+      Object.assign(where, params.filter);
+    }
+    
+    // Handle ids parameter
+    if (params.ids) {
+      where.id = { in: params.ids.split(',') };
+    }
+    
+    // Add branchId filtering
+    where.branchId = params.branchId;
     
     // Handle sorting, including nested field sorting
     let orderBy: any = [{ id: 'asc' }]; // default
@@ -44,12 +54,12 @@ export class SectionsService {
       }),
       this.prisma.section.count({ where }),
     ]);
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { data, total };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, branchId: string) {
     const section = await this.prisma.section.findUnique({
-      where: { id },
+      where: { id, branchId },
       include: {
         class: true,
       }
@@ -60,11 +70,10 @@ export class SectionsService {
     return { data: section };
   }
 
-  async create(input: Section) {
-    const { branchId } = PrismaService.getScope();
+  async create(input: Section & { branchId: string }) {
     const created = await this.prisma.section.create({
       data: { 
-        branchId: branchId ?? undefined,
+        branchId: input.branchId,
         classId: input.classId, 
         name: input.name, 
         capacity: input.capacity ?? null 
@@ -73,9 +82,9 @@ export class SectionsService {
     return { data: created };
   }
 
-  async update(id: string, input: Partial<Section>) {
+  async update(id: string, input: Partial<Section>, branchId: string) {
     const updated = await this.prisma.section.update({
-      where: { id },
+      where: { id, branchId },
       data: {
         classId: input.classId ?? undefined,
         name: input.name ?? undefined,
@@ -85,12 +94,12 @@ export class SectionsService {
     return { data: updated };
   }
 
-  async remove(id: string) {
+  async remove(id: string, branchId: string) {
     try {
-      await this.prisma.section.delete({ where: { id } });
+      await this.prisma.section.delete({ where: { id, branchId } });
     } catch {
       throw new NotFoundException('Section not found');
     }
-    return { success: true };
+    return { data: { id } };
   }
 }

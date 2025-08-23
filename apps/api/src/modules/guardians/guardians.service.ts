@@ -8,6 +8,7 @@ export type GuardianCreateInput = {
   alternatePhoneNumber?: string;
   address?: string;
   occupation?: string;
+  branchId?: string;
   students?: Array<{
     studentId: string;
     relation: string;
@@ -29,6 +30,7 @@ export class GuardiansService {
     relation?: string;
     phone?: string;
     email?: string;
+    branchId?: string;
   }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
@@ -36,9 +38,8 @@ export class GuardiansService {
 
     const where: any = {};
     
-    // Add branchId filtering from request scope
-    const { branchId } = PrismaService.getScope();
-    if (branchId) where.branchId = branchId;
+    // Add branchId filtering
+    if (params.branchId) where.branchId = params.branchId;
     
     // Text search
     if (params.q) {
@@ -103,12 +104,15 @@ export class GuardiansService {
       student: guardian.students[0]?.student,
     }));
     
-    return { data: transformedData, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { data: transformedData, total };
   }
 
-  async findOne(id: string) {
-    const entity = await this.prisma.guardian.findUnique({
-      where: { id },
+  async findOne(id: string, branchId?: string) {
+    const entity = await this.prisma.guardian.findFirst({
+      where: { 
+        id,
+        ...(branchId && { branchId })
+      },
       include: {
         students: {
           include: {
@@ -135,12 +139,10 @@ export class GuardiansService {
   }
 
   async create(input: GuardianCreateInput) {
-    const { branchId } = PrismaService.getScope();
-    
     // Create guardian with relationships
     const created = await this.prisma.guardian.create({
       data: {
-        branchId: branchId ?? undefined,
+        branchId: input.branchId ?? undefined,
         name: input.name,
         email: input.email ?? null,
         phoneNumber: input.phoneNumber ?? null,
@@ -170,6 +172,11 @@ export class GuardiansService {
   }
 
   async update(id: string, input: Partial<GuardianCreateInput>) {
+    // First check if guardian exists in the branch (if branchId provided)
+    if (input.branchId) {
+      await this.findOne(id, input.branchId);
+    }
+    
     const updated = await this.prisma.guardian.update({
       where: { id },
       data: {
@@ -239,13 +246,16 @@ export class GuardiansService {
       }
     });
     
-    return { success: true };
+    return { data: { guardianId, studentId } };
   }
 
-  async remove(id: string) {
-    // Check if guardian has any students
-    const guardian = await this.prisma.guardian.findUnique({ 
-      where: { id },
+  async remove(id: string, branchId?: string) {
+    // Check if guardian exists in the branch and has any students
+    const guardian = await this.prisma.guardian.findFirst({ 
+      where: { 
+        id,
+        ...(branchId && { branchId })
+      },
       include: {
         students: true
       }
@@ -259,7 +269,7 @@ export class GuardiansService {
       throw new BadRequestException('Cannot delete guardian with linked students. Please unlink all students first.');
     }
     
-    await this.prisma.guardian.delete({ where: { id } });
-    return { success: true };
+    const deleted = await this.prisma.guardian.delete({ where: { id } });
+    return { data: deleted };
   }
 }

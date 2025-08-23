@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StaffService } from './staff.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -89,7 +89,7 @@ class UpsertStaffDto {
   status?: string;
 }
 
-@ApiTags('Staff')
+@ApiTags('HR - Staff')
 @Controller('hr/staff')
 export class StaffController {
   constructor(private readonly service: StaffService) {}
@@ -98,31 +98,65 @@ export class StaffController {
   @ListDocs('List staff')
   @ApiQuery({ name: 'department', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'filter', required: false })
+  @ApiQuery({ name: 'ids', required: false })
   list(
     @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('perPage') perPage?: number,
     @Query('sort') sort?: string,
+    @Query('filter') filter?: string,
+    @Query('ids') ids?: string,
     @Query('department') department?: string,
     @Query('status') status?: string,
+    @Headers('x-branch-id') branchId = 'branch1',
   ) {
-    return this.service.list({ page, pageSize, sort, department, status });
+    return this.service.list({ page, perPage, sort, filter, ids, department, status, branchId });
   }
 
   @Post()
   @CreateDocs('Create staff')
-  create(@Body() body: UpsertStaffDto) {
-    return this.service.create(body);
+  create(
+    @Body() body: UpsertStaffDto,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.create(body, branchId);
+  }
+
+  @Get(':id')
+  @ApiTags('Staff')
+  getOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.getOne(id, branchId);
+  }
+
+  @Put(':id')
+  @UpdateDocs('Update staff')
+  update(
+    @Param('id') id: string, 
+    @Body() body: Partial<UpsertStaffDto>,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.update(id, body, branchId);
   }
 
   @Patch(':id')
-  @UpdateDocs('Update staff')
-  update(@Param('id') id: string, @Body() body: Partial<UpsertStaffDto>) {
-    return this.service.update(id, body);
+  @UpdateDocs('Partially update staff')
+  partialUpdate(
+    @Param('id') id: string, 
+    @Body() body: Partial<UpsertStaffDto>,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.update(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete staff')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.remove(id, branchId);
   }
 }

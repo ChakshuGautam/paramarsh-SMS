@@ -2,6 +2,37 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+/**
+ * Generate realistic student status based on grade level and target distribution:
+ * - 70% active (currently enrolled)
+ * - 10% inactive (on leave, suspended, etc.)
+ * - 20% graduated (for historical data)
+ * 
+ * Graduated students should be more likely in higher classes (Class 8-10)
+ */
+function getRealisticStudentStatus(gradeLevel: number): string {
+  const rand = Math.random();
+  
+  // Higher classes (Class 8-10) have more graduated students
+  if (gradeLevel >= 10) { // Class 8 and above
+    if (rand < 0.50) return 'active';     // 50% active
+    if (rand < 0.60) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 40% graduated
+  } else if (gradeLevel >= 8) { // Class 6-7
+    if (rand < 0.60) return 'active';     // 60% active
+    if (rand < 0.70) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 30% graduated
+  } else if (gradeLevel >= 5) { // Class 3-5
+    if (rand < 0.75) return 'active';     // 75% active
+    if (rand < 0.85) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 15% graduated
+  } else { // Lower classes (Nursery-Class 2)
+    if (rand < 0.85) return 'active';     // 85% active
+    if (rand < 0.95) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 5% graduated
+  }
+}
+
 async function main() {
   console.log('🌱 Starting database seed...');
 
@@ -485,7 +516,7 @@ async function main() {
           classId: section.classId,
           sectionId: section.id,
           rollNumber: String(j + 1),
-          status: Math.random() > 0.95 ? (Math.random() > 0.5 ? 'inactive' : 'graduated') : 'active'
+          status: getRealisticStudentStatus(cls?.gradeLevel || 1)
         }
       });
       students.push(student);
@@ -582,6 +613,20 @@ async function main() {
   console.log('📋 Creating enrollments...');
   for (const student of students) {
     if (student.sectionId) {
+      // For graduated students, create enrollment with realistic dates
+      let startDate = academicYear.startDate;
+      let endDate = undefined;
+      
+      if (student.status === 'graduated') {
+        // Graduated students completed in previous academic years
+        const yearsAgo = Math.floor(Math.random() * 3) + 1; // 1-3 years ago
+        startDate = `${2024 - yearsAgo - 1}-04-01`;
+        endDate = `${2024 - yearsAgo}-03-31`;
+      } else if (student.status === 'inactive') {
+        // Inactive students started this year but are currently inactive
+        endDate = undefined; // They might return
+      }
+      
       await prisma.enrollment.create({
         data: {
           branchId: tenant.id,
@@ -589,8 +634,8 @@ async function main() {
           sectionId: student.sectionId,
           status: student.status === 'active' ? 'enrolled' : 
                   student.status === 'graduated' ? 'completed' : 'inactive',
-          startDate: academicYear.startDate,
-          endDate: student.status !== 'active' ? academicYear.endDate : undefined
+          startDate: startDate,
+          endDate: endDate
         }
       });
     }
@@ -1159,6 +1204,60 @@ async function main() {
   const twoParentStudents = studentsWithBothParents.filter(s => s.guardians.length >= 2);
   console.log(`  - Students with both parents: ${twoParentStudents.length}`);
   console.log(`  - Students with single parent: ${studentsWithBothParents.filter(s => s.guardians.length === 1).length}`);
+  
+  // Validate student status distribution
+  console.log('\n📊 Student Status Distribution:');
+  const statusCounts = await prisma.student.groupBy({
+    by: ['status'],
+    _count: {
+      status: true
+    }
+  });
+  
+  const totalStudents = summary.students;
+  statusCounts.forEach(({ status, _count }) => {
+    const percentage = ((_count.status / totalStudents) * 100).toFixed(1);
+    console.log(`  - ${status}: ${_count.status} (${percentage}%)`);
+  });
+  
+  // Validate graduated students by class
+  console.log('\n🎓 Graduated Students by Class:');
+  const graduatedStudents = await prisma.student.findMany({
+    where: { status: 'graduated' }
+  });
+  
+  const classIds = [...new Set(graduatedStudents.map(s => s.classId).filter(Boolean))];
+  const classEntities = await prisma.class.findMany({
+    where: { id: { in: classIds } }
+  });
+  
+  const classMap = classEntities.reduce((acc, cls) => {
+    acc[cls.id] = cls.name;
+    return acc;
+  }, {} as Record<string, string>);
+  
+  const classGraduationCounts = graduatedStudents.reduce((acc, student) => {
+    const className = student.classId ? classMap[student.classId] || 'Unknown' : 'Unknown';
+    acc[className] = (acc[className] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  Object.entries(classGraduationCounts).forEach(([className, count]) => {
+    console.log(`  - ${className}: ${count} graduated students`);
+  });
+  
+  // Validate that each class has some students with different statuses
+  console.log('\n📚 Status Distribution Across Classes:');
+  for (const cls of classes) {
+    const classStudents = await prisma.student.groupBy({
+      by: ['status'],
+      where: { classId: cls.id },
+      _count: { status: true }
+    });
+    
+    const statusSummary = classStudents.map(s => `${s.status}: ${s._count.status}`).join(', ');
+    console.log(`  - ${cls.name}: ${statusSummary}`);
+  }
 }
 
 main()

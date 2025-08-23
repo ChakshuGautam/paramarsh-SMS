@@ -1,5 +1,32 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString, IsUUID, IsIn, IsArray, Length } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsUUID, IsIn, IsArray, Length, ValidateIf, registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+
+// Custom validator to check if scheduled date is in the future
+function IsFutureDate(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      name: 'isFutureDate',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          const obj = args.object as CreateCampaignDto;
+          // Only validate if status is 'scheduled' and schedule is provided
+          if (obj.status === 'scheduled' && value) {
+            const scheduleDate = new Date(value);
+            const now = new Date();
+            return scheduleDate > now;
+          }
+          return true; // Don't validate if not scheduled or no date provided
+        },
+        defaultMessage(args: ValidationArguments) {
+          return 'Schedule date must be in the future for scheduled campaigns';
+        },
+      },
+    });
+  };
+}
 
 export class CreateCampaignDto {
   @ApiProperty({ 
@@ -45,7 +72,8 @@ export class CreateCampaignDto {
   })
   @IsOptional()
   @IsDateString()
-  scheduledAt?: string;
+  @IsFutureDate()
+  schedule?: string;
 
   @ApiPropertyOptional({ 
     description: 'JSON array of target audience criteria', 

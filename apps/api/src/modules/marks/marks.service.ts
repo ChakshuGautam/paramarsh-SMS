@@ -46,9 +46,23 @@ export class MarksService {
     where.branchId = branchId;
     
     // Sorting
-    const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ createdAt: 'desc' }];
+    let orderBy: any = [{ createdAt: 'desc' }];
+    if (params.sort) {
+      const sortField = params.sort.startsWith('-') ? params.sort.slice(1) : params.sort;
+      const sortOrder = params.sort.startsWith('-') ? 'desc' : 'asc';
+      
+      // Handle special relation sorting
+      if (sortField === 'student') {
+        orderBy = [{ student: { firstName: sortOrder } }];
+      } else if (sortField === 'subject') {
+        orderBy = [{ subject: { name: sortOrder } }];
+      } else if (sortField === 'exam') {
+        orderBy = [{ exam: { name: sortOrder } }];
+      } else {
+        // Direct field sorting
+        orderBy = [{ [sortField]: sortOrder }];
+      }
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.mark.findMany({ 
@@ -89,7 +103,7 @@ export class MarksService {
       this.prisma.mark.count({ where }),
     ]);
 
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { data, total };
   }
 
   async findOne(id: string) {
@@ -248,8 +262,8 @@ export class MarksService {
       throw new NotFoundException('Mark entry not found');
     }
 
-    await this.prisma.mark.delete({ where: { id } });
-    return { success: true };
+    const deleted = await this.prisma.mark.delete({ where: { id } });
+    return { data: deleted };
   }
 
   // Bulk operations for entering marks for a whole class/exam

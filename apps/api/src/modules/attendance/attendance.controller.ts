@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional, ApiOperation } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -116,17 +116,20 @@ export class AttendanceController {
   @ApiQuery({ name: 'studentId', required: false })
   list(
     @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('perPage') perPage?: number,
     @Query('sort') sort?: string,
     @Query('studentId') studentId?: string,
   ) {
-    return this.service.list({ page, pageSize, sort, studentId });
+    return this.service.list({ page, perPage, sort, studentId });
   }
 
   @Post()
   @CreateDocs('Create attendance record')
-  create(@Body() body: UpsertAttendanceDto) {
-    return this.service.create(body);
+  create(
+    @Body() body: UpsertAttendanceDto,
+    @Headers('x-branch-id') branchId = 'branch1',
+  ) {
+    return this.service.create({ ...body, branchId });
   }
 
   @Patch(':id')

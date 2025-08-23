@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -61,8 +61,11 @@ export class EnrollmentsController {
   @Get()
   @ListDocs('List enrollments')
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
-  @ApiQuery({ name: 'pageSize', required: false, description: 'Number of items per page', example: 10 })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Number of items per page', example: 10 })
   @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'startDate:desc' })
+  @ApiQuery({ name: 'filter', required: false, description: 'JSON filter object' })
+  @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated list of IDs' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query' })
   @ApiQuery({ name: 'sectionId', required: false, description: 'Filter by section ID' })
   @ApiQuery({ name: 'studentId', required: false, description: 'Filter by student ID' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by enrollment status', enum: ['active', 'inactive', 'transferred', 'graduated', 'dropped'] })
@@ -70,46 +73,83 @@ export class EnrollmentsController {
   @ApiQuery({ name: 'endDate_lte', required: false, description: 'Filter enrollments ending on or before this date', example: '2024-12-31' })
   list(
     @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('perPage') perPage?: number,
     @Query('sort') sort?: string,
+    @Query('filter') filter?: string,
+    @Query('ids') ids?: string,
+    @Query('q') q?: string,
     @Query('sectionId') sectionId?: string,
     @Query('studentId') studentId?: string,
     @Query('status') status?: string,
     @Query('startDate_gte') startDateGte?: string,
     @Query('endDate_lte') endDateLte?: string,
+    @Headers('x-branch-id') branchId = 'branch1',
   ) {
+    const parsedFilter = filter ? JSON.parse(filter) : {};
+    const idsArray = ids ? ids.split(',') : undefined;
+    
+    if (idsArray) {
+      return this.service.getMany(idsArray, branchId);
+    }
+    
     return this.service.list({ 
       page, 
-      pageSize, 
+      perPage, 
       sort, 
+      filter: parsedFilter,
+      q,
       sectionId, 
       studentId,
       status,
       startDateGte,
       endDateLte,
+      branchId,
     });
   }
 
   @Get(':id')
-  getOne(@Param('id') id: string) {
-    return this.service.getOne(id);
+  getOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.getOne(id, branchId);
   }
 
   @Post()
   @CreateDocs('Create enrollment')
-  create(@Body() body: UpsertEnrollmentDto) {
-    return this.service.create(body);
+  create(
+    @Body() body: UpsertEnrollmentDto,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.create({ ...body, branchId });
+  }
+
+  @Put(':id')
+  @UpdateDocs('Update enrollment')
+  update(
+    @Param('id') id: string, 
+    @Body() body: Partial<UpsertEnrollmentDto>,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.update(id, { ...body, branchId });
   }
 
   @Patch(':id')
-  @UpdateDocs('Update enrollment')
-  update(@Param('id') id: string, @Body() body: Partial<UpsertEnrollmentDto>) {
-    return this.service.update(id, body);
+  @UpdateDocs('Partially update enrollment')
+  partialUpdate(
+    @Param('id') id: string, 
+    @Body() body: Partial<UpsertEnrollmentDto>,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.update(id, { ...body, branchId });
   }
 
   @Delete(':id')
   @DeleteDocs('Delete enrollment')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId = 'branch1'
+  ) {
+    return this.service.remove(id, branchId);
   }
 }

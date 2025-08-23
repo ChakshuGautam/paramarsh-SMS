@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -62,7 +62,7 @@ class UpsertInvoiceDto {
 }
 
 @ApiTags('Invoices')
-@Controller('fees/invoices')
+@Controller('invoices')
 export class InvoicesController {
   constructor(private readonly service: InvoicesService) {}
 
@@ -72,30 +72,61 @@ export class InvoicesController {
   @ApiQuery({ name: 'status', required: false })
   list(
     @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('perPage') perPage?: number,
     @Query('sort') sort?: string,
     @Query('studentId') studentId?: string,
     @Query('status') status?: string,
+    @Query('filter') filterStr?: string,
+    @Query('ids') ids?: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
   ) {
-    return this.service.list({ page, pageSize, sort, studentId, status });
+    const filter = filterStr ? JSON.parse(filterStr) : undefined;
+    
+    if (ids) {
+      const idList = ids.split(',');
+      return this.service.list({ branchId, ids: ids }).then(response => ({
+        data: response.data.filter(item => idList.includes(item.id))
+      }));
+    }
+    
+    return this.service.list({ page, perPage, sort, studentId, status, filter, branchId });
+  }
+
+  @Get(':id')
+  @ApiTags('Invoices')
+  getOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.getOneWithBranch(id, branchId);
   }
 
   @Post()
   @CreateDocs('Create invoice')
-  create(@Body() body: UpsertInvoiceDto) {
-    return this.service.create(body);
+  create(
+    @Body() body: UpsertInvoiceDto,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.create({ ...body, branchId });
   }
 
   @Patch(':id')
   @UpdateDocs('Update invoice')
-  update(@Param('id') id: string, @Body() body: Partial<UpsertInvoiceDto>) {
-    return this.service.update(id, body);
+  update(
+    @Param('id') id: string,
+    @Body() body: Partial<UpsertInvoiceDto>,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.updateWithBranch(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete invoice')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId: string = 'branch1',
+  ) {
+    return this.service.remove(id, branchId);
   }
 
   @Post(':id/export')

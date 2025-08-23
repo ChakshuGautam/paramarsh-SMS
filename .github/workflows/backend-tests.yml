@@ -1,0 +1,188 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/backend-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.bun/install/cache
+          apps/api/node_modules
+        key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+        restore-keys: |
+          ${{ runner.os }}-bun-
+
+    - name: Install dependencies
+      working-directory: apps/api
+      run: bun install
+
+    - name: Setup SQLite database
+      working-directory: apps/api
+      run: |
+        touch prisma/dev.db
+        touch prisma/test.db
+
+    - name: Run Prisma migrations
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+      run: |
+        npx prisma generate
+        npx prisma migrate deploy
+        npx prisma db push
+
+    - name: Seed database
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+      run: npx prisma db seed
+
+    - name: Run E2E tests
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./test.db
+        NODE_ENV: test
+        JWT_SECRET: test-secret-key-for-ci
+        PORT: 8080
+      run: |
+        bun run test:e2e --coverage
+
+    - name: Run unit tests
+      working-directory: apps/api
+      env:
+        NODE_ENV: test
+      run: |
+        bun run test --coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./apps/api/coverage
+        flags: backend
+        name: backend-coverage
+        fail_ci_if_error: false
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-test-results-${{ matrix.node-version }}
+        path: |
+          apps/api/coverage
+          apps/api/test-results
+
+    - name: Lint code
+      working-directory: apps/api
+      run: |
+        bun run lint
+
+    - name: Type check
+      working-directory: apps/api
+      run: |
+        bun run typecheck || npx tsc --noEmit
+
+    - name: Build application
+      working-directory: apps/api
+      run: |
+        bun run build
+
+    - name: Test build output
+      working-directory: apps/api
+      run: |
+        bun run start:prod &
+        sleep 5
+        curl -f http://localhost:8080/health || exit 1
+        pkill -f "bun run start:prod"
+
+  validate-api:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      working-directory: apps/api
+      run: bun install
+
+    - name: Setup database
+      working-directory: apps/api
+      run: |
+        touch prisma/dev.db
+        npx prisma generate
+        npx prisma migrate deploy
+        npx prisma db seed
+
+    - name: Start backend server
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+        NODE_ENV: test
+        JWT_SECRET: test-secret-key-for-ci
+        PORT: 8080
+      run: |
+        bun run start:dev &
+        sleep 10
+
+    - name: Validate all API endpoints
+      run: |
+        chmod +x ./scripts/validate-api.sh
+        ./scripts/validate-api.sh all
+
+    - name: Stop backend server
+      if: always()
+      run: |
+        pkill -f "bun run start:dev" || true
