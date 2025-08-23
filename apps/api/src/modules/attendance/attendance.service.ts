@@ -1,106 +1,206 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { BaseCrudService } from '../../common/base-crud.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-export type Attendance = {
-  id?: string;
-  studentId: string;
-  date: string;
-  status?: string;
-  reason?: string;
-  markedBy?: string;
-  source?: string;
-  branchId?: string;
-};
-
 @Injectable()
-export class AttendanceService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async list(params: { page?: number; perPage?: number; pageSize?: number; sort?: string; studentId?: string }) {
-    const page = Math.max(1, Number(params.page ?? 1));
-    // Support both perPage (React Admin) and pageSize for backwards compatibility
-    const perPage = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
-    const skip = (page - 1) * perPage;
-
-    const where: any = {};
-    if (params.studentId) where.studentId = params.studentId;
-    const { branchId } = PrismaService.getScope();
-    if (branchId) where.branchId = branchId;
-    const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ date: 'desc' }];
-
-    const [data, total] = await Promise.all([
-      this.prisma.attendanceRecord.findMany({ where, skip, take: perPage, orderBy }),
-      this.prisma.attendanceRecord.count({ where }),
-    ]);
-    
-    // Return standard React Admin format
-    return { data, total };
+export class AttendanceService extends BaseCrudService<any> {
+  constructor(prisma: PrismaService) {
+    super(prisma, 'attendanceRecord');
   }
 
-  async create(input: Attendance) {
-    const created = await this.prisma.attendanceRecord.create({ data: {
-      branchId: input.branchId ?? null,
-      studentId: input.studentId,
-      date: input.date,
-      status: input.status ?? null,
-      reason: input.reason ?? null,
-      markedBy: input.markedBy ?? null,
-      source: input.source ?? null,
-    }});
-    return { data: created };
+  /**
+   * AttendanceRecord model has branchId field for multi-tenancy support
+   */
+  protected supportsBranchScoping(): boolean {
+    return true;
   }
 
-  async update(id: string, input: Partial<Attendance>) {
-    const { branchId } = PrismaService.getScope();
-    const where: any = { id };
-    if (branchId) where.branchId = branchId;
-    
+  /**
+   * Override to add branchId filtering and include student information
+   */
+  async getList(params: any) {
     try {
-      // First check if the record exists and belongs to the correct branch
-      const existing = await this.prisma.attendanceRecord.findFirst({ where });
-      if (!existing) {
-        throw new NotFoundException('Attendance record not found');
+      const page = Math.max(1, Number(params.page ?? 1));
+      const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? 25)));
+      const skip = (page - 1) * perPage;
+
+      // Build where clause WITH BRANCH FILTERING
+      const where: any = {};
+      
+      // CRITICAL: Add branchId filtering for multi-tenancy
+      if (params.branchId) {
+        where.branchId = params.branchId;
       }
       
-      const updated = await this.prisma.attendanceRecord.update({ 
-        where: { id }, 
-        data: {
-          date: input.date ?? undefined,
-          status: input.status ?? undefined,
-          reason: input.reason ?? undefined,
-          markedBy: input.markedBy ?? undefined,
-          source: input.source ?? undefined,
+      // Add filters correctly
+      if (params.filter && typeof params.filter === 'object') {
+        Object.keys(params.filter).forEach(key => {
+          if (params.filter[key] !== undefined && params.filter[key] !== null) {
+            where[key] = params.filter[key];
+          }
+        });
+      }
+      
+      // Handle search query 'q'
+      if (params.q && typeof params.q === 'string') {
+        where.OR = [
+          { status: { contains: params.q, mode: 'insensitive' } },
+          { reason: { contains: params.q, mode: 'insensitive' } }
+        ];
+      }
+      
+      // Build orderBy for sorting
+      let orderBy: any = [{ date: 'desc' }];
+      if (params.sort) {
+        let sortField: string;
+        let sortOrder: 'asc' | 'desc';
+        
+        if (params.sort.includes(':')) {
+          const [field, order] = params.sort.split(':');
+          sortField = field;
+          sortOrder = order === 'desc' ? 'desc' : 'asc';
+        } else if (params.sort.startsWith('-')) {
+          sortField = params.sort.slice(1);
+          sortOrder = 'desc';
+        } else {
+          sortField = params.sort;
+          sortOrder = 'asc';
         }
-      });
-      return { data: updated };
-    } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new NotFoundException('Attendance record not found');
-    }
-  }
-
-  async remove(id: string) {
-    const { branchId } = PrismaService.getScope();
-    const where: any = { id };
-    if (branchId) where.branchId = branchId;
-    
-    try {
-      // First check if the record exists and belongs to the correct branch
-      const existing = await this.prisma.attendanceRecord.findFirst({ where });
-      if (!existing) {
-        throw new NotFoundException('Attendance record not found');
+        
+        orderBy = [{ [sortField]: sortOrder }];
       }
-      
-      await this.prisma.attendanceRecord.delete({ where: { id } });
-      return { success: true };
+
+      const [data, total] = await Promise.all([
+        this.prisma.attendanceRecord.findMany({ 
+          where, 
+          skip, 
+          take: perPage,
+          orderBy,
+          include: {
+            student: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                rollNumber: true,
+                admissionNo: true
+              }
+            }
+          }
+        }),
+        this.prisma.attendanceRecord.count({ where }),
+      ]);
+
+      return {
+        data: data,
+        total,
+      };
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
-      throw new NotFoundException('Attendance record not found');
+      console.error('Error in attendance getList:', error);
+      throw error;
     }
   }
 
+  /**
+   * Override to add branchId filtering and include student information
+   */
+  async getOne(id: string, branchId?: string) {
+    const data = await this.prisma.attendanceRecord.findFirst({
+      where: { 
+        id,
+        ...(branchId && { branchId })
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            rollNumber: true,
+            admissionNo: true
+          }
+        }
+      }
+    });
+
+    if (!data) {
+      throw new NotFoundException('Attendance record not found');
+    }
+
+    return {
+      data: data,
+    };
+  }
+
+  /**
+   * Override to add branchId filtering and include student information
+   */
+  async getMany(ids: string[], branchId?: string) {
+    const data = await this.prisma.attendanceRecord.findMany({
+      where: { 
+        id: { in: ids },
+        ...(branchId && { branchId })
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            rollNumber: true,
+            admissionNo: true
+          }
+        }
+      }
+    });
+
+    return {
+      data: data,
+    };
+  }
+
+  /**
+   * Override create method to ensure branchId is included
+   */
+  async create(data: any) {
+    const result = await super.create(data);
+    return {
+      data: result.data,
+    };
+  }
+
+  /**
+   * Override update method
+   */
+  async update(id: string, data: any) {
+    const result = await super.update(id, data);
+    return {
+      data: result.data,
+    };
+  }
+
+  /**
+   * Override delete method
+   */
+  async delete(id: string, userId?: string) {
+    const result = await super.delete(id, userId);
+    return {
+      data: result.data,
+    };
+  }
+
+  /**
+   * Override to support search on status and reason
+   */
+  protected buildSearchClause(search: string): any[] {
+    return [
+      { status: { contains: search, mode: 'insensitive' } },
+      { reason: { contains: search, mode: 'insensitive' } },
+      { source: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  // Keep existing custom methods for backward compatibility
   async getStudentAttendanceSummary(studentId: string, startDate: string, endDate: string) {
     const { branchId } = PrismaService.getScope();
     
