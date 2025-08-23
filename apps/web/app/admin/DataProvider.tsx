@@ -276,53 +276,59 @@ function resourceToPath(resource: string): string {
     classes: "classes",
     sections: "sections",
     enrollments: "enrollments",
-    academicYears: "academic-years", // Added missing academic years
+    academicYears: "academic-years",
     
-    // Admissions
+    // Admissions - Currently missing backend implementation
     admissionsApplications: "admissions/applications",
+    applications: "admissions/applications",
     
-    // Attendance
-    attendanceRecords: "attendance/records",
-    attendanceSessions: "attendance/sessions", 
-    teacherAttendance: "teacher-attendance",
+    // Attendance - Fixed to match actual backend paths
+    attendanceRecords: "attendance",
+    attendanceSessions: "attendance-sessions",
+    attendance: "attendance",
+    teacherAttendance: "teacher-attendance", // Missing backend implementation
     
     // Exams & Marks
     exams: "exams",
     marks: "marks",
     
-    // Fees & Payments - Fixed to match backend paths
-    feeStructures: "fees/structures",
-    feeSchedules: "fees/schedules",
-    invoices: "invoices", // Fixed: backend has /invoices not /fees/invoices
-    payments: "payments", // Fixed: backend has /payments not /fees/payments
+    // Fees & Payments
+    feeStructures: "fee-structures",
+    feeSchedules: "fee-schedules", 
+    invoices: "invoices",
+    payments: "payments",
     
-    // HR & Staff - Fixed to match backend paths
-    staff: "hr/staff",
-    teachers: "teachers", // Fixed: backend has /teachers not /hr/teachers
+    // HR & Staff
+    staff: "staff",
+    teachers: "teachers",
     
     // Timetable
     subjects: "subjects",
     rooms: "rooms",
-    timetable: "timetable", // Added main timetable endpoint
-    timetablePeriods: "timetable/periods",
-    timetableGrid: "timetable/grid", // Special grid view endpoint
-    timeSlots: "timetable/time-slots",
+    timetable: "timetable",
+    timetablePeriods: "timetable/periods", // Missing backend implementation
+    timetableGrid: "timetable/grid",
+    timeSlots: "timeslots",
+    timeslots: "timeslots",
     substitutions: "timetable/substitutions",
-    sectionTimetables: "sections", // Maps to sections API to get section data
-    timetables: "sections", // Main timetable resource maps to sections for CRUD operations
+    sectionTimetables: "sections",
+    timetables: "timetable",
     
-    // Communications - Fixed tickets path
-    templates: "comms/templates",
-    campaigns: "comms/campaigns",
-    messages: "comms/messages",
-    preferences: "comms/preferences",
-    tickets: "comms/tickets", // Fixed: backend has /comms/tickets not /helpdesk/tickets
+    // Communications - Fixed to match actual backend paths
+    templates: "templates",
+    campaigns: "campaigns", 
+    messages: "messages",
+    preferences: "preferences",
+    tickets: "tickets",
     
     // Files & Documents
-    files: "files", // Added missing files endpoint
+    files: "files",
     
     // System
     tenants: "tenants",
+    
+    // Health check
+    health: "health",
   };
   return mapping[resource] ?? resource;
 }
