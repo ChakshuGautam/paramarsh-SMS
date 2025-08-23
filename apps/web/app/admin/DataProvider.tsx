@@ -29,15 +29,19 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 
 function getScopeHeaders(): Record<string, string> {
   const scope: { [k: string]: string | undefined } = {};
-  // Prefer runtime-provided values from window for easier local switching
+  // Get branch ID from localStorage (set during login)
+  const branchId = typeof window !== "undefined" 
+    ? localStorage.getItem('selectedBranchId') || 'branch1'
+    : 'branch1';
+  
+  scope["X-Branch-Id"] = branchId;
+  
+  // Optional tenant ID
   const win = (typeof window !== "undefined" ? (window as unknown as any) : undefined) || {};
   const tenantId =
     win.NEXT_PUBLIC_TENANT_ID || process.env.NEXT_PUBLIC_TENANT_ID || undefined;
-  const branchId =
-    win.NEXT_PUBLIC_BRANCH_ID || process.env.NEXT_PUBLIC_BRANCH_ID || undefined;
-
   if (tenantId) scope["X-Tenant-Id"] = String(tenantId);
-  if (branchId) scope["X-Branch-Id"] = String(branchId);
+  
   return scope as Record<string, string>;
 }
 

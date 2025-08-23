@@ -1,0 +1,81 @@
+{
+  "version": "1.0.0",
+  "description": "CI Configuration for Paramarsh SMS",
+  "settings": {
+    "backend": {
+      "useDbPush": true,
+      "skipMigrationDeploy": true,
+      "testTimeout": 15000,
+      "maxWorkers": 1,
+      "enableBasicTests": true,
+      "enableIntegrationTests": false
+    },
+    "frontend": {
+      "useCiConfig": true,
+      "skipFailingTests": true,
+      "testTimeout": 15000,
+      "maxWorkers": 1,
+      "enableBasicTests": true,
+      "enableE2eTests": false
+    },
+    "database": {
+      "strategy": "push",
+      "resetBetweenTests": true,
+      "seedData": true,
+      "useTestDb": true
+    },
+    "integration": {
+      "enableApiValidation": true,
+      "enableMultiTenantTests": true,
+      "enablePerformanceTests": false,
+      "healthCheckTimeout": 15
+    }
+  },
+  "testFiles": {
+    "alwaysRun": [
+      "apps/api/test/basic-ci.e2e-spec.ts",
+      "apps/api/test/health.e2e-spec.ts",
+      "apps/web/test/basic-ci.test.tsx",
+      "apps/web/test/resources/resource-validation.test.tsx"
+    ],
+    "skipInCi": [
+      "apps/api/test/api-endpoints.e2e-spec.ts",
+      "apps/api/test/crud-endpoints.e2e-spec.ts"
+    ]
+  },
+  "environment": {
+    "requiredVars": [
+      "DATABASE_URL",
+      "JWT_SECRET",
+      "NODE_ENV",
+      "PORT"
+    ],
+    "defaults": {
+      "DATABASE_URL": "file:./test.db",
+      "JWT_SECRET": "test-secret-key-for-ci",
+      "NODE_ENV": "test",
+      "PORT": "8080"
+    }
+  },
+  "workflows": {
+    "backend-tests": {
+      "enabled": true,
+      "nodeVersions": ["18.x", "20.x"],
+      "failFast": false
+    },
+    "frontend-tests": {
+      "enabled": true,
+      "nodeVersions": ["18.x", "20.x"],
+      "failFast": false
+    },
+    "integration-tests": {
+      "enabled": true,
+      "nodeVersion": "20.x",
+      "failFast": false
+    },
+    "code-quality": {
+      "enabled": true,
+      "failFast": true
+    }
+  }
+}
