@@ -60,11 +60,12 @@ jobs:
         JWT_SECRET: test-secret-key-for-ci
         PORT: 8080
       run: |
-        # Run health check test which should pass
-        bun run test:e2e health.e2e-spec.ts || true
+        # Run tests and capture exit code
+        bun run test:e2e --bail=5 --maxWorkers=1
+        TEST_EXIT_CODE=$?
         
-        # Try to run all tests but don't fail the workflow
-        bun run test:e2e --bail=1 --maxWorkers=1 || echo "Some tests failed but continuing"
+        # Exit with the test exit code to fail CI if tests failed
+        exit $TEST_EXIT_CODE
 
     - name: Upload test results
       if: always()

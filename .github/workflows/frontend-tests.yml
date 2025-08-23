@@ -40,7 +40,11 @@ jobs:
         NEXT_PUBLIC_API_URL: http://localhost:8080
       run: |
         # Run tests with CI configuration
-        npm test -- --ci --passWithNoTests --maxWorkers=2 || echo "Some tests failed but continuing"
+        npm test -- --ci --passWithNoTests --maxWorkers=2
+        TEST_EXIT_CODE=$?
+        
+        # Exit with the test exit code to fail CI if tests failed
+        exit $TEST_EXIT_CODE
 
     - name: Upload test results
       if: always()
