@@ -8,7 +8,11 @@ type ClerkLikeUser = {
   username?: string | null;
   primaryEmailAddress?: { emailAddress?: string | null } | null;
   imageUrl?: string | null;
-  publicMetadata?: { roles?: string[] } | null;
+  publicMetadata?: { 
+    role?: string;
+    roles?: string[];
+    branchId?: string;
+  } | null;
   organizationMemberships?: Array<{ role?: string | null }> | null;
 } | null;
 
@@ -43,14 +47,17 @@ async function getUser(): Promise<ClerkLikeUser> {
   return clerk?.user ?? null;
 }
 
+function getBranchId(): string {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem('selectedBranchId') || 'branch1';
+  }
+  return 'branch1';
+}
+
 const authProvider: AuthProvider = {
   async login() {
-    // For development, auto-login without Clerk
-    if (process.env.NODE_ENV === 'development') {
-      return Promise.resolve();
-    }
     if (typeof window !== "undefined") {
-      window.location.href = "/admin/login";
+      window.location.href = "/sign-in";
     }
     return Promise.resolve();
   },
@@ -59,20 +66,20 @@ const authProvider: AuthProvider = {
     if (clerk && typeof clerk.signOut === "function") {
       try {
         await clerk.signOut();
+        // Clear branch selection
+        if (typeof window !== "undefined") {
+          localStorage.removeItem('selectedBranchId');
+        }
       } catch {
         // ignore signOut errors; treat as logged out
       }
     }
     if (typeof window !== "undefined") {
-      window.location.href = "/admin/login";
+      window.location.href = "/sign-in";
     }
     return Promise.resolve();
   },
   async checkAuth() {
-    // For development, always authenticated
-    if (process.env.NODE_ENV === 'development') {
-      return Promise.resolve();
-    }
     return (await isSignedIn()) ? Promise.resolve() : Promise.reject();
   },
   async checkError(error: unknown) {
@@ -84,19 +91,10 @@ const authProvider: AuthProvider = {
     return Promise.resolve();
   },
   async getIdentity(): Promise<UserIdentity> {
-    // For development, return a mock admin user
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        id: 'dev-user',
-        fullName: 'Development Admin',
-        avatar: undefined,
-        roles: ['admin'] // Give admin role for development
-      } as UserIdentity & { roles?: string[] };
-    }
-    
     const user = await getUser();
     if (!user) return Promise.reject();
-    const identity: UserIdentity & { roles?: string[] } = {
+    
+    const identity: UserIdentity & { roles?: string[]; branchId?: string } = {
       id: user.id,
       fullName:
         user.fullName ??
@@ -105,56 +103,32 @@ const authProvider: AuthProvider = {
         undefined,
       avatar: user.imageUrl ?? undefined,
     };
-    // Prefer local override when testing RBAC
-    let roles = [] as string[];
-    if (typeof window !== "undefined") {
-      try {
-        const override = JSON.parse(
-          window.localStorage.getItem("admin.rolesOverride") || "[]"
-        );
-        if (Array.isArray(override) && override.length > 0) {
-          roles = override.filter(Boolean);
-        }
-      } catch {}
+    
+    // Get role from user metadata
+    let roles: string[] = [];
+    if (user?.publicMetadata?.role) {
+      roles = [user.publicMetadata.role];
+    } else if (user?.publicMetadata?.roles) {
+      roles = user.publicMetadata.roles;
     }
-    if (roles.length === 0) {
-      roles =
-      (user?.publicMetadata?.roles as string[] | undefined) ||
-      (user?.organizationMemberships
-        ?.map((m) => m.role || undefined)
-        .filter(Boolean) as string[] | undefined) ||
-      [];
-    }
+    
+    // Add branch ID
+    const branchId = getBranchId();
+    identity.branchId = branchId;
+    
     if (roles.length > 0) identity.roles = roles;
     return identity;
   },
   async getPermissions() {
-    // For development, return admin permissions
-    if (process.env.NODE_ENV === 'development') {
-      return ['admin'] as unknown;
+    const user = await getUser();
+    
+    let roles: string[] = [];
+    if (user?.publicMetadata?.role) {
+      roles = [user.publicMetadata.role];
+    } else if (user?.publicMetadata?.roles) {
+      roles = user.publicMetadata.roles;
     }
     
-    const user = await getUser();
-    // Prefer local override for RBAC testing
-    let roles: string[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const override = JSON.parse(
-          window.localStorage.getItem("admin.rolesOverride") || "[]"
-        );
-        if (Array.isArray(override) && override.length > 0) {
-          roles = override.filter(Boolean);
-        }
-      } catch {}
-    }
-    if (roles.length === 0) {
-      roles =
-        (user?.publicMetadata?.roles as string[] | undefined) ||
-        (user?.organizationMemberships
-          ?.map((m) => m.role || undefined)
-          .filter(Boolean) as string[] | undefined) ||
-        [];
-    }
     return roles as unknown;
   },
 };

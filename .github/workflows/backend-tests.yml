@@ -69,13 +69,13 @@ jobs:
         touch prisma/dev.db
         touch prisma/test.db
 
-    - name: Run Prisma migrations
+    - name: Run Prisma setup for CI
       working-directory: apps/api
       env:
         DATABASE_URL: file:./dev.db
       run: |
         npx prisma generate
-        npx prisma migrate deploy
+        npx prisma db push --force-reset
         npx prisma db push
 
     - name: Seed database
@@ -83,6 +83,13 @@ jobs:
       env:
         DATABASE_URL: file:./dev.db
       run: npx prisma db seed
+
+    - name: Setup test database
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./test.db
+      run: |
+        npx prisma db push --force-reset
 
     - name: Run E2E tests
       working-directory: apps/api
@@ -163,7 +170,7 @@ jobs:
       run: |
         touch prisma/dev.db
         npx prisma generate
-        npx prisma migrate deploy
+        npx prisma db push --force-reset
         npx prisma db seed
 
     - name: Start backend server
