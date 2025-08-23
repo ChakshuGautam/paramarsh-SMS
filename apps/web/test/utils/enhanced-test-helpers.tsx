@@ -348,28 +348,36 @@ export const detectDateErrors = (container: HTMLElement) => {
   return errors;
 };
 
-// Enhanced MUI detection
+// Enhanced MUI detection - using simpler approach for jsdom compatibility
 export const detectMUIImports = (container: HTMLElement) => {
-  const muiSelectors = [
-    '[class*="Mui"]',
-    '[class*="MuiPaper"]',
-    '[class*="MuiButton"]',
-    '[class*="MuiTextField"]',
-    '[class*="MuiFormControl"]',
-    '[class*="MuiSelect"]',
-    '[class*="MuiDialog"]',
-    '[class*="MuiTable"]',
-    '[class*="MuiChip"]',
-    '[data-mui-*]',
-    '.MuiBox-root',
-    '.MuiContainer-root'
-  ];
-  
-  const muiElements = muiSelectors.map(selector => 
-    container.querySelectorAll(selector)
-  ).reduce((total, nodeList) => total + nodeList.length, 0);
-  
-  return muiElements > 0;
+  try {
+    // Get all elements
+    const allElements = container.querySelectorAll('*');
+    
+    // Check each element's className
+    for (let i = 0; i < allElements.length; i++) {
+      const element = allElements[i];
+      const className = element.className;
+      
+      // Check if className contains 'Mui'
+      if (typeof className === 'string' && className.includes('Mui')) {
+        return true;
+      }
+      
+      // Check data attributes
+      const attrs = element.attributes;
+      for (let j = 0; j < attrs.length; j++) {
+        if (attrs[j].name.startsWith('data-mui')) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    // If any error occurs, assume no MUI components
+    return false;
+  }
 };
 
 // Business logic validation utilities

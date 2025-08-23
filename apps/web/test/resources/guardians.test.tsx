@@ -1,6 +1,12 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-import { renderWithReactAdmin, expectNoDateErrors } from '../test-helpers';
+import { 
+  renderStudentsList, 
+  mockIndianStudentData,
+  detectDateErrors,
+  detectMUIImports,
+  screen,
+  waitingHelpers
+} from '../utils/enhanced-test-helpers';
 
 // Simple mock components for testing
 const MockGuardiansList = () => (
@@ -52,48 +58,89 @@ const MockGuardiansEdit = () => (
   </div>
 );
 
+// Helper to render guardian components with proper providers
+const renderGuardiansList = (dataProviderOverrides = {}, options = {}) => {
+  const { container } = renderStudentsList(
+    {
+      getList: jest.fn(() => Promise.resolve({ 
+        data: [
+          { id: 1, name: 'John Smith', relation: 'Father', phoneNumber: '+91-9876543210', email: 'john.smith@example.com' },
+          { id: 2, name: 'Mary Johnson', relation: 'Mother', phoneNumber: '+91-9876543211', email: 'mary.johnson@example.com' },
+          { id: 3, name: 'Robert Brown', relation: 'Guardian', phoneNumber: '+91-9876543212', email: 'robert.brown@example.com' }
+        ],
+        total: 3
+      })),
+      getOne: jest.fn(() => Promise.resolve({ data: {} })),
+      getMany: jest.fn(() => Promise.resolve({ data: [] })),
+      getManyReference: jest.fn(() => Promise.resolve({ data: [], total: 0 })),
+      create: jest.fn(() => Promise.resolve({ data: { id: 1 } })),
+      update: jest.fn(() => Promise.resolve({ data: { id: 1 } })),
+      delete: jest.fn(() => Promise.resolve({ data: { id: 1 } })),
+      deleteMany: jest.fn(() => Promise.resolve({ data: [] })),
+      updateMany: jest.fn(() => Promise.resolve({ data: [] })),
+      ...dataProviderOverrides
+    },
+    { resource: 'guardians', ...options }
+  );
+  
+  // Replace content with guardian mock
+  container.innerHTML = '';
+  const guardianContainer = document.createElement('div');
+  container.appendChild(guardianContainer);
+  
+  const root = require('react-dom/client').createRoot(guardianContainer);
+  root.render(<MockGuardiansList />);
+  
+  return { container };
+};
+
 describe('Guardians Resource Tests', () => {
   describe('GuardiansList Component', () => {
     it('should handle null dates without crashing', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
       
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('John Smith (Father)');
       expect(screen.getByText('John Smith (Father)')).toBeInTheDocument();
       
       // Should not have date errors
-      expectNoDateErrors();
+      const dateErrors = detectDateErrors(container);
+      expect(dateErrors).toHaveLength(0);
     });
 
     it('should handle undefined dates safely', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
       
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Mary Johnson (Mother)');
       expect(screen.getByText('Mary Johnson (Mother)')).toBeInTheDocument();
       
-      expectNoDateErrors();
+      const dateErrors = detectDateErrors(container);
+      expect(dateErrors).toHaveLength(0);
     });
 
     it('should handle empty date strings', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
       
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Robert Brown (Guardian)');
       expect(screen.getByText('Robert Brown (Guardian)')).toBeInTheDocument();
       
-      expectNoDateErrors();
+      const dateErrors = detectDateErrors(container);
+      expect(dateErrors).toHaveLength(0);
     });
 
-    it('should not use MUI components', () => {
-      const { container } = renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+    it('should not use MUI components', async () => {
+      const { container } = renderGuardiansList();
+      
+      await waitingHelpers.waitForData('Guardians List');
       
       // Check that no MUI classes are present
-      const muiElements = container.querySelectorAll('[class*="Mui"]');
-      expect(muiElements.length).toBe(0);
+      const hasMUI = detectMUIImports(container);
+      expect(hasMUI).toBe(false);
     });
 
     it('should handle wrapped data format correctly', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       expect(screen.getByText('John Smith (Father)')).toBeInTheDocument();
       expect(screen.getByText('Mary Johnson (Mother)')).toBeInTheDocument();
       expect(screen.getByText('Robert Brown (Guardian)')).toBeInTheDocument();
@@ -101,48 +148,65 @@ describe('Guardians Resource Tests', () => {
 
     it('should handle empty data gracefully', async () => {
       const EmptyList = () => <div>No results found</div>;
-      renderWithReactAdmin(<EmptyList />, { resource: 'guardians' });
+      const { container } = renderStudentsList({}, { resource: 'guardians' });
+      
+      container.innerHTML = '';
+      const emptyContainer = document.createElement('div');
+      container.appendChild(emptyContainer);
+      const root = require('react-dom/client').createRoot(emptyContainer);
+      root.render(<EmptyList />);
 
-      await screen.findByText('No results found');
-      expectNoDateErrors();
+      await waitingHelpers.waitForData('No results found');
+      const dateErrors = detectDateErrors(container);
+      expect(dateErrors).toHaveLength(0);
     });
 
     it('should display student links correctly', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       expect(screen.getByText('Ward: Alice Smith (ADM2024001)')).toBeInTheDocument();
     });
 
     it('should handle guardians with no students', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       expect(screen.getByText('No wards linked')).toBeInTheDocument();
     });
 
     it('should handle null phone numbers gracefully', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       // Should not crash when phone is null
       expect(screen.getByText('John Smith (Father)')).toBeInTheDocument();
     });
 
     it('should handle null email addresses gracefully', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       // Should not crash when email is null
       expect(screen.getByText('Robert Brown (Guardian)')).toBeInTheDocument();
     });
   });
 
   describe('GuardiansCreate Component', () => {
+    const renderGuardiansCreate = () => {
+      const { container } = renderStudentsList({}, { resource: 'guardians' });
+      container.innerHTML = '';
+      const createContainer = document.createElement('div');
+      container.appendChild(createContainer);
+      const root = require('react-dom/client').createRoot(createContainer);
+      root.render(<MockGuardiansCreate />);
+      return { container };
+    };
+    
     it('should render all required form fields', async () => {
-      renderWithReactAdmin(<MockGuardiansCreate />, { resource: 'guardians' });
+      const { container } = renderGuardiansCreate();
 
-      await screen.findByText('Create Guardian');
+      await waitingHelpers.waitForData('Create Guardian');
       expect(screen.getByLabelText('Name')).toBeInTheDocument();
       expect(screen.getByLabelText('Relation')).toBeInTheDocument();
       expect(screen.getByLabelText('Phone')).toBeInTheDocument();
@@ -150,17 +214,18 @@ describe('Guardians Resource Tests', () => {
       expect(screen.getByLabelText('Address')).toBeInTheDocument();
     });
 
-    it('should not use MUI components', () => {
-      const { container } = renderWithReactAdmin(<MockGuardiansCreate />, { resource: 'guardians' });
+    it('should not use MUI components', async () => {
+      const { container } = renderGuardiansCreate();
       
-      const muiElements = container.querySelectorAll('[class*="Mui"]');
-      expect(muiElements.length).toBe(0);
+      await waitingHelpers.waitForData('Create Guardian');
+      const hasMUI = detectMUIImports(container);
+      expect(hasMUI).toBe(false);
     });
 
     it('should handle form with empty optional fields', async () => {
-      renderWithReactAdmin(<MockGuardiansCreate />, { resource: 'guardians' });
+      const { container } = renderGuardiansCreate();
 
-      await screen.findByText('Create Guardian');
+      await waitingHelpers.waitForData('Create Guardian');
       
       // Form should render without errors even when empty
       expect(screen.getByLabelText('Name')).toHaveValue('');
@@ -169,52 +234,70 @@ describe('Guardians Resource Tests', () => {
     });
 
     it('should display save button', async () => {
-      renderWithReactAdmin(<MockGuardiansCreate />, { resource: 'guardians' });
+      const { container } = renderGuardiansCreate();
       
-      const saveButton = await screen.findByRole('button', { name: /save/i });
+      await waitingHelpers.waitForData('Create Guardian');
+      const saveButton = screen.getByRole('button', { name: /save/i });
       expect(saveButton).toBeInTheDocument();
     });
   });
 
   describe('GuardiansEdit Component', () => {
+    const renderGuardiansEdit = () => {
+      const { container } = renderStudentsList({}, { resource: 'guardians' });
+      container.innerHTML = '';
+      const editContainer = document.createElement('div');
+      container.appendChild(editContainer);
+      const root = require('react-dom/client').createRoot(editContainer);
+      root.render(<MockGuardiansEdit />);
+      return { container };
+    };
+    
     it('should load existing guardian data', async () => {
-      renderWithReactAdmin(<MockGuardiansEdit />, { resource: 'guardians' });
+      const { container } = renderGuardiansEdit();
 
-      await screen.findByText('Edit Guardian');
+      await waitingHelpers.waitForData('Edit Guardian');
       expect(screen.getByDisplayValue('John Smith')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('father')).toBeInTheDocument();
+      
+      // Check select value directly since getByDisplayValue might not work with select elements
+      const selectElement = container.querySelector('select[name="relation"]') as HTMLSelectElement;
+      expect(selectElement).toHaveValue('father');
+      
       expect(screen.getByDisplayValue('+91-9876543210')).toBeInTheDocument();
       expect(screen.getByDisplayValue('john.smith@example.com')).toBeInTheDocument();
     });
 
     it('should handle loading with null dates', async () => {
-      renderWithReactAdmin(<MockGuardiansEdit />, { resource: 'guardians' });
+      const { container } = renderGuardiansEdit();
 
-      await screen.findByText('Edit Guardian');
+      await waitingHelpers.waitForData('Edit Guardian');
       expect(screen.getByDisplayValue('John Smith')).toBeInTheDocument();
       
-      expectNoDateErrors();
+      const dateErrors = detectDateErrors(container);
+      expect(dateErrors).toHaveLength(0);
     });
 
     it('should handle loading with null phone and email', async () => {
-      renderWithReactAdmin(<MockGuardiansEdit />, { resource: 'guardians' });
+      const { container } = renderGuardiansEdit();
 
-      await screen.findByText('Edit Guardian');
+      await waitingHelpers.waitForData('Edit Guardian');
       expect(screen.getByDisplayValue('John Smith')).toBeInTheDocument();
       // Should handle null phone/email gracefully
     });
 
-    it('should not use MUI components', () => {
-      const { container } = renderWithReactAdmin(<MockGuardiansEdit />, { resource: 'guardians' });
+    it('should not use MUI components', async () => {
+      const { container } = renderGuardiansEdit();
       
-      const muiElements = container.querySelectorAll('[class*="Mui"]');
-      expect(muiElements.length).toBe(0);
+      await waitingHelpers.waitForData('Edit Guardian');
+      const hasMUI = detectMUIImports(container);
+      expect(hasMUI).toBe(false);
     });
 
     it('should display save button', async () => {
-      renderWithReactAdmin(<MockGuardiansEdit />, { resource: 'guardians' });
+      const { container } = renderGuardiansEdit();
       
-      const saveButton = await screen.findByRole('button', { name: /save/i });
+      await waitingHelpers.waitForData('Edit Guardian');
+      const saveButton = screen.getByRole('button', { name: /save/i });
       expect(saveButton).toBeInTheDocument();
     });
   });
@@ -222,19 +305,38 @@ describe('Guardians Resource Tests', () => {
   describe('Comprehensive Date Safety Tests', () => {
     it('should handle all date edge cases across all components', async () => {
       // Test List component with edge cases
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
-      await screen.findByText('Guardians List');
-      expectNoDateErrors();
+      const { container: listContainer } = renderGuardiansList();
+      await waitingHelpers.waitForData('Guardians List');
+      let dateErrors = detectDateErrors(listContainer);
+      expect(dateErrors).toHaveLength(0);
+      
+      listContainer.remove();
       
       // Test Create component
-      renderWithReactAdmin(<MockGuardiansCreate />, { resource: 'guardians' });
-      await screen.findByText('Create Guardian');
-      expectNoDateErrors();
+      const { container: createContainer } = renderStudentsList({}, { resource: 'guardians' });
+      createContainer.innerHTML = '';
+      const createDiv = document.createElement('div');
+      createContainer.appendChild(createDiv);
+      const createRoot = require('react-dom/client').createRoot(createDiv);
+      createRoot.render(<MockGuardiansCreate />);
+      
+      await waitingHelpers.waitForData('Create Guardian');
+      dateErrors = detectDateErrors(createContainer);
+      expect(dateErrors).toHaveLength(0);
+      
+      createContainer.remove();
       
       // Test Edit component
-      renderWithReactAdmin(<MockGuardiansEdit />, { resource: 'guardians' });
-      await screen.findByText('Edit Guardian');
-      expectNoDateErrors();
+      const { container: editContainer } = renderStudentsList({}, { resource: 'guardians' });
+      editContainer.innerHTML = '';
+      const editDiv = document.createElement('div');
+      editContainer.appendChild(editDiv);
+      const editRoot = require('react-dom/client').createRoot(editDiv);
+      editRoot.render(<MockGuardiansEdit />);
+      
+      await waitingHelpers.waitForData('Edit Guardian');
+      dateErrors = detectDateErrors(editContainer);
+      expect(dateErrors).toHaveLength(0);
     });
   });
 
@@ -250,21 +352,27 @@ describe('Guardians Resource Tests', () => {
         </div>
       );
       
-      renderWithReactAdmin(<IndianGuardiansList />, { resource: 'guardians' });
+      const { container } = renderStudentsList({}, { resource: 'guardians' });
+      container.innerHTML = '';
+      const indianDiv = document.createElement('div');
+      container.appendChild(indianDiv);
+      const indianRoot = require('react-dom/client').createRoot(indianDiv);
+      indianRoot.render(<IndianGuardiansList />);
       
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       expect(screen.getByText('राम शर्मा (Father)')).toBeInTheDocument();
       expect(screen.getByText('सीता देवी (Mother)')).toBeInTheDocument();
       
-      expectNoDateErrors();
+      const dateErrors = detectDateErrors(container);
+      expect(dateErrors).toHaveLength(0);
     });
   });
 
   describe('Relation Badge Tests', () => {
     it('should display correct relation badges', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       expect(screen.getByText('John Smith (Father)')).toBeInTheDocument();
       expect(screen.getByText('Mary Johnson (Mother)')).toBeInTheDocument();
       expect(screen.getByText('Robert Brown (Guardian)')).toBeInTheDocument();
@@ -273,9 +381,9 @@ describe('Guardians Resource Tests', () => {
 
   describe('Contact Information Tests', () => {
     it('should display phone and email correctly', async () => {
-      renderWithReactAdmin(<MockGuardiansList />, { resource: 'guardians' });
+      const { container } = renderGuardiansList();
 
-      await screen.findByText('Guardians List');
+      await waitingHelpers.waitForData('Guardians List');
       expect(screen.getByText('Phone: +91-9876543210')).toBeInTheDocument();
       expect(screen.getByText('Email: john.smith@example.com')).toBeInTheDocument();
     });

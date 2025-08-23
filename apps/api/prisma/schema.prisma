@@ -164,14 +164,28 @@ model Invoice {
 
 model Application {
   id                String   @id @default(uuid())
-  tenantId          String?
-  branchId          String?  // Represents schoolId - which school this application is for
-  programId         String?
-  studentProfileRef String?
-  status            String?
-  score             Float?
-  priorityTag       String?
+  branchId          String   // Represents schoolId - which school this application is for
+  applicationNo     String   @unique // Unique application number like APP20250001
+  firstName         String
+  lastName          String
+  dob               String   // Date of birth in YYYY-MM-DD format
+  gender            String   // male | female | other
+  guardianName      String
+  guardianPhone     String   // Guardian's primary phone number
+  guardianEmail     String?  // Guardian's email (optional)
+  previousSchool    String?  // Previous school name (optional)
+  classAppliedFor   String   // Class applying for (e.g., "Class 1", "Class 2")
+  status            String   @default("PENDING") // PENDING | APPROVED | REJECTED | WAITLISTED
+  submittedAt       DateTime @default(now()) // When application was submitted
+  reviewedAt        DateTime? // When application was reviewed
+  reviewedBy        String?  // ID of staff member who reviewed
+  notes             String?  // Additional notes about the application
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([branchId])
+  @@index([branchId, status])
+  @@index([branchId, classAppliedFor])
 }
 
 model Tenant {
@@ -317,6 +331,7 @@ model Teacher {
   markedAttendance    StudentPeriodAttendance[] @relation("MarkedAttendance")
   dailyAttendance     TeacherDailyAttendance[] @relation("TeacherAttendance")
   substitutingFor     TeacherDailyAttendance[] @relation("SubstituteFor")
+  attendanceRecords   TeacherAttendance[] @relation("TeacherAttendanceRecords")
   
   @@index([deletedAt])
 }
@@ -478,7 +493,6 @@ model TimeSlot {
   endTime     String           // HH:MM format
   slotType    String           @default("regular") // regular | break | assembly
   slotOrder   Int              // Order of the slot in the day
-  periods     TimetablePeriod[]
   constraints TimeSlotConstraint[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -488,30 +502,37 @@ model TimeSlot {
 }
 
 model TimetablePeriod {
-  id          String            @id @default(uuid())
-  branchId    String?
-  sectionId   String
-  section     Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  subjectId   String
-  subject     Subject           @relation(fields: [subjectId], references: [id])
-  teacherId   String
-  teacher     Teacher           @relation(fields: [teacherId], references: [id])
-  roomId      String?
-  room        Room?             @relation(fields: [roomId], references: [id])
-  timeSlotId  String
-  timeSlot    TimeSlot          @relation(fields: [timeSlotId], references: [id])
-  isActive    Boolean           @default(true)
-  effectiveFrom DateTime        @default(now())
-  effectiveTo DateTime?
-  substitutions Substitution[]
-  attendanceSessions AttendanceSession[]  // Add reverse relation
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id               String            @id @default(uuid())
+  branchId         String?           // Multi-tenancy support
+  sectionId        String
+  section          Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  dayOfWeek        Int               // 1-6 for Monday-Saturday
+  periodNumber     Int               // Period number in the day
+  startTime        String            // HH:MM format
+  endTime          String            // HH:MM format
+  subjectId        String?           // Optional for break periods
+  subject          Subject?          @relation(fields: [subjectId], references: [id])
+  teacherId        String?           // Optional for break periods
+  teacher          Teacher?          @relation(fields: [teacherId], references: [id])
+  roomId           String?           // Optional
+  room             Room?             @relation(fields: [roomId], references: [id])
+  isBreak          Boolean           @default(false)  // Is this a break period
+  breakType        String?           // SHORT/LUNCH (only for break periods)
+  academicYearId   String
+  academicYear     AcademicYear      @relation(fields: [academicYearId], references: [id])
+  
+  // Keep existing relations for backwards compatibility
+  substitutions    Substitution[]
+  attendanceSessions AttendanceSession[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  @@unique([sectionId, timeSlotId, effectiveFrom])
+  @@unique([sectionId, dayOfWeek, periodNumber, academicYearId])
+  @@index([branchId])
   @@index([teacherId])
   @@index([roomId])
-  @@index([isActive])
+  @@index([dayOfWeek])
+  @@index([academicYearId])
 }
 
 model Substitution {
@@ -678,6 +699,28 @@ model TeacherDailyAttendance {
   @@index([date, status])
 }
 
+model TeacherAttendance {
+  id        String   @id @default(uuid())
+  branchId  String   // Represents schoolId - which school this attendance record belongs to
+  teacherId String
+  date      String   // Date in YYYY-MM-DD format
+  checkIn   String?  // Time in HH:MM format
+  checkOut  String?  // Time in HH:MM format
+  status    String   // PRESENT | ABSENT | LATE | HALF_DAY | ON_LEAVE
+  leaveType String?  // CASUAL | SICK | EARNED | UNPAID (optional, only when status is ON_LEAVE)
+  remarks   String?  // Additional notes or comments
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  teacher   Teacher  @relation("TeacherAttendanceRecords", fields: [teacherId], references: [id])
+  
+  @@unique([teacherId, branchId, date])
+  @@index([branchId, date])
+  @@index([branchId, teacherId])
+  @@index([branchId, status])
+}
+
 // ========== Academic Year Management ==========
 model AcademicYear {
   id        String   @id @default(uuid())
@@ -692,6 +735,7 @@ model AcademicYear {
   
   // Relations
   exams     Exam[]
+  periods   TimetablePeriod[]
   
   @@unique([branchId, name])
   @@index([branchId, isActive])

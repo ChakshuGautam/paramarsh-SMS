@@ -51,7 +51,7 @@ class GenerateDummyAttendanceDto {
 }
 
 @ApiTags('Attendance')
-@Controller('attendance')
+@Controller('attendance-records')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
@@ -129,9 +129,7 @@ export class AttendanceController {
     @Body() data: UpdateAttendanceDto,
     @Headers('x-branch-id') branchId = 'branch1',
   ) {
-    // First check if the attendance record exists in this branch
-    await this.attendanceService.getOne(id, branchId);
-    return this.attendanceService.update(id, { ...data, branchId });
+    return this.attendanceService.update(id, data, branchId);
   }
 
   @Delete(':id')
@@ -141,9 +139,7 @@ export class AttendanceController {
     @Headers('x-branch-id') branchId = 'branch1',
     @Headers('x-user-id') userId?: string,
   ) {
-    // First check if the attendance record exists in this branch
-    await this.attendanceService.getOne(id, branchId);
-    return this.attendanceService.delete(id, userId);
+    return this.attendanceService.delete(id, userId, branchId);
   }
 
   @Delete()

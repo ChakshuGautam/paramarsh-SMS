@@ -16,177 +16,89 @@ export class AttendanceService extends BaseCrudService<any> {
   }
 
   /**
-   * Override to add branchId filtering and include student information
+   * Use the base class method with proper parameters
    */
   async getList(params: any) {
-    try {
-      const page = Math.max(1, Number(params.page ?? 1));
-      const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? 25)));
-      const skip = (page - 1) * perPage;
-
-      // Build where clause WITH BRANCH FILTERING
-      const where: any = {};
-      
-      // CRITICAL: Add branchId filtering for multi-tenancy
-      if (params.branchId) {
-        where.branchId = params.branchId;
+    // Set branch scoping in params
+    const scopedParams = {
+      page: params.page,
+      perPage: params.perPage || params.pageSize,
+      sort: params.sort,
+      filter: {
+        ...params.filter,
+        branchId: params.branchId
       }
-      
-      // Add filters correctly
-      if (params.filter && typeof params.filter === 'object') {
-        Object.keys(params.filter).forEach(key => {
-          if (params.filter[key] !== undefined && params.filter[key] !== null) {
-            where[key] = params.filter[key];
-          }
-        });
-      }
-      
-      // Handle search query 'q'
-      if (params.q && typeof params.q === 'string') {
-        where.OR = [
-          { status: { contains: params.q, mode: 'insensitive' } },
-          { reason: { contains: params.q, mode: 'insensitive' } }
-        ];
-      }
-      
-      // Build orderBy for sorting
-      let orderBy: any = [{ date: 'desc' }];
-      if (params.sort) {
-        let sortField: string;
-        let sortOrder: 'asc' | 'desc';
-        
-        if (params.sort.includes(':')) {
-          const [field, order] = params.sort.split(':');
-          sortField = field;
-          sortOrder = order === 'desc' ? 'desc' : 'asc';
-        } else if (params.sort.startsWith('-')) {
-          sortField = params.sort.slice(1);
-          sortOrder = 'desc';
-        } else {
-          sortField = params.sort;
-          sortOrder = 'asc';
-        }
-        
-        orderBy = [{ [sortField]: sortOrder }];
-      }
-
-      const [data, total] = await Promise.all([
-        this.prisma.attendanceRecord.findMany({ 
-          where, 
-          skip, 
-          take: perPage,
-          orderBy,
-          include: {
-            student: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                rollNumber: true,
-                admissionNo: true
-              }
-            }
-          }
-        }),
-        this.prisma.attendanceRecord.count({ where }),
-      ]);
-
-      return {
-        data: data,
-        total,
-      };
-    } catch (error) {
-      console.error('Error in attendance getList:', error);
-      throw error;
-    }
+    };
+    
+    return super.getList(scopedParams);
   }
 
   /**
-   * Override to add branchId filtering and include student information
+   * Use the base class method with branchId filtering
    */
   async getOne(id: string, branchId?: string) {
-    const data = await this.prisma.attendanceRecord.findFirst({
-      where: { 
-        id,
-        ...(branchId && { branchId })
-      },
-      include: {
-        student: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            rollNumber: true,
-            admissionNo: true
-          }
-        }
-      }
-    });
-
-    if (!data) {
-      throw new NotFoundException('Attendance record not found');
+    const where: any = { id };
+    if (branchId) {
+      where.branchId = branchId;
     }
-
-    return {
-      data: data,
-    };
+    
+    const data = await this.prisma.attendanceRecord.findFirst({ where });
+    
+    if (!data) {
+      throw new NotFoundException('AttendanceRecord not found');
+    }
+    
+    return { data };
   }
 
   /**
-   * Override to add branchId filtering and include student information
+   * Use the base class method with branchId filtering
    */
   async getMany(ids: string[], branchId?: string) {
-    const data = await this.prisma.attendanceRecord.findMany({
-      where: { 
-        id: { in: ids },
-        ...(branchId && { branchId })
-      },
-      include: {
-        student: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            rollNumber: true,
-            admissionNo: true
-          }
-        }
-      }
-    });
-
-    return {
-      data: data,
-    };
+    const where: any = { id: { in: ids } };
+    if (branchId) {
+      where.branchId = branchId;
+    }
+    
+    const data = await this.prisma.attendanceRecord.findMany({ where });
+    
+    return { data };
   }
 
   /**
-   * Override create method to ensure branchId is included
+   * Create method - uses base class
    */
   async create(data: any) {
-    const result = await super.create(data);
-    return {
-      data: result.data,
-    };
+    return super.create(data);
   }
 
   /**
-   * Override update method
+   * Update method with branchId validation
    */
-  async update(id: string, data: any) {
-    const result = await super.update(id, data);
-    return {
-      data: result.data,
-    };
+  async update(id: string, data: any, branchId?: string) {
+    // Validate record exists in this branch
+    await this.getOne(id, branchId);
+    
+    const updated = await this.prisma.attendanceRecord.update({
+      where: { id },
+      data
+    });
+    
+    return { data: updated };
   }
 
   /**
-   * Override delete method
+   * Delete method with branchId validation
    */
-  async delete(id: string, userId?: string) {
-    const result = await super.delete(id, userId);
-    return {
-      data: result.data,
-    };
+  async delete(id: string, userId?: string, branchId?: string) {
+    // Validate record exists in this branch
+    await this.getOne(id, branchId);
+    
+    const deleted = await this.prisma.attendanceRecord.delete({
+      where: { id }
+    });
+    
+    return { data: deleted };
   }
 
   /**
@@ -194,10 +106,31 @@ export class AttendanceService extends BaseCrudService<any> {
    */
   protected buildSearchClause(search: string): any[] {
     return [
-      { status: { contains: search, mode: 'insensitive' } },
-      { reason: { contains: search, mode: 'insensitive' } },
-      { source: { contains: search, mode: 'insensitive' } },
+      { status: { contains: search } },
+      { reason: { contains: search } },
+      { source: { contains: search } },
     ];
+  }
+
+  /**
+   * Override to handle date filtering correctly for string dates
+   */
+  protected buildWhereClause(filter?: Record<string, any>): any {
+    const where = super.buildWhereClause(filter);
+    
+    // Handle date range filters specifically for string dates
+    if (filter) {
+      if (filter.date_gte) {
+        where.date = { ...where.date, gte: filter.date_gte };
+        delete where.date_gte;
+      }
+      if (filter.date_lte) {
+        where.date = { ...where.date, lte: filter.date_lte };
+        delete where.date_lte;
+      }
+    }
+    
+    return where;
   }
 
   // Keep existing custom methods for backward compatibility

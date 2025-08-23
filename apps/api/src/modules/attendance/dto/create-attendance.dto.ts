@@ -11,6 +11,14 @@ export class CreateAttendanceDto {
   @IsUUID()
   studentId!: string;
 
+  @ApiPropertyOptional({
+    description: 'Session ID for the attendance record (optional)',
+    example: 'session-1'
+  })
+  @IsOptional()
+  @IsString()
+  sessionId?: string;
+
   @ApiProperty({
     description: 'Date of the attendance record in ISO date format',
     example: '2024-08-12',
@@ -22,13 +30,13 @@ export class CreateAttendanceDto {
 
   @ApiPropertyOptional({
     description: 'Attendance status for the given date',
-    example: 'present',
-    enum: ['present', 'absent', 'late', 'excused', 'sick', 'partial'],
-    default: 'present'
+    example: 'PRESENT',
+    enum: ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED', 'present', 'absent', 'late', 'excused'],
+    default: 'PRESENT'
   })
   @IsOptional()
   @IsString()
-  @IsIn(['present', 'absent', 'late', 'excused', 'sick', 'partial'])
+  @IsIn(['PRESENT', 'ABSENT', 'LATE', 'EXCUSED', 'present', 'absent', 'late', 'excused'])
   status?: string;
 
   @ApiPropertyOptional({

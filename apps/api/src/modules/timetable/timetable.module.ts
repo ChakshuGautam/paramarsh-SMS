@@ -6,11 +6,13 @@ import { RoomsService } from './rooms.service';
 import { RoomsController } from './rooms.controller';
 import { TimetableService } from './timetable.service';
 import { TimetableController } from './timetable.controller';
+import { PeriodsService } from './periods.service';
+import { PeriodsController } from './periods.controller';
 
 @Module({
   imports: [PrismaModule],
-  controllers: [SubjectsController, RoomsController, TimetableController],
-  providers: [SubjectsService, RoomsService, TimetableService],
-  exports: [SubjectsService, RoomsService, TimetableService],
+  controllers: [SubjectsController, RoomsController, TimetableController, PeriodsController],
+  providers: [SubjectsService, RoomsService, TimetableService, PeriodsService],
+  exports: [SubjectsService, RoomsService, TimetableService, PeriodsService],
 })
 export class TimetableModule {}
