@@ -56,21 +56,35 @@ jobs:
       run: |
         bun run start:dev &
         sleep 10
-        curl -f http://localhost:8080/api/v1 || echo "Backend started"
+        # Verify backend is running
+        if ! curl -f http://localhost:8080/api/v1; then
+          echo "❌ Backend failed to start"
+          exit 1
+        fi
+        echo "✅ Backend is running"
 
     - name: Build frontend
       working-directory: apps/web
       env:
         NEXT_PUBLIC_API_URL: http://localhost:8080
       run: |
-        npm run build || echo "Frontend build completed"
+        npm run build
+        BUILD_EXIT=$?
+        if [ $BUILD_EXIT -ne 0 ]; then
+          echo "❌ Frontend build failed"
+          exit $BUILD_EXIT
+        fi
+        echo "✅ Frontend build succeeded"
 
     - name: Run integration tests
       run: |
         echo "Running integration tests..."
         # Test if backend is responding
-        curl -f http://localhost:8080/api/v1 || true
-        echo "Integration tests completed"
+        if ! curl -f http://localhost:8080/api/v1; then
+          echo "❌ Backend integration test failed"
+          exit 1
+        fi
+        echo "✅ Integration tests passed"
 
     - name: Upload test results
       if: always()
