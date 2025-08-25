@@ -1,0 +1,57 @@
+name: Frontend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/frontend-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/frontend-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      working-directory: apps/web
+      run: npm ci
+
+    - name: Run Jest tests
+      working-directory: apps/web
+      env:
+        NODE_ENV: test
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+      run: |
+        # Run tests with CI configuration
+        npm test -- --ci --passWithNoTests --maxWorkers=2
+        TEST_EXIT_CODE=$?
+        
+        # Exit with the test exit code to fail CI if tests failed
+        exit $TEST_EXIT_CODE
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-test-results-${{ matrix.node-version }}
+        path: |
+          apps/web/coverage
+          apps/web/test-results
+        if-no-files-found: ignore

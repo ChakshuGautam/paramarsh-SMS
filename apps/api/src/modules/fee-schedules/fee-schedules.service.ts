@@ -17,9 +17,9 @@ export type FeeSchedule = {
 export class FeeSchedulesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string }) {
+  async list(params: { page?: number; perPage?: number; sort?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
+    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? 25)));
     const skip = (page - 1) * pageSize;
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => {
@@ -42,7 +42,22 @@ export class FeeSchedulesService {
       prismaAny.feeSchedule.findMany({ where, skip, take: pageSize, orderBy }),
       prismaAny.feeSchedule.count({ where }),
     ]);
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { data, total };
+  }
+
+  async findOne(id: string) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
+    const prismaAny = this.prisma as any;
+    const feeSchedule = await prismaAny.feeSchedule.findFirst({ where });
+    
+    if (!feeSchedule) {
+      throw new NotFoundException('Fee schedule not found');
+    }
+    
+    return { data: feeSchedule };
   }
 
   async create(input: FeeSchedule) {
@@ -65,8 +80,18 @@ export class FeeSchedulesService {
   }
 
   async update(id: string, input: Partial<FeeSchedule>) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
     try {
       const prismaAny = this.prisma as any;
+      // First check if the record exists and belongs to the correct branch
+      const existing = await prismaAny.feeSchedule.findFirst({ where });
+      if (!existing) {
+        throw new NotFoundException('Fee schedule not found');
+      }
+      
       const updated = await prismaAny.feeSchedule.update({
         where: { id },
         data: {
@@ -81,19 +106,31 @@ export class FeeSchedulesService {
         },
       });
       return { data: updated };
-    } catch {
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new NotFoundException('Fee schedule not found');
     }
   }
 
   async remove(id: string) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
     try {
       const prismaAny = this.prisma as any;
-      await prismaAny.feeSchedule.delete({ where: { id } });
-    } catch {
+      // First check if the record exists and belongs to the correct branch
+      const existing = await prismaAny.feeSchedule.findFirst({ where });
+      if (!existing) {
+        throw new NotFoundException('Fee schedule not found');
+      }
+      
+      const deleted = await prismaAny.feeSchedule.delete({ where: { id } });
+      return { data: deleted };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
       throw new NotFoundException('Fee schedule not found');
     }
-    return { success: true };
   }
 
   // Given a schedule and a target cycle start date, compute period label
@@ -142,8 +179,24 @@ export class FeeSchedulesService {
 
     let created = 0;
     for (const s of students) {
-      await this.prisma.invoice.create({ data: { studentId: s.id, period, dueDate, amount, status: 'issued' } });
-      created += 1;
+      // Check if invoice already exists for this student and period
+      const existing = await this.prisma.invoice.findFirst({
+        where: { studentId: s.id, period }
+      });
+      
+      if (!existing) {
+        await this.prisma.invoice.create({ 
+          data: { 
+            studentId: s.id, 
+            period, 
+            dueDate, 
+            amount, 
+            status: 'issued',
+            branchId: s.branchId // Include branchId for multi-tenancy
+          } 
+        });
+        created += 1;
+      }
     }
     return { created };
   }

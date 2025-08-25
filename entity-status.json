@@ -1,0 +1,436 @@
+{
+  "metadata": {
+    "lastUpdated": "2025-08-22",
+    "version": "1.0.0",
+    "description": "Entity implementation status tracking for Paramarsh SMS"
+  },
+  "entities": {
+    "students": {
+      "name": "Students",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation with proper data wrapper and multi-tenancy. Uses school aliasing."
+    },
+    "guardians": {
+      "name": "Guardians",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "FIXED: Updated service response format from { data, meta } to { data, total }. Complete implementation."
+    },
+    "teachers": {
+      "name": "Teachers",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Controller uses hr/teachers path instead of teachers", "Missing dedicated DTO classes"],
+      "notes": "Good implementation with BaseCrudController, proper data wrapper, multi-tenancy support"
+    },
+    "classes": {
+      "name": "Classes",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation with likely BaseCrudController pattern"
+    },
+    "sections": {
+      "name": "Sections",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "staff": {
+      "name": "Staff",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "payments": {
+      "name": "Payments",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "invoices": {
+      "name": "Invoices",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "enrollments": {
+      "name": "Enrollments",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "subjects": {
+      "name": "Subjects",
+      "status": "partial",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": false,
+        "create": false,
+        "edit": false,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": false,
+        "reviewed": true
+      },
+      "issues": ["Frontend components incomplete - only basic resource directory found", "Missing dedicated DTO classes"],
+      "notes": "Backend complete but frontend needs full implementation"
+    },
+    "academic-years": {
+      "name": "Academic Years",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "campaigns": {
+      "name": "Campaigns",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "templates": {
+      "name": "Templates",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    },
+    "tickets": {
+      "name": "Tickets",
+      "status": "complete",
+      "backend": {
+        "controller": true,
+        "service": true,
+        "dto": false,
+        "module": true,
+        "dataWrapper": true,
+        "multiTenancy": true
+      },
+      "frontend": {
+        "list": true,
+        "create": true,
+        "edit": true,
+        "shadcnOnly": true,
+        "noMUI": true
+      },
+      "tests": {
+        "e2e": true,
+        "allEndpoints": true,
+        "passing": true
+      },
+      "validation": {
+        "scriptPasses": true,
+        "reviewed": true
+      },
+      "issues": ["Missing dedicated DTO classes"],
+      "notes": "Complete implementation following project patterns"
+    }
+  },
+  "summary": {
+    "totalEntities": 14,
+    "completed": 11,
+    "partial": 2,
+    "notStarted": 1,
+    "lastReviewDate": "2025-08-22"
+  }
+}

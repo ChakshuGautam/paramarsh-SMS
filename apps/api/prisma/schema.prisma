@@ -30,6 +30,9 @@ model Student {
   status           String?            @default("active") // active | inactive | graduated
   rollNumber       String?            // Add roll number for attendance display
   photoUrl         String?            // Add photo URL for visual identification
+  // Soft delete fields
+  deletedAt        DateTime?          // Null if not deleted, timestamp if soft deleted
+  deletedBy        String?            // User ID who deleted the record
   // Note: branchId is used internally but represents schoolId in the API layer
   // This allows multi-school support where each school is a separate branch
   guardians        StudentGuardian[]  // Many-to-many relationship via junction table
@@ -41,6 +44,7 @@ model Student {
   marks            Mark[]  // New exam marks
 
   @@unique([admissionNo])
+  @@index([deletedAt])
 }
 
 model Guardian {
@@ -52,12 +56,16 @@ model Guardian {
   alternatePhoneNumber String?           // Secondary phone number
   address              String?
   occupation           String?           // Guardian's occupation
+  // Soft delete fields
+  deletedAt            DateTime?         // Null if not deleted, timestamp if soft deleted
+  deletedBy            String?           // User ID who deleted the record
   // Many-to-many relationship with students
   students             StudentGuardian[]
   
   @@index([branchId])
   @@index([email])
   @@index([phoneNumber])
+  @@index([deletedAt])
 }
 
 // Junction table for many-to-many relationship between students and guardians
@@ -144,22 +152,40 @@ model Invoice {
   dueDate   String?
   amount    Int?
   status    String?
+  // Soft delete fields
+  deletedAt DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy String?   // User ID who deleted the record
   student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   payments  Payment[]
 
   @@unique([studentId, period])
+  @@index([deletedAt])
 }
 
 model Application {
   id                String   @id @default(uuid())
-  tenantId          String?
-  branchId          String?  // Represents schoolId - which school this application is for
-  programId         String?
-  studentProfileRef String?
-  status            String?
-  score             Float?
-  priorityTag       String?
+  branchId          String   // Represents schoolId - which school this application is for
+  applicationNo     String   @unique // Unique application number like APP20250001
+  firstName         String
+  lastName          String
+  dob               String   // Date of birth in YYYY-MM-DD format
+  gender            String   // male | female | other
+  guardianName      String
+  guardianPhone     String   // Guardian's primary phone number
+  guardianEmail     String?  // Guardian's email (optional)
+  previousSchool    String?  // Previous school name (optional)
+  classAppliedFor   String   // Class applying for (e.g., "Class 1", "Class 2")
+  status            String   @default("PENDING") // PENDING | APPROVED | REJECTED | WAITLISTED
+  submittedAt       DateTime @default(now()) // When application was submitted
+  reviewedAt        DateTime? // When application was reviewed
+  reviewedBy        String?  // ID of staff member who reviewed
+  notes             String?  // Additional notes about the application
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([branchId])
+  @@index([branchId, status])
+  @@index([branchId, classAppliedFor])
 }
 
 model Tenant {
@@ -212,12 +238,16 @@ model Payment {
   status    String?
   reference String?
   method    String?
+  // Soft delete fields
+  deletedAt DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy String?   // User ID who deleted the record
   invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 
   @@unique([reference])
   @@index([invoiceId])
+  @@index([deletedAt])
 }
 
 model ExamSession {
@@ -271,7 +301,12 @@ model Staff {
   employmentType String?
   joinDate       String?
   status         String?
+  // Soft delete fields
+  deletedAt      DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy      String?   // User ID who deleted the record
   Teacher        Teacher?
+  
+  @@index([deletedAt])
 }
 
 model Teacher {
@@ -281,6 +316,9 @@ model Teacher {
   subjects        String?
   qualifications  String?
   experienceYears Int?
+  // Soft delete fields
+  deletedAt       DateTime? // Null if not deleted, timestamp if soft deleted
+  deletedBy       String?   // User ID who deleted the record
   staff           Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
   homeroomSections Section[]
   periods         TimetablePeriod[]
@@ -293,6 +331,9 @@ model Teacher {
   markedAttendance    StudentPeriodAttendance[] @relation("MarkedAttendance")
   dailyAttendance     TeacherDailyAttendance[] @relation("TeacherAttendance")
   substitutingFor     TeacherDailyAttendance[] @relation("SubstituteFor")
+  attendanceRecords   TeacherAttendance[] @relation("TeacherAttendanceRecords")
+  
+  @@index([deletedAt])
 }
 
 // Communications Module
@@ -452,7 +493,6 @@ model TimeSlot {
   endTime     String           // HH:MM format
   slotType    String           @default("regular") // regular | break | assembly
   slotOrder   Int              // Order of the slot in the day
-  periods     TimetablePeriod[]
   constraints TimeSlotConstraint[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
@@ -462,30 +502,37 @@ model TimeSlot {
 }
 
 model TimetablePeriod {
-  id          String            @id @default(uuid())
-  branchId    String?
-  sectionId   String
-  section     Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  subjectId   String
-  subject     Subject           @relation(fields: [subjectId], references: [id])
-  teacherId   String
-  teacher     Teacher           @relation(fields: [teacherId], references: [id])
-  roomId      String?
-  room        Room?             @relation(fields: [roomId], references: [id])
-  timeSlotId  String
-  timeSlot    TimeSlot          @relation(fields: [timeSlotId], references: [id])
-  isActive    Boolean           @default(true)
-  effectiveFrom DateTime        @default(now())
-  effectiveTo DateTime?
-  substitutions Substitution[]
-  attendanceSessions AttendanceSession[]  // Add reverse relation
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id               String            @id @default(uuid())
+  branchId         String?           // Multi-tenancy support
+  sectionId        String
+  section          Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  dayOfWeek        Int               // 1-6 for Monday-Saturday
+  periodNumber     Int               // Period number in the day
+  startTime        String            // HH:MM format
+  endTime          String            // HH:MM format
+  subjectId        String?           // Optional for break periods
+  subject          Subject?          @relation(fields: [subjectId], references: [id])
+  teacherId        String?           // Optional for break periods
+  teacher          Teacher?          @relation(fields: [teacherId], references: [id])
+  roomId           String?           // Optional
+  room             Room?             @relation(fields: [roomId], references: [id])
+  isBreak          Boolean           @default(false)  // Is this a break period
+  breakType        String?           // SHORT/LUNCH (only for break periods)
+  academicYearId   String
+  academicYear     AcademicYear      @relation(fields: [academicYearId], references: [id])
+  
+  // Keep existing relations for backwards compatibility
+  substitutions    Substitution[]
+  attendanceSessions AttendanceSession[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  @@unique([sectionId, timeSlotId, effectiveFrom])
+  @@unique([sectionId, dayOfWeek, periodNumber, academicYearId])
+  @@index([branchId])
   @@index([teacherId])
   @@index([roomId])
-  @@index([isActive])
+  @@index([dayOfWeek])
+  @@index([academicYearId])
 }
 
 model Substitution {
@@ -652,6 +699,28 @@ model TeacherDailyAttendance {
   @@index([date, status])
 }
 
+model TeacherAttendance {
+  id        String   @id @default(uuid())
+  branchId  String   // Represents schoolId - which school this attendance record belongs to
+  teacherId String
+  date      String   // Date in YYYY-MM-DD format
+  checkIn   String?  // Time in HH:MM format
+  checkOut  String?  // Time in HH:MM format
+  status    String   // PRESENT | ABSENT | LATE | HALF_DAY | ON_LEAVE
+  leaveType String?  // CASUAL | SICK | EARNED | UNPAID (optional, only when status is ON_LEAVE)
+  remarks   String?  // Additional notes or comments
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  teacher   Teacher  @relation("TeacherAttendanceRecords", fields: [teacherId], references: [id])
+  
+  @@unique([teacherId, branchId, date])
+  @@index([branchId, date])
+  @@index([branchId, teacherId])
+  @@index([branchId, status])
+}
+
 // ========== Academic Year Management ==========
 model AcademicYear {
   id        String   @id @default(uuid())
@@ -666,6 +735,7 @@ model AcademicYear {
   
   // Relations
   exams     Exam[]
+  periods   TimetablePeriod[]
   
   @@unique([branchId, name])
   @@index([branchId, isActive])
@@ -737,5 +807,32 @@ model GradingScale {
   updatedAt      DateTime @updatedAt
   
   @@index([branchId, isDefault])
+}
+
+// ========== Audit Log ==========
+model AuditLog {
+  id             String   @id @default(uuid())
+  branchId       String?  // Branch/School where action occurred
+  userId         String?  // User who performed the action
+  userEmail      String?  // User email for reference
+  action         String   // CREATE, UPDATE, DELETE, SOFT_DELETE, RESTORE, LOGIN, LOGOUT
+  method         String   // GET, POST, PUT, PATCH, DELETE
+  endpoint       String   // API endpoint path
+  entityType     String?  // Model/Entity type affected
+  entityId       String?  // ID of the affected entity
+  oldData        String?  // JSON string of old data (for updates/deletes)
+  newData        String?  // JSON string of new data (for creates/updates)
+  ipAddress      String?  // Client IP address
+  userAgent      String?  // Browser/client user agent
+  statusCode     Int?     // HTTP response status code
+  errorMessage   String?  // Error message if request failed
+  duration       Int?     // Request duration in milliseconds
+  createdAt      DateTime @default(now())
+  
+  @@index([branchId])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
 }
 

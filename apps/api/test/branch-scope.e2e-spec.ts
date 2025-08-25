@@ -17,6 +17,7 @@ describe('BranchGuard + scoping (E2E)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api/v1');
+    app.setGlobalPrefix('api/v1');
     await app.init();
     http = request(app.getHttpServer());
   });

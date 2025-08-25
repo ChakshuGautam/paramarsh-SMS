@@ -2,6 +2,37 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+/**
+ * Generate realistic student status based on grade level and target distribution:
+ * - 70% active (currently enrolled)
+ * - 10% inactive (on leave, suspended, etc.)
+ * - 20% graduated (for historical data)
+ * 
+ * Graduated students should be more likely in higher classes (Class 8-10)
+ */
+function getRealisticStudentStatus(gradeLevel: number): string {
+  const rand = Math.random();
+  
+  // Higher classes (Class 8-10) have more graduated students
+  if (gradeLevel >= 10) { // Class 8 and above
+    if (rand < 0.50) return 'active';     // 50% active
+    if (rand < 0.60) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 40% graduated
+  } else if (gradeLevel >= 8) { // Class 6-7
+    if (rand < 0.60) return 'active';     // 60% active
+    if (rand < 0.70) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 30% graduated
+  } else if (gradeLevel >= 5) { // Class 3-5
+    if (rand < 0.75) return 'active';     // 75% active
+    if (rand < 0.85) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 15% graduated
+  } else { // Lower classes (Nursery-Class 2)
+    if (rand < 0.85) return 'active';     // 85% active
+    if (rand < 0.95) return 'inactive';   // 10% inactive
+    return 'graduated';                   // 5% graduated
+  }
+}
+
 async function main() {
   console.log('🌱 Starting database seed...');
 
@@ -485,7 +516,7 @@ async function main() {
           classId: section.classId,
           sectionId: section.id,
           rollNumber: String(j + 1),
-          status: Math.random() > 0.95 ? (Math.random() > 0.5 ? 'inactive' : 'graduated') : 'active'
+          status: getRealisticStudentStatus(cls?.gradeLevel || 1)
         }
       });
       students.push(student);
@@ -582,6 +613,20 @@ async function main() {
   console.log('📋 Creating enrollments...');
   for (const student of students) {
     if (student.sectionId) {
+      // For graduated students, create enrollment with realistic dates
+      let startDate = academicYear.startDate;
+      let endDate = undefined;
+      
+      if (student.status === 'graduated') {
+        // Graduated students completed in previous academic years
+        const yearsAgo = Math.floor(Math.random() * 3) + 1; // 1-3 years ago
+        startDate = `${2024 - yearsAgo - 1}-04-01`;
+        endDate = `${2024 - yearsAgo}-03-31`;
+      } else if (student.status === 'inactive') {
+        // Inactive students started this year but are currently inactive
+        endDate = undefined; // They might return
+      }
+      
       await prisma.enrollment.create({
         data: {
           branchId: tenant.id,
@@ -589,8 +634,8 @@ async function main() {
           sectionId: student.sectionId,
           status: student.status === 'active' ? 'enrolled' : 
                   student.status === 'graduated' ? 'completed' : 'inactive',
-          startDate: academicYear.startDate,
-          endDate: student.status !== 'active' ? academicYear.endDate : undefined
+          startDate: startDate,
+          endDate: endDate
         }
       });
     }
@@ -818,14 +863,57 @@ async function main() {
         
         const period = await prisma.timetablePeriod.create({
           data: {
+            branchId: section.branchId,
             sectionId: section.id,
+            dayOfWeek: day,
+            periodNumber: i + 1,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
             subjectId: subject.id,
             teacherId: teacher.id,
             roomId: room.id,
-            timeSlotId: slot.id
+            isBreak: false,
+            academicYearId: academicYear.id
           }
         });
         timetablePeriods.push(period);
+      }
+
+      // Add break periods for each day (using higher period numbers to avoid conflicts)
+      if (daySlots.length > 2) {
+        // Short break 
+        const shortBreak = await prisma.timetablePeriod.create({
+          data: {
+            branchId: section.branchId,
+            sectionId: section.id,
+            dayOfWeek: day,
+            periodNumber: daySlots.length + 1,
+            startTime: '10:45',
+            endTime: '11:00',
+            isBreak: true,
+            breakType: 'SHORT',
+            academicYearId: academicYear.id
+          }
+        });
+        timetablePeriods.push(shortBreak);
+      }
+
+      if (daySlots.length > 4) {
+        // Lunch break
+        const lunchBreak = await prisma.timetablePeriod.create({
+          data: {
+            branchId: section.branchId,
+            sectionId: section.id,
+            dayOfWeek: day,
+            periodNumber: daySlots.length + 2,
+            startTime: '12:45',
+            endTime: '13:30',
+            isBreak: true,
+            breakType: 'LUNCH',
+            academicYearId: academicYear.id
+          }
+        });
+        timetablePeriods.push(lunchBreak);
       }
     }
   }
@@ -1098,6 +1186,137 @@ async function main() {
     }
   }
 
+  // Create Applications for both branches
+  console.log('🎓 Creating applications...');
+  
+  const applications = [];
+  const applicationStatuses = ['PENDING', 'APPROVED', 'REJECTED', 'WAITLISTED'];
+  const genders = ['male', 'female'];
+  const classLevels = ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'];
+  
+  const indianFirstNames = {
+    male: ['Aarav', 'Vivaan', 'Arjun', 'Rohan', 'Ishaan', 'Karan', 'Dhruv', 'Aryan', 'Vihaan', 'Aditya', 'Aniket', 'Harsh', 'Sidharth', 'Yash', 'Kabir'],
+    female: ['Saanvi', 'Ananya', 'Diya', 'Neha', 'Kavya', 'Riya', 'Priya', 'Avni', 'Shruti', 'Pooja', 'Meera', 'Tanya', 'Shreya', 'Aditi', 'Divya']
+  };
+  
+  const indianLastNames = ['Sharma', 'Patel', 'Singh', 'Kumar', 'Gupta', 'Jain', 'Agarwal', 'Mittal', 'Shah', 'Bansal', 'Aggarwal', 'Malhotra', 'Chopra', 'Kapoor', 'Verma', 'Joshi', 'Mehta', 'Saxena', 'Sinha', 'Yadav'];
+  
+  const guardianFirstNames = {
+    male: ['Rajesh', 'Suresh', 'Mahesh', 'Ramesh', 'Deepak', 'Ashok', 'Vinod', 'Anil', 'Sanjay', 'Ajay', 'Vikash', 'Manoj', 'Ravi', 'Amit', 'Rohit'],
+    female: ['Sunita', 'Meena', 'Kavita', 'Seema', 'Rekha', 'Geeta', 'Sita', 'Rita', 'Nisha', 'Pooja', 'Priya', 'Anjali', 'Shanti', 'Maya', 'Sushma']
+  };
+
+  const previousSchools = [
+    'Little Angels Nursery',
+    'Tiny Tots Kindergarten',
+    'Bright Minds School',
+    'Happy Kids Academy',
+    'Rainbow Nursery School',
+    'Golden Steps School',
+    'Smart Kids Academy',
+    'Future Stars School',
+    'Bright Future Nursery',
+    'Little Scholars School',
+    'Sunshine Kindergarten',
+    'Creative Minds Academy',
+    'First Steps School',
+    'Building Blocks Academy',
+    'Growing Minds School'
+  ];
+
+  const branches = [tenant.id, 'branch2'];
+  
+  // Create second branch tenant if it doesn't exist
+  if (!await prisma.tenant.findUnique({ where: { id: 'branch2' } })) {
+    await prisma.tenant.create({
+      data: {
+        id: 'branch2',
+        name: 'Delhi Public School - Central',
+        subdomain: 'dps-central'
+      }
+    });
+  }
+  
+  for (const branchId of branches) {
+    // Create applications for each branch (15 per branch)
+    for (let i = 0; i < 15; i++) {
+      const gender = genders[Math.floor(Math.random() * genders.length)];
+      const firstName = indianFirstNames[gender][Math.floor(Math.random() * indianFirstNames[gender].length)];
+      const lastName = indianLastNames[Math.floor(Math.random() * indianLastNames.length)];
+      
+      const guardianGender = Math.random() > 0.7 ? 'female' : 'male'; // 70% male guardians
+      const guardianFirstName = guardianFirstNames[guardianGender][Math.floor(Math.random() * guardianFirstNames[guardianGender].length)];
+      
+      const status = applicationStatuses[Math.floor(Math.random() * applicationStatuses.length)];
+      const classApplied = classLevels[Math.floor(Math.random() * classLevels.length)];
+      
+      // Generate realistic birth year based on class applied
+      const currentYear = new Date().getFullYear();
+      let birthYear = currentYear - 4; // Default for Nursery (4 years old)
+      
+      if (classApplied === 'LKG') birthYear = currentYear - 5;
+      else if (classApplied === 'UKG') birthYear = currentYear - 6;
+      else if (classApplied.includes('1')) birthYear = currentYear - 7;
+      else if (classApplied.includes('2')) birthYear = currentYear - 8;
+      else if (classApplied.includes('3')) birthYear = currentYear - 9;
+      else if (classApplied.includes('4')) birthYear = currentYear - 10;
+      else if (classApplied.includes('5')) birthYear = currentYear - 11;
+      
+      const dobMonth = Math.floor(Math.random() * 12) + 1;
+      const dobDay = Math.floor(Math.random() * 28) + 1;
+      const dob = `${birthYear}-${dobMonth.toString().padStart(2, '0')}-${dobDay.toString().padStart(2, '0')}`;
+      
+      const phoneNumber = `+91-${Math.floor(Math.random() * 9000000000) + 1000000000}`;
+      const email = `${guardianFirstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
+      
+      const submittedDate = new Date();
+      submittedDate.setDate(submittedDate.getDate() - Math.floor(Math.random() * 90)); // Random date in last 90 days
+      
+      let reviewedAt = null;
+      let reviewedBy = null;
+      
+      if (['APPROVED', 'REJECTED', 'WAITLISTED'].includes(status)) {
+        reviewedAt = new Date(submittedDate);
+        reviewedAt.setDate(reviewedAt.getDate() + Math.floor(Math.random() * 30)); // Reviewed within 30 days
+        reviewedBy = staffMembers[Math.floor(Math.random() * staffMembers.length)].id;
+      }
+      
+      const applicationNo = `APP2025${(branchId === 'branch1' ? i + 1 : i + 16).toString().padStart(4, '0')}`;
+      
+      const application = await prisma.application.create({
+        data: {
+          branchId,
+          applicationNo,
+          firstName,
+          lastName,
+          dob,
+          gender,
+          guardianName: `${guardianFirstName} ${lastName}`,
+          guardianPhone: phoneNumber,
+          guardianEmail: email,
+          previousSchool: Math.random() > 0.2 ? previousSchools[Math.floor(Math.random() * previousSchools.length)] : null,
+          classAppliedFor: classApplied,
+          status,
+          submittedAt: submittedDate,
+          reviewedAt,
+          reviewedBy,
+          notes: Math.random() > 0.5 ? [
+            'Student shows good communication skills',
+            'Very bright and enthusiastic child',
+            'Needs some support with language',
+            'Excellent in mathematics',
+            'Creative and artistic talents',
+            'Good social skills observed',
+            'Recommended by previous teacher',
+            'Parent very cooperative and involved'
+          ][Math.floor(Math.random() * 8)] : null,
+        }
+      });
+      
+      applications.push(application);
+    }
+  }
+
   console.log('✅ Database seed completed successfully!');
   
   // Display comprehensive summary
@@ -1132,7 +1351,8 @@ async function main() {
     messages: await prisma.message.count(),
     preferences: await prisma.preference.count(),
     tickets: await prisma.ticket.count(),
-    ticketMessages: await prisma.ticketMessage.count()
+    ticketMessages: await prisma.ticketMessage.count(),
+    applications: await prisma.application.count()
   };
   
   console.log('\n📊 Database Summary:');
@@ -1159,6 +1379,207 @@ async function main() {
   const twoParentStudents = studentsWithBothParents.filter(s => s.guardians.length >= 2);
   console.log(`  - Students with both parents: ${twoParentStudents.length}`);
   console.log(`  - Students with single parent: ${studentsWithBothParents.filter(s => s.guardians.length === 1).length}`);
+  
+  // Validate student status distribution
+  console.log('\n📊 Student Status Distribution:');
+  const statusCounts = await prisma.student.groupBy({
+    by: ['status'],
+    _count: {
+      status: true
+    }
+  });
+  
+  const totalStudents = summary.students;
+  statusCounts.forEach(({ status, _count }) => {
+    const percentage = ((_count.status / totalStudents) * 100).toFixed(1);
+    console.log(`  - ${status}: ${_count.status} (${percentage}%)`);
+  });
+  
+  // 📋 Create AttendanceRecord data
+  console.log('📋 Creating AttendanceRecord data...');
+  
+  const currentDate = new Date();
+  const attendanceRecords = [];
+  
+  // Get students from both branches
+  const allStudents = await prisma.student.findMany({
+    where: {
+      branchId: {
+        in: ['branch1', 'branch2']
+      },
+      status: 'active'
+    },
+    take: 100 // Limit for performance
+  });
+  
+  // Create attendance records for the last 30 days
+  for (let i = 0; i < 30; i++) {
+    const attendanceDate = new Date(currentDate);
+    attendanceDate.setDate(currentDate.getDate() - i);
+    const dateString = attendanceDate.toISOString().split('T')[0];
+    
+    // Skip weekends
+    const dayOfWeek = attendanceDate.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+    
+    // Create records for random subset of students
+    const selectedStudents = allStudents.slice(0, Math.floor(allStudents.length * 0.8));
+    
+    for (const student of selectedStudents) {
+      const random = Math.random();
+      let status = 'PRESENT';
+      let reason = null;
+      let source = 'manual';
+      
+      if (random < 0.05) {
+        status = 'ABSENT';
+        reason = 'Sick leave';
+      } else if (random < 0.08) {
+        status = 'LATE';
+        reason = 'Traffic delay';
+      } else if (random < 0.10) {
+        status = 'EXCUSED';
+        reason = 'Doctor appointment';
+      }
+      
+      attendanceRecords.push({
+        branchId: student.branchId,
+        studentId: student.id,
+        date: dateString,
+        status,
+        reason,
+        source
+      });
+    }
+  }
+  
+  if (attendanceRecords.length > 0) {
+    await prisma.attendanceRecord.createMany({
+      data: attendanceRecords
+    });
+    
+    console.log(`  ✅ Created ${attendanceRecords.length} attendance records`);
+  }
+
+  // Create Teacher Attendance records
+  console.log('\n👨‍🏫 Creating teacher attendance records...');
+  const allTeachers = await prisma.teacher.findMany({
+    where: {
+      branchId: { in: ['branch1', 'branch2'] }
+    }
+  });
+  
+  const teacherAttendanceData = [];
+  const teacherStatuses = ['PRESENT', 'ABSENT', 'LATE', 'HALF_DAY', 'ON_LEAVE'];
+  const leaveTypes = ['CASUAL', 'SICK', 'EARNED', 'UNPAID'];
+  
+  // Create attendance for last 30 days
+  for (let day = 0; day < 30; day++) {
+    const date = new Date();
+    date.setDate(date.getDate() - day);
+    
+    // Skip weekends for school attendance
+    if (date.getDay() === 0 || date.getDay() === 6) continue;
+    
+    const dateStr = date.toISOString().split('T')[0];
+    
+    for (const teacher of allTeachers) {
+      const random = Math.random();
+      let status: string;
+      let checkIn: string | null = null;
+      let checkOut: string | null = null;
+      let leaveType: string | null = null;
+      let remarks: string | null = null;
+      
+      if (random < 0.85) { // 85% present
+        status = 'PRESENT';
+        checkIn = `08:${String(Math.floor(Math.random() * 30)).padStart(2, '0')}`;
+        checkOut = `16:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
+        remarks = 'Regular attendance';
+      } else if (random < 0.90) { // 5% late
+        status = 'LATE';
+        checkIn = `09:${String(15 + Math.floor(Math.random() * 45)).padStart(2, '0')}`;
+        checkOut = `16:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`;
+        remarks = 'Arrived late';
+      } else if (random < 0.93) { // 3% half day
+        status = 'HALF_DAY';
+        if (Math.random() < 0.5) {
+          checkIn = '08:00';
+          checkOut = '12:00';
+          remarks = 'Morning half day';
+        } else {
+          checkIn = '13:00';
+          checkOut = '17:00';
+          remarks = 'Afternoon half day';
+        }
+      } else if (random < 0.97) { // 4% on leave
+        status = 'ON_LEAVE';
+        leaveType = leaveTypes[Math.floor(Math.random() * leaveTypes.length)];
+        remarks = `${leaveType.toLowerCase()} leave taken`;
+      } else { // 3% absent
+        status = 'ABSENT';
+        remarks = 'Unplanned absence';
+      }
+      
+      teacherAttendanceData.push({
+        branchId: teacher.branchId,
+        teacherId: teacher.id,
+        date: dateStr,
+        checkIn,
+        checkOut,
+        status,
+        leaveType,
+        remarks
+      });
+    }
+  }
+  
+  if (teacherAttendanceData.length > 0) {
+    await prisma.teacherAttendance.createMany({
+      data: teacherAttendanceData
+    });
+    
+    console.log(`  ✅ Created ${teacherAttendanceData.length} teacher attendance records`);
+  }
+
+  // Validate graduated students by class
+  console.log('\n🎓 Graduated Students by Class:');
+  const graduatedStudents = await prisma.student.findMany({
+    where: { status: 'graduated' }
+  });
+  
+  const classIds = [...new Set(graduatedStudents.map(s => s.classId).filter(Boolean))];
+  const classEntities = await prisma.class.findMany({
+    where: { id: { in: classIds } }
+  });
+  
+  const classMap = classEntities.reduce((acc, cls) => {
+    acc[cls.id] = cls.name;
+    return acc;
+  }, {} as Record<string, string>);
+  
+  const classGraduationCounts = graduatedStudents.reduce((acc, student) => {
+    const className = student.classId ? classMap[student.classId] || 'Unknown' : 'Unknown';
+    acc[className] = (acc[className] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  Object.entries(classGraduationCounts).forEach(([className, count]) => {
+    console.log(`  - ${className}: ${count} graduated students`);
+  });
+  
+  // Validate that each class has some students with different statuses
+  console.log('\n📚 Status Distribution Across Classes:');
+  for (const cls of classes) {
+    const classStudents = await prisma.student.groupBy({
+      by: ['status'],
+      where: { classId: cls.id },
+      _count: { status: true }
+    });
+    
+    const statusSummary = classStudents.map(s => `${s.status}: ${s._count.status}`).join(', ');
+    console.log(`  - ${cls.name}: ${statusSummary}`);
+  }
 }
 
 main()

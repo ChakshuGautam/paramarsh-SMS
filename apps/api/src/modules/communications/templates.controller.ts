@@ -4,9 +4,11 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   Query,
+  Headers,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { TemplatesService } from './templates.service';
@@ -25,7 +27,10 @@ export class TemplatesController {
     description: 'Creates a reusable message template for SMS, email, push notifications, or WhatsApp'
   })
   @CreateDocs('Template created successfully')
-  create(@Body() createTemplateDto: CreateTemplateDto) {
+  create(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Body() createTemplateDto: CreateTemplateDto,
+  ) {
     return this.templatesService.create(createTemplateDto);
   }
 
@@ -34,19 +39,39 @@ export class TemplatesController {
     summary: 'Get all templates',
     description: 'Retrieves all message templates with optional filtering by channel and pagination'
   })
-  @ApiQuery({ name: 'skip', required: false, description: 'Number of records to skip', example: '0' })
-  @ApiQuery({ name: 'take', required: false, description: 'Number of records to take', example: '20' })
-  @ApiQuery({ name: 'channel', required: false, description: 'Filter by communication channel', example: 'sms' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: '1' })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Number of records per page', example: '25' })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'name' })
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter JSON', example: '{}' })
+  @ApiQuery({ name: 'ids', required: false, description: 'Specific IDs to fetch', example: 'id1,id2' })
   @ListDocs('List of message templates')
-  findAll(
-    @Query('skip') skip?: string,
-    @Query('take') take?: string,
-    @Query('channel') channel?: string,
+  async findAll(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('sort') sort?: string,
+    @Query('filter') filterStr?: string,
+    @Query('ids') idsStr?: string,
   ) {
-    return this.templatesService.findAll({
-      skip: skip ? Number(skip) : undefined,
-      take: take ? Number(take) : undefined,
-      where: channel ? { channel } : undefined,
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = JSON.parse(filterStr);
+      } catch (error) {
+        filter = {};
+      }
+    }
+    const ids = idsStr ? idsStr.split(',') : undefined;
+
+    if (ids) {
+      return this.templatesService.getMany(ids);
+    }
+
+    return this.templatesService.getList({
+      page: parseInt(page || '1'),
+      perPage: parseInt(perPage || '25'),
+      sort,
+      filter,
     });
   }
 
@@ -56,12 +81,20 @@ export class TemplatesController {
     description: 'Retrieves detailed information about a specific message template'
   })
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
+  @ApiQuery({ name: 'include', required: false, description: 'Include related data (campaigns)', example: 'campaigns' })
   @ListDocs('Template details')
-  findOne(@Param('id') id: string) {
-    return this.templatesService.findOne(id);
+  findOne(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+    @Query('include') include?: string,
+  ) {
+    if (include) {
+      return this.templatesService.getOneWithIncludes(id, include);
+    }
+    return this.templatesService.getOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiOperation({ 
     summary: 'Update template',
     description: 'Updates an existing message template with new content or settings'
@@ -69,6 +102,22 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @UpdateDocs('Template updated successfully')
   update(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+    @Body() updateTemplateDto: UpdateTemplateDto,
+  ) {
+    return this.templatesService.update(id, updateTemplateDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ 
+    summary: 'Patch template',
+    description: 'Partially updates an existing message template'
+  })
+  @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
+  @UpdateDocs('Template updated successfully')
+  patch(
+    @Headers('x-branch-id') branchId = 'branch1',
     @Param('id') id: string,
     @Body() updateTemplateDto: UpdateTemplateDto,
   ) {
@@ -82,8 +131,11 @@ export class TemplatesController {
   })
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @DeleteDocs('Template deleted successfully')
-  remove(@Param('id') id: string) {
-    return this.templatesService.remove(id);
+  remove(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+  ) {
+    return this.templatesService.delete(id);
   }
 
   @Post(':id/preview')
@@ -108,7 +160,8 @@ export class TemplatesController {
     @Param('id') id: string,
     @Body() variables: Record<string, any>,
   ) {
-    const template = await this.templatesService.findOne(id);
+    const result = await this.templatesService.getOne(id);
+    const template = result.data;
     if (!template) {
       throw new Error('Template not found');
     }

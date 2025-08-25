@@ -108,19 +108,54 @@ export class InvoicesService extends BaseCrudService<any> {
   /**
    * Legacy list method for backward compatibility
    */
-  async list(params: { page?: number; pageSize?: number; sort?: string; studentId?: string; status?: string }) {
+  async list(params: { page?: number; perPage?: number; sort?: string; studentId?: string; status?: string; branchId: string; filter?: any; ids?: string }) {
+    const filter: any = {
+      studentId: params.studentId,
+      status: params.status,
+      student: {
+        branchId: params.branchId
+      }
+    };
+    
+    if (params.filter) {
+      Object.assign(filter, params.filter);
+    }
+    
+    if (params.ids) {
+      filter.id = { in: params.ids.split(',') };
+    }
+    
     return this.getList({
       page: params.page,
-      perPage: params.pageSize,
+      perPage: params.perPage,
       sort: params.sort,
-      filter: {
-        studentId: params.studentId,
-        status: params.status,
-      }
+      filter
     });
   }
 
-  async create(input: { studentId: string; period?: string; dueDate?: string; amount?: number; status?: string; withPayment?: boolean }) {
+  // Override base method
+  async getOne(id: string): Promise<any> {
+    // This method will be used by the controller with branchId
+    throw new Error('Use getOneWithBranch instead');
+  }
+  
+  async getOneWithBranch(id: string, branchId: string) {
+    const invoice = await this.prisma.invoice.findUnique({ 
+      where: { id },
+      include: {
+        student: true
+      }
+    });
+    
+    // Check tenant isolation
+    if (!invoice || invoice.student.branchId !== branchId) {
+      throw new NotFoundException('Invoice not found');
+    }
+    
+    return { data: invoice };
+  }
+
+  async create(input: { studentId: string; period?: string; dueDate?: string; amount?: number; status?: string; withPayment?: boolean; branchId: string }) {
     const inv = await this.prisma.invoice.create({ data: {
       studentId: input.studentId,
       period: input.period ?? null,
@@ -140,7 +175,23 @@ export class InvoicesService extends BaseCrudService<any> {
     return { data: inv };
   }
 
-  async update(id: string, input: Partial<{ period: string; dueDate: string; amount: number; status: string }>) {
+  // Override base method
+  async update(id: string, data: any): Promise<any> {
+    // This method will be used by the controller with branchId
+    throw new Error('Use updateWithBranch instead');
+  }
+  
+  async updateWithBranch(id: string, input: Partial<{ period: string; dueDate: string; amount: number; status: string }>, branchId: string) {
+    // First check if invoice exists and belongs to branch
+    const existing = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: { student: true }
+    });
+    
+    if (!existing || existing.student.branchId !== branchId) {
+      throw new NotFoundException('Invoice not found');
+    }
+    
     const updated = await this.prisma.invoice.update({ where: { id }, data: {
       period: input.period ?? undefined,
       dueDate: input.dueDate ?? undefined,
@@ -150,13 +201,23 @@ export class InvoicesService extends BaseCrudService<any> {
     return { data: updated };
   }
 
-  async remove(id: string) {
+  async remove(id: string, branchId: string) {
+    // First check if invoice exists and belongs to branch
+    const existing = await this.prisma.invoice.findUnique({
+      where: { id },
+      include: { student: true }
+    });
+    
+    if (!existing || existing.student.branchId !== branchId) {
+      throw new NotFoundException('Invoice not found');
+    }
+    
     try {
       await this.prisma.invoice.delete({ where: { id } });
     } catch {
       throw new NotFoundException('Invoice not found');
     }
-    return { success: true };
+    return { data: { id } };
   }
 
   async exportPdfAndUpload(id: string) {

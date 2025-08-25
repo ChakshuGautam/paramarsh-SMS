@@ -18,11 +18,13 @@ export class SubjectsService {
 
   async findAll(filters?: {
     page?: number;
-    pageSize?: number;
+    perPage?: number;
     sort?: string;
     q?: string;
     credits?: number;
-    isActive?: boolean;
+    isElective?: boolean;
+    code?: string;
+    [key: string]: any;
   }) {
     const { branchId } = PrismaService.getScope();
     const where: Prisma.SubjectWhereInput = {};
@@ -41,23 +43,36 @@ export class SubjectsService {
       where.credits = filters.credits;
     }
     
-    // Elective filter (using isElective since isActive doesn't exist)
-    if (filters?.isActive !== undefined) {
-      where.isElective = filters.isActive; // Map isActive to isElective for now
+    // isElective filter
+    if (filters?.isElective !== undefined) {
+      where.isElective = filters.isElective;
     }
+    
+    // Code filter
+    if (filters?.code) {
+      where.code = filters.code;
+    }
+    
+    // Apply other dynamic filters
+    Object.keys(filters || {}).forEach(key => {
+      if (!['page', 'perPage', 'sort', 'q'].includes(key) && filters![key] !== undefined) {
+        if (!(where as any)[key]) {
+          (where as any)[key] = filters![key];
+        }
+      }
+    });
     
     // Pagination
     const page = filters?.page || 1;
-    const pageSize = filters?.pageSize || 10;
-    const skip = (page - 1) * pageSize;
+    const perPage = filters?.perPage || 10;
+    const skip = (page - 1) * perPage;
     
-    // Sorting
+    // Sorting - handle React Admin format
     let orderBy: Prisma.SubjectOrderByWithRelationInput = { name: 'asc' };
     if (filters?.sort) {
-      const [field, direction] = filters.sort.split(':');
-      if (field && direction) {
-        orderBy = { [field]: direction === 'desc' ? 'desc' : 'asc' };
-      }
+      const sortField = filters.sort.startsWith('-') ? filters.sort.substring(1) : filters.sort;
+      const sortDirection = filters.sort.startsWith('-') ? 'desc' : 'asc';
+      orderBy = { [sortField]: sortDirection };
     }
     
     const [subjects, total] = await Promise.all([
@@ -65,7 +80,7 @@ export class SubjectsService {
         where,
         orderBy,
         skip,
-        take: pageSize,
+        take: perPage,
         include: {
           constraints: true,
           periods: {
@@ -83,18 +98,17 @@ export class SubjectsService {
     
     return {
       data: subjects,
-      meta: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      },
+      total,
     };
   }
 
   async findOne(id: string) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
     return this.prisma.subject.findUnique({
-      where: { id },
+      where,
       include: {
         constraints: true,
         periods: {
@@ -113,16 +127,46 @@ export class SubjectsService {
     });
   }
 
+  async findMany(ids: string[]) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id: { in: ids } };
+    if (branchId) where.branchId = branchId;
+
+    const data = await this.prisma.subject.findMany({
+      where,
+      include: {
+        constraints: true,
+        periods: {
+          take: 5,
+          include: {
+            section: true,
+            teacher: true,
+          },
+        },
+      },
+    });
+
+    return { data };
+  }
+
   async update(id: string, data: Prisma.SubjectUpdateInput) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
     return this.prisma.subject.update({
-      where: { id },
+      where,
       data,
     });
   }
 
   async remove(id: string) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId) where.branchId = branchId;
+    
     return this.prisma.subject.delete({
-      where: { id },
+      where,
     });
   }
 

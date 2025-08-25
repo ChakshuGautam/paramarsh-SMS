@@ -119,12 +119,22 @@ export class CreateStudentDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  className?: string;
+  classId?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  sectionName?: string;
+  sectionId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  rollNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  status?: string;
 
   @ApiPropertyOptional({ type: [CreateGuardianDto] })
   @IsOptional()

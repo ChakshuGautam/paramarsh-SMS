@@ -1,1 +1,14 @@
 node_modules
+.mcp.json
+
+# Cypress
+apps/web/cypress/videos
+apps/web/cypress/screenshots
+apps/web/cypress/snapshots/diff
+apps/web/cypress/snapshots/base/*.png
+apps/web/cypress/downloads
+
+# Testing
+coverage
+.nyc_output
+test-results

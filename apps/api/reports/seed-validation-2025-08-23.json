@@ -1,0 +1,307 @@
+{
+  "timestamp": "2025-08-23T06:07:05.660Z",
+  "database": "dev.db",
+  "branchId": "branch1",
+  "overall": {
+    "status": "FAIL",
+    "healthScore": 73,
+    "totalChecks": 40,
+    "passed": 29,
+    "failed": 8,
+    "warnings": 3
+  },
+  "entityCounts": [
+    {
+      "entity": "Student",
+      "current": 1049,
+      "required": 500,
+      "status": "PASS",
+      "message": "✅ Student: 1049 records (required: 500)"
+    },
+    {
+      "entity": "Teacher",
+      "current": 41,
+      "required": 30,
+      "status": "PASS",
+      "message": "✅ Teacher: 41 records (required: 30)"
+    },
+    {
+      "entity": "Class",
+      "current": 61,
+      "required": 10,
+      "status": "PASS",
+      "message": "✅ Class: 61 records (required: 10)"
+    },
+    {
+      "entity": "Section",
+      "current": 76,
+      "required": 20,
+      "status": "PASS",
+      "message": "✅ Section: 76 records (required: 20)"
+    },
+    {
+      "entity": "Subject",
+      "current": 31,
+      "required": 10,
+      "status": "PASS",
+      "message": "✅ Subject: 31 records (required: 10)"
+    },
+    {
+      "entity": "Staff",
+      "current": 94,
+      "required": 40,
+      "status": "PASS",
+      "message": "✅ Staff: 94 records (required: 40)"
+    },
+    {
+      "entity": "Guardian",
+      "current": 1878,
+      "required": 800,
+      "status": "PASS",
+      "message": "✅ Guardian: 1878 records (required: 800)"
+    },
+    {
+      "entity": "StudentGuardian",
+      "current": 1882,
+      "required": 800,
+      "status": "PASS",
+      "message": "✅ StudentGuardian: 1882 records (required: 800)"
+    },
+    {
+      "entity": "AcademicYear",
+      "current": 1,
+      "required": 1,
+      "status": "PASS",
+      "message": "✅ AcademicYear: 1 records (required: 1)"
+    },
+    {
+      "entity": "Enrollment",
+      "current": 1040,
+      "required": 500,
+      "status": "PASS",
+      "message": "✅ Enrollment: 1040 records (required: 500)"
+    },
+    {
+      "entity": "Exam",
+      "current": 0,
+      "required": 20,
+      "status": "FAIL",
+      "message": "❌ Exam: 0 records (required: 20)"
+    },
+    {
+      "entity": "ExamSession",
+      "current": 0,
+      "required": 50,
+      "status": "FAIL",
+      "message": "❌ ExamSession: 0 records (required: 50)"
+    },
+    {
+      "entity": "MarksEntry",
+      "current": 0,
+      "required": 500,
+      "status": "FAIL",
+      "message": "❌ MarksEntry: 0 records (required: 500)"
+    },
+    {
+      "entity": "FeeStructure",
+      "current": 80,
+      "required": 10,
+      "status": "PASS",
+      "message": "✅ FeeStructure: 80 records (required: 10)"
+    },
+    {
+      "entity": "FeeComponent",
+      "current": 55,
+      "required": 30,
+      "status": "PASS",
+      "message": "✅ FeeComponent: 55 records (required: 30)"
+    },
+    {
+      "entity": "Invoice",
+      "current": 0,
+      "required": 100,
+      "status": "FAIL",
+      "message": "❌ Invoice: 0 records (required: 100)"
+    },
+    {
+      "entity": "Payment",
+      "current": 0,
+      "required": 50,
+      "status": "FAIL",
+      "message": "❌ Payment: 0 records (required: 50)"
+    },
+    {
+      "entity": "AttendanceRecord",
+      "current": 144,
+      "required": 1000,
+      "status": "FAIL",
+      "message": "❌ AttendanceRecord: 144 records (required: 1000)"
+    },
+    {
+      "entity": "AttendanceSession",
+      "current": 2562,
+      "required": 100,
+      "status": "PASS",
+      "message": "✅ AttendanceSession: 2562 records (required: 100)"
+    },
+    {
+      "entity": "Room",
+      "current": 13,
+      "required": 10,
+      "status": "PASS",
+      "message": "✅ Room: 13 records (required: 10)"
+    },
+    {
+      "entity": "TimeSlot",
+      "current": 45,
+      "required": 30,
+      "status": "PASS",
+      "message": "✅ TimeSlot: 45 records (required: 30)"
+    },
+    {
+      "entity": "TimetablePeriod",
+      "current": 0,
+      "required": 200,
+      "status": "FAIL",
+      "message": "❌ TimetablePeriod: 0 records (required: 200)"
+    },
+    {
+      "entity": "Template",
+      "current": 30,
+      "required": 10,
+      "status": "PASS",
+      "message": "✅ Template: 30 records (required: 10)"
+    },
+    {
+      "entity": "Campaign",
+      "current": 21,
+      "required": 5,
+      "status": "PASS",
+      "message": "✅ Campaign: 21 records (required: 5)"
+    },
+    {
+      "entity": "Ticket",
+      "current": 38,
+      "required": 10,
+      "status": "PASS",
+      "message": "✅ Ticket: 38 records (required: 10)"
+    },
+    {
+      "entity": "Application",
+      "current": 0,
+      "required": 20,
+      "status": "FAIL",
+      "message": "❌ Application: 0 records (required: 20)"
+    }
+  ],
+  "referentialIntegrity": [
+    {
+      "relationship": "StudentGuardian → Student/Guardian",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned student-guardian relationships"
+    },
+    {
+      "relationship": "Enrollment → Student/Section",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ No orphaned enrollments"
+    },
+    {
+      "relationship": "Teacher → Staff",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All teachers have staff records"
+    }
+  ],
+  "indianContext": [
+    {
+      "entity": "Subject",
+      "field": "Hindi",
+      "status": "PASS",
+      "message": "✅ Hindi subject found"
+    },
+    {
+      "entity": "Student",
+      "field": "IndianNames",
+      "current": 76,
+      "status": "WARNING",
+      "message": "⚠️ 76% Indian names"
+    },
+    {
+      "entity": "Guardian",
+      "field": "IndianPhones",
+      "current": 99,
+      "status": "PASS",
+      "message": "✅ 99% Indian phone numbers (+91)"
+    },
+    {
+      "entity": "Guardian",
+      "field": "IndianAddresses",
+      "current": 99,
+      "status": "PASS",
+      "message": "✅ 99% Indian addresses"
+    }
+  ],
+  "multiTenancy": [
+    {
+      "entity": "Student",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All students have branchId"
+    },
+    {
+      "entity": "Teacher",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All teachers have branchId"
+    },
+    {
+      "entity": "Class",
+      "field": "branchId",
+      "current": 0,
+      "status": "PASS",
+      "message": "✅ All classes have branchId"
+    }
+  ],
+  "dataQuality": [
+    {
+      "entity": "Student",
+      "field": "GenderDistribution",
+      "status": "PASS",
+      "message": "✅ Gender: 51%M / 49%F",
+      "details": {
+        "male": 50.5283381364073,
+        "female": 49.4716618635927
+      }
+    },
+    {
+      "entity": "Payment",
+      "field": "CollectionRate",
+      "current": 0,
+      "status": "WARNING",
+      "message": "⚠️ Fee collection: 0%"
+    },
+    {
+      "entity": "Teacher",
+      "field": "StudentRatio",
+      "current": 26,
+      "status": "PASS",
+      "message": "✅ Teacher-student ratio: 1:26"
+    },
+    {
+      "entity": "AttendanceRecord",
+      "field": "AttendanceRate",
+      "current": 33,
+      "status": "WARNING",
+      "message": "⚠️ Attendance rate: 33%"
+    }
+  ],
+  "recommendations": [
+    "Increase seed data volume for entities below minimum requirements",
+    "Enhance Indian cultural context in names, subjects, and addresses",
+    "Overall health score below 90% - consider comprehensive data review"
+  ]
+}

@@ -1,0 +1,78 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/backend-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/backend-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      working-directory: apps/api
+      run: bun install
+
+    - name: Setup SQLite database
+      working-directory: apps/api
+      run: |
+        touch prisma/dev.db
+        touch prisma/test.db
+
+    - name: Run Prisma setup
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./test.db
+      run: |
+        npx prisma generate
+        npx prisma db push --force-reset --skip-generate
+
+    - name: Run E2E tests
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./test.db
+        NODE_ENV: test
+        JWT_SECRET: test-secret-key-for-ci
+        PORT: 8080
+      run: |
+        # Run tests and capture exit code
+        bun run test:e2e --bail=5 --maxWorkers=1
+        TEST_EXIT_CODE=$?
+        
+        # Exit with the test exit code to fail CI if tests failed
+        exit $TEST_EXIT_CODE
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-test-results-${{ matrix.node-version }}
+        path: |
+          apps/api/coverage
+          apps/api/test-results
+        if-no-files-found: ignore

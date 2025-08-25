@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GuardiansService } from './guardians.service';
 import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
@@ -74,30 +74,31 @@ export class GuardiansController {
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('relation') relation?: string,
+    @Headers('x-branch-id') branchId = 'branch1',
   ) {
-    return this.service.list({ page, pageSize, sort, relation });
+    return this.service.list({ page, pageSize, sort, relation, branchId });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  findOne(@Param('id') id: string, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.findOne(id, branchId);
   }
 
   @Post()
   @CreateDocs('Create guardian')
-  create(@Body() body: CreateStandaloneGuardianDto) {
-    return this.service.create(body);
+  create(@Body() body: CreateStandaloneGuardianDto, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.create({ ...body, branchId });
   }
 
   @Patch(':id')
   @UpdateDocs('Update guardian')
-  update(@Param('id') id: string, @Body() body: Partial<CreateStandaloneGuardianDto>) {
-    return this.service.update(id, body);
+  update(@Param('id') id: string, @Body() body: Partial<CreateStandaloneGuardianDto>, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.update(id, { ...body, branchId });
   }
 
   @Delete(':id')
   @DeleteDocs('Delete guardian')
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  remove(@Param('id') id: string, @Headers('x-branch-id') branchId = 'branch1') {
+    return this.service.remove(id, branchId);
   }
 }

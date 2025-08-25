@@ -1,40 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Ticket, TicketMessage, TicketAttachment, Prisma } from '@prisma/client';
+import { BaseCrudService } from '../../common/base-crud.service';
 
 @Injectable()
-export class TicketsService {
-  constructor(private prisma: PrismaService) {}
+export class TicketsService extends BaseCrudService<Ticket> {
+  constructor(prisma: PrismaService) {
+    super(prisma, 'ticket');
+  }
 
-  async create(data: {
-    ownerType: string;
-    ownerId: string;
-    category?: string;
-    priority?: string;
-    subject: string;
-    description: string;
-  }): Promise<Ticket> {
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  protected buildSearchClause(search: string): any[] {
+    return [
+      { subject: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { status: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  // Override create to handle ticket-specific logic
+  async create(data: any) {
     // Calculate SLA due date based on priority
     const slaDueAt = this.calculateSlaDueDate(data.priority || 'normal');
 
     const { branchId } = PrismaService.getScope();
-    return this.prisma.ticket.create({
-      data: {
-        branchId: branchId ?? undefined,
-        ownerType: data.ownerType,
-        ownerId: data.ownerId,
-        category: data.category,
-        priority: data.priority || 'normal',
-        subject: data.subject,
-        description: data.description,
-        status: 'open',
-        slaDueAt,
-      },
+    const ticketData = {
+      branchId: branchId ?? undefined,
+      ownerType: data.ownerType,
+      ownerId: data.ownerId,
+      category: data.category,
+      priority: data.priority || 'normal',
+      subject: data.subject,
+      description: data.description,
+      status: 'open',
+      slaDueAt,
+    };
+    
+    const created = await this.prisma.ticket.create({
+      data: ticketData,
       include: {
         messages: true,
         attachments: true,
       },
     });
+    
+    return { data: created };
   }
 
   private calculateSlaDueDate(priority: string): Date {
@@ -49,50 +62,45 @@ export class TicketsService {
     return new Date(now.getTime() + hoursToAdd * 60 * 60 * 1000);
   }
 
-  async findAll(params?: {
-    skip?: number;
-    take?: number;
-    where?: Prisma.TicketWhereInput;
-    orderBy?: Prisma.TicketOrderByWithRelationInput;
-  }): Promise<Ticket[]> {
-    const { skip, take, where, orderBy } = params || {};
-    const { branchId } = PrismaService.getScope();
-    const finalWhere = {
-      ...where,
-      ...(branchId ? { branchId } : {}),
-    };
-    return this.prisma.ticket.findMany({
-      skip,
-      take,
-      where: finalWhere,
-      orderBy: orderBy || { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: {
-            messages: true,
-            attachments: true,
-          },
-        },
-      },
-    });
-  }
+  // Custom ticket-specific methods will be added here if needed
 
-  async findOne(id: string): Promise<Ticket | null> {
-    return this.prisma.ticket.findUnique({
-      where: { id },
+  // Override getOne to respect branch scoping
+  async getOne(id: string): Promise<{ data: Ticket }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    const data = await this.prisma.ticket.findUnique({
+      where,
       include: {
         messages: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
         },
         attachments: true,
       },
     });
+    
+    if (!data) {
+      throw new NotFoundException(`Ticket not found`);
+    }
+    
+    return { data };
   }
 
+  // Override update to handle ticket status transitions and branch scoping
   async update(
     id: string,
-    data: Prisma.TicketUpdateInput,
-  ): Promise<Ticket> {
+    data: any,
+  ) {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
     // Handle status transitions
     const updateData: any = { ...data };
     
@@ -105,24 +113,50 @@ export class TicketsService {
       }
     }
 
-    return this.prisma.ticket.update({
-      where: { id },
-      data: updateData,
-      include: {
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 5,
+    try {
+      const updated = await this.prisma.ticket.update({
+        where,
+        data: updateData,
+        include: {
+          messages: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+          },
+          attachments: true,
         },
-        attachments: true,
-      },
-    });
+      });
+
+      return { data: updated };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Ticket not found');
+      }
+      throw error;
+    }
   }
 
-  async remove(id: string): Promise<Ticket> {
-    return this.prisma.ticket.delete({
-      where: { id },
-    });
+  // Override delete to respect branch scoping
+  async delete(id: string): Promise<{ data: Ticket }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    try {
+      const deleted = await this.prisma.ticket.delete({
+        where,
+      });
+      return { data: deleted };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Ticket not found');
+      }
+      throw error;
+    }
   }
+
+  // Let BaseCrudService handle delete method
 
   async addMessage(
     ticketId: string,
@@ -176,7 +210,7 @@ export class TicketsService {
     });
   }
 
-  async assign(ticketId: string, assigneeId: string): Promise<Ticket> {
+  async assign(ticketId: string, assigneeId: string) {
     return this.update(ticketId, {
       assigneeId,
       status: 'in_progress',
@@ -186,39 +220,31 @@ export class TicketsService {
   async getMyTickets(
     ownerType: string,
     ownerId: string,
-  ): Promise<Ticket[]> {
-    return this.findAll({
-      where: {
+  ) {
+    return this.getList({
+      filter: {
         ownerType,
         ownerId,
       },
     });
   }
 
-  async getAssignedTickets(assigneeId: string): Promise<Ticket[]> {
-    return this.findAll({
-      where: {
+  async getAssignedTickets(assigneeId: string) {
+    return this.getList({
+      filter: {
         assigneeId,
-        status: {
-          notIn: ['closed'],
-        },
+        status_in: ['open', 'in_progress', 'resolved'],
       },
     });
   }
 
-  async getOverdueTickets(): Promise<Ticket[]> {
-    return this.findAll({
-      where: {
-        slaDueAt: {
-          lt: new Date(),
-        },
-        status: {
-          notIn: ['resolved', 'closed'],
-        },
+  async getOverdueTickets() {
+    return this.getList({
+      filter: {
+        slaDueAt_lt: new Date(),
+        status_in: ['open', 'in_progress'],
       },
-      orderBy: {
-        slaDueAt: 'asc',
-      },
+      sort: 'slaDueAt',
     });
   }
 

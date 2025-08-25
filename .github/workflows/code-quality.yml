@@ -1,0 +1,106 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  quality-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install backend dependencies
+      working-directory: apps/api
+      run: bun install
+
+    - name: Install frontend dependencies
+      working-directory: apps/web
+      run: npm ci
+
+    - name: Backend Linting
+      working-directory: apps/api
+      run: |
+        echo "Running backend linting..."
+        bun run lint
+        BACKEND_LINT_EXIT=$?
+        if [ $BACKEND_LINT_EXIT -ne 0 ]; then
+          echo "❌ Backend linting failed"
+          exit $BACKEND_LINT_EXIT
+        fi
+        echo "✅ Backend linting passed"
+
+    - name: Backend Type Checking
+      working-directory: apps/api
+      run: |
+        echo "Running backend type checking..."
+        bun run typecheck || npx tsc --noEmit
+        BACKEND_TYPE_EXIT=$?
+        if [ $BACKEND_TYPE_EXIT -ne 0 ]; then
+          echo "❌ Backend type checking failed"
+          exit $BACKEND_TYPE_EXIT
+        fi
+        echo "✅ Backend type checking passed"
+
+    - name: Frontend Linting
+      working-directory: apps/web
+      run: |
+        echo "Running frontend linting..."
+        npm run lint
+        FRONTEND_LINT_EXIT=$?
+        if [ $FRONTEND_LINT_EXIT -ne 0 ]; then
+          echo "❌ Frontend linting failed"
+          exit $FRONTEND_LINT_EXIT
+        fi
+        echo "✅ Frontend linting passed"
+
+    - name: Frontend Type Checking
+      working-directory: apps/web
+      run: |
+        echo "Running frontend type checking..."
+        npm run type-check || npx tsc --noEmit
+        FRONTEND_TYPE_EXIT=$?
+        if [ $FRONTEND_TYPE_EXIT -ne 0 ]; then
+          echo "❌ Frontend type checking failed"
+          exit $FRONTEND_TYPE_EXIT
+        fi
+        echo "✅ Frontend type checking passed"
+
+    - name: Check for forbidden imports (MUI)
+      run: |
+        echo "Checking for forbidden MUI imports..."
+        if grep -r "@mui/material" apps/web --include="*.tsx" --include="*.ts" --include="*.jsx" --include="*.js"; then
+          echo "❌ Found forbidden MUI imports!"
+          exit 1
+        fi
+        echo "✅ No MUI imports found"
+
+    - name: Generate quality report
+      if: always()
+      run: |
+        echo "## Code Quality Report" > quality-report.md
+        echo "### Checks Performed:" >> quality-report.md
+        echo "See workflow logs for detailed results" >> quality-report.md
+        cat quality-report.md
+
+    - name: Upload quality report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: quality-report
+        path: quality-report.md
+        if-no-files-found: ignore

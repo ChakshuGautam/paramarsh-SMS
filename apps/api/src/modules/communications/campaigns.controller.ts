@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  Headers,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CampaignsService } from './campaigns.service';
@@ -25,7 +27,10 @@ export class CampaignsController {
     description: 'Creates a new communication campaign with template, audience, and scheduling details'
   })
   @CreateDocs('Campaign created successfully')
-  create(@Body() createCampaignDto: CreateCampaignDto) {
+  async create(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Body() createCampaignDto: CreateCampaignDto,
+  ) {
     return this.campaignsService.create(createCampaignDto);
   }
 
@@ -34,19 +39,54 @@ export class CampaignsController {
     summary: 'Get all campaigns',
     description: 'Retrieves all communication campaigns with optional filtering and pagination'
   })
-  @ApiQuery({ name: 'skip', required: false, description: 'Number of records to skip', example: '0' })
-  @ApiQuery({ name: 'take', required: false, description: 'Number of records to take', example: '20' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by campaign status', example: 'running' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: '1' })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Number of records per page', example: '25' })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and order', example: 'name' })
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter criteria as JSON string' })
+  @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated list of IDs for getMany' })
   @ListDocs('List of campaigns')
-  findAll(
-    @Query('skip') skip?: string,
-    @Query('take') take?: string,
-    @Query('status') status?: string,
+  async findAll(
+    @Query('ids') ids?: string | string[],
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('sort') sort?: string,
+    @Query('filter') filterStr?: string,
+    @Headers('x-branch-id') branchId = 'branch1',
   ) {
-    return this.campaignsService.findAll({
-      skip: skip ? Number(skip) : undefined,
-      take: take ? Number(take) : undefined,
-      where: status ? { status } : undefined,
+    // Handle getMany case (when ids are provided)
+    if (ids) {
+      const idArray = Array.isArray(ids) ? ids : (typeof ids === 'string' ? ids.split(',') : [ids]);
+      return this.campaignsService.getMany(idArray);
+    }
+    
+    // Parse filter if it's a JSON string
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = typeof filterStr === 'string' ? JSON.parse(filterStr) : filterStr;
+      } catch (e) {
+        // If parsing fails, treat as empty filter
+        filter = {};
+      }
+    }
+    
+    const currentPage = page ? Number(page) : 1;
+    const pageSize = perPage ? Number(perPage) : 25;
+    const skip = (currentPage - 1) * perPage;
+    
+    // Build sort order
+    let orderBy = {};
+    if (sort) {
+      const isDesc = sort.startsWith('-');
+      const field = isDesc ? sort.substring(1) : sort;
+      orderBy = { [field]: isDesc ? 'desc' : 'asc' };
+    }
+    
+    return this.campaignsService.getList({
+      page: currentPage,
+      perPage: pageSize,
+      sort,
+      filter,
     });
   }
 
@@ -57,8 +97,30 @@ export class CampaignsController {
   })
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @ListDocs('Campaign details')
-  findOne(@Param('id') id: string) {
-    return this.campaignsService.findOne(id);
+  async findOne(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+    @Query('include') include?: string,
+  ) {
+    if (include) {
+      return this.campaignsService.getOneWithIncludes(id, include);
+    }
+    return this.campaignsService.getOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ 
+    summary: 'Replace campaign',
+    description: 'Completely replaces an existing campaign'
+  })
+  @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
+  @UpdateDocs('Campaign replaced successfully')
+  async replace(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+    @Body() updateCampaignDto: UpdateCampaignDto,
+  ) {
+    return this.campaignsService.update(id, updateCampaignDto);
   }
 
   @Patch(':id')
@@ -68,7 +130,8 @@ export class CampaignsController {
   })
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @UpdateDocs('Campaign updated successfully')
-  update(
+  async update(
+    @Headers('x-branch-id') branchId = 'branch1',
     @Param('id') id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
   ) {
@@ -82,8 +145,11 @@ export class CampaignsController {
   })
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @DeleteDocs('Campaign deleted successfully')
-  remove(@Param('id') id: string) {
-    return this.campaignsService.remove(id);
+  async remove(
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Param('id') id: string,
+  ) {
+    return this.campaignsService.delete(id);
   }
 
   @Post(':id/execute')

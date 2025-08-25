@@ -1,0 +1,98 @@
+name: Full Stack Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install backend dependencies
+      working-directory: apps/api
+      run: bun install
+
+    - name: Install frontend dependencies
+      working-directory: apps/web
+      run: npm ci
+
+    - name: Setup databases
+      working-directory: apps/api
+      run: |
+        touch prisma/dev.db
+        touch prisma/test.db
+
+    - name: Setup Prisma
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+      run: |
+        npx prisma generate
+        npx prisma db push --force-reset --skip-generate
+
+    - name: Start backend server
+      working-directory: apps/api
+      env:
+        DATABASE_URL: file:./dev.db
+        NODE_ENV: test
+        JWT_SECRET: test-secret-key-for-ci
+        PORT: 8080
+      run: |
+        bun run start:dev &
+        sleep 10
+        # Verify backend is running
+        if ! curl -f http://localhost:8080/api/v1; then
+          echo "❌ Backend failed to start"
+          exit 1
+        fi
+        echo "✅ Backend is running"
+
+    - name: Build frontend
+      working-directory: apps/web
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+      run: |
+        npm run build
+        BUILD_EXIT=$?
+        if [ $BUILD_EXIT -ne 0 ]; then
+          echo "❌ Frontend build failed"
+          exit $BUILD_EXIT
+        fi
+        echo "✅ Frontend build succeeded"
+
+    - name: Run integration tests
+      run: |
+        echo "Running integration tests..."
+        # Test if backend is responding
+        if ! curl -f http://localhost:8080/api/v1; then
+          echo "❌ Backend integration test failed"
+          exit 1
+        fi
+        echo "✅ Integration tests passed"
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: integration-test-results
+        path: |
+          apps/api/coverage
+          apps/web/coverage
+          test-results
+        if-no-files-found: ignore

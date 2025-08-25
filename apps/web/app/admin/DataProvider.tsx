@@ -29,15 +29,33 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 
 function getScopeHeaders(): Record<string, string> {
   const scope: { [k: string]: string | undefined } = {};
-  // Prefer runtime-provided values from window for easier local switching
+  
+  // Get composite branch ID (e.g., "dps-main", "kvs-central")
+  const branchId = typeof window !== "undefined" 
+    ? localStorage.getItem('selectedBranchId') || 'dps-main'
+    : 'dps-main';
+  
+  scope["X-Branch-Id"] = branchId;
+  
+  // Also send school and branch info separately if needed
+  if (typeof window !== "undefined") {
+    const schoolId = localStorage.getItem('selectedSchoolId');
+    const branchName = localStorage.getItem('selectedBranchName');
+    const schoolName = localStorage.getItem('selectedSchoolName');
+    const branchDisplayName = localStorage.getItem('selectedBranchDisplayName');
+    
+    if (schoolId) scope["X-School-Id"] = schoolId;
+    if (branchName) scope["X-Branch-Name"] = branchName;
+    if (schoolName) scope["X-School-Name"] = schoolName;
+    if (branchDisplayName) scope["X-Branch-Display-Name"] = branchDisplayName;
+  }
+  
+  // Optional tenant ID
   const win = (typeof window !== "undefined" ? (window as unknown as any) : undefined) || {};
   const tenantId =
     win.NEXT_PUBLIC_TENANT_ID || process.env.NEXT_PUBLIC_TENANT_ID || undefined;
-  const branchId =
-    win.NEXT_PUBLIC_BRANCH_ID || process.env.NEXT_PUBLIC_BRANCH_ID || undefined;
-
   if (tenantId) scope["X-Tenant-Id"] = String(tenantId);
-  if (branchId) scope["X-Branch-Id"] = String(branchId);
+  
   return scope as Record<string, string>;
 }
 
@@ -272,48 +290,59 @@ function resourceToPath(resource: string): string {
     classes: "classes",
     sections: "sections",
     enrollments: "enrollments",
+    academicYears: "academic-years",
     
-    // Admissions
+    // Admissions - Currently missing backend implementation
     admissionsApplications: "admissions/applications",
+    applications: "admissions/applications",
     
-    // Attendance
-    attendanceRecords: "attendance/records",
-    attendanceSessions: "attendance/sessions", 
-    teacherAttendance: "teacher-attendance",
+    // Attendance - Fixed to match actual backend paths
+    attendanceRecords: "attendance",
+    attendanceSessions: "attendance-sessions",
+    attendance: "attendance",
+    teacherAttendance: "teacher-attendance", // Missing backend implementation
     
     // Exams & Marks
     exams: "exams",
     marks: "marks",
     
     // Fees & Payments
-    feeStructures: "fees/structures",
-    feeSchedules: "fees/schedules",
-    invoices: "fees/invoices",
-    payments: "fees/payments",
+    feeStructures: "fee-structures",
+    feeSchedules: "fee-schedules", 
+    invoices: "invoices",
+    payments: "payments",
     
     // HR & Staff
-    staff: "hr/staff",
-    teachers: "hr/teachers",
+    staff: "staff",
+    teachers: "teachers",
     
     // Timetable
     subjects: "subjects",
     rooms: "rooms",
-    timetablePeriods: "timetable/periods",
-    timetableGrid: "timetable/grid", // Special grid view endpoint
-    timeSlots: "timetable/time-slots",
+    timetable: "timetable",
+    timetablePeriods: "timetable/periods", // Missing backend implementation
+    timetableGrid: "timetable/grid",
+    timeSlots: "timeslots",
+    timeslots: "timeslots",
     substitutions: "timetable/substitutions",
-    sectionTimetables: "sections", // Maps to sections API to get section data
-    timetables: "sections", // Main timetable resource maps to sections for CRUD operations
+    sectionTimetables: "sections",
+    timetables: "timetable",
     
-    // Communications
-    templates: "comms/templates",
-    campaigns: "comms/campaigns",
-    messages: "comms/messages",
-    preferences: "comms/preferences",
-    tickets: "helpdesk/tickets",
+    // Communications - Fixed to match actual backend paths
+    templates: "templates",
+    campaigns: "campaigns", 
+    messages: "messages",
+    preferences: "preferences",
+    tickets: "tickets",
+    
+    // Files & Documents
+    files: "files",
     
     // System
     tenants: "tenants",
+    
+    // Health check
+    health: "health",
   };
   return mapping[resource] ?? resource;
 }
