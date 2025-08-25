@@ -249,27 +249,27 @@ export default function SignInPage() {
         {/* Test Credentials Info for Development */}
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-blue-900 mb-2">Test Credentials (Updated - Secure Passwords):</p>
+            <p className="text-sm font-medium text-blue-900 mb-2">Test Credentials:</p>
             <div className="space-y-2 text-xs">
               <div className="text-blue-800">
                 <strong className="text-blue-900">Admin:</strong>
                 <div className="ml-4">Username: admin</div>
-                <div className="ml-4">Password: P@ramarsh#Admin2024$Secure</div>
+                <div className="ml-4">Password: Admin@123</div>
               </div>
               <div className="text-blue-800">
                 <strong className="text-blue-900">Teacher:</strong>
                 <div className="ml-4">Username: teacher</div>
-                <div className="ml-4">Password: Teach@Paramarsh#2024$Safe</div>
+                <div className="ml-4">Password: Teacher@123</div>
               </div>
               <div className="text-blue-800">
                 <strong className="text-blue-900">Student:</strong>
                 <div className="ml-4">Username: student</div>
-                <div className="ml-4">Password: Stud3nt@SMS#2024$Strong</div>
+                <div className="ml-4">Password: Student@123</div>
               </div>
               <div className="text-blue-800">
                 <strong className="text-blue-900">Parent:</strong>
                 <div className="ml-4">Username: parent</div>
-                <div className="ml-4">Password: Par3nt@School#2024$Protect</div>
+                <div className="ml-4">Password: Parent@123</div>
               </div>
             </div>
           </CardContent>
