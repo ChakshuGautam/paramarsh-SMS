@@ -96,7 +96,10 @@ export const ListPagination = ({
         <Select
           value={perPage.toString()}
           onValueChange={(value) => {
-            setPerPage(Number(value));
+            const newPerPage = Number(value);
+            setPerPage(newPerPage);
+            // Reset to first page when changing rows per page
+            setPage(1);
           }}
         >
           <SelectTrigger className="h-8 w-[70px]">
@@ -130,14 +133,15 @@ export const ListPagination = ({
           <PaginationItem>
             <PaginationLink
               href="#"
-              onClick={pageChangeHandler(page - 1)}
+              onClick={hasPreviousPage ? pageChangeHandler(page - 1) : (e) => e.preventDefault()}
               className={cn(
                 "gap-1 px-2.5 sm:pr-2.5",
-                !hasPreviousPage ? "opacity-50 cursor-not-allowed" : ""
+                !hasPreviousPage ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
               )}
               aria-label={translate("ra.navigation.previous", {
                 _: "Previous",
               })}
+              aria-disabled={!hasPreviousPage}
             >
               <ChevronLeftIcon className="h-4 w-4" />
             </PaginationLink>
@@ -208,13 +212,14 @@ export const ListPagination = ({
           <PaginationItem>
             <PaginationLink
               href="#"
-              onClick={pageChangeHandler(page + 1)}
+              onClick={hasNextPage ? pageChangeHandler(page + 1) : (e) => e.preventDefault()}
               size="default"
               className={cn(
                 "gap-1 px-2.5 sm:pr-2.5",
-                !hasNextPage ? "opacity-50 cursor-not-allowed" : ""
+                !hasNextPage ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
               )}
               aria-label={translate("ra.navigation.next", { _: "Next" })}
+              aria-disabled={!hasNextPage}
             >
               <ChevronRightIcon className="h-4 w-4" />
             </PaginationLink>

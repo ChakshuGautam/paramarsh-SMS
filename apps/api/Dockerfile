@@ -25,7 +25,7 @@ COPY apps/api/tsconfig*.json ./
 # Build the application
 RUN bun run build
 
-# Create data directory for SQLite
+# PostgreSQL client setup (if needed for health checks)
 RUN mkdir -p /app/data
 
 # Expose port
@@ -37,7 +37,7 @@ RUN echo '#!/bin/sh\n\
 bunx prisma migrate deploy\n\
 \n\
 # Seed database if empty\n\
-if [ ! -s "/app/data/dev.db" ]; then\n\
+# Always run seed for PostgreSQL setup\n\
   echo "Database is empty, running seed..."\n\
   bun run prisma:seed\n\
 fi\n\

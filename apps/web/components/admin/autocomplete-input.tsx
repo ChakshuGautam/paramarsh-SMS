@@ -100,7 +100,7 @@ export const AutocompleteInput = (
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-full justify-between"
+              className="w-full justify-between h-10"
             >
               <span className={!selectedChoice ? "text-muted-foreground" : ""}>
                 {selectedChoice ? getChoiceText(selectedChoice) : placeholder}

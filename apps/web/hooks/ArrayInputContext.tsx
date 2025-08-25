@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 import { UseFieldArrayReturn } from "react-hook-form";
 
 /**
@@ -16,3 +16,17 @@ export const ArrayInputContext = createContext<
  * @deprecated Use ra-core `ArrayInputContextValue` once available.
  */
 export type ArrayInputContextValue = UseFieldArrayReturn;
+
+/**
+ * Hook to access the ArrayInput context
+ * @deprecated Use ra-core `useArrayInputContext` once available.
+ */
+export const useArrayInputContext = (): ArrayInputContextValue => {
+  const context = useContext(ArrayInputContext);
+  if (context === undefined) {
+    throw new Error(
+      "useArrayInputContext must be used within an ArrayInput component"
+    );
+  }
+  return context;
+};

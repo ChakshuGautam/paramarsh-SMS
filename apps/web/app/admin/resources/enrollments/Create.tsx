@@ -1,13 +1,24 @@
 "use client";
 
-import { Create, SimpleForm, TextInput, SelectInput } from "@/components/admin";
+import { 
+  Create, 
+  SimpleForm, 
+  ReferenceInput,
+  AutocompleteInput,
+  SelectInput,
+  DateInput,
+  required 
+} from "@/components/admin";
 
 export const EnrollmentsCreate = () => (
   <Create>
     <SimpleForm>
-      <TextInput source="studentId" label="Student ID" />
-      <TextInput source="classId" label="Class ID" />
-      <TextInput source="sectionId" label="Section ID" />
+      <ReferenceInput source="studentId" reference="students" validate={required()}>
+        <AutocompleteInput optionText={(choice) => `${choice.firstName} ${choice.lastName}`} label="Student" />
+      </ReferenceInput>
+      <ReferenceInput source="sectionId" reference="sections" validate={required()}>
+        <AutocompleteInput optionText="name" label="Section" />
+      </ReferenceInput>
       <SelectInput 
         source="status" 
         label="Status" 
@@ -22,9 +33,10 @@ export const EnrollmentsCreate = () => (
           { id: 'completed', name: 'Completed' },
         ]}
         defaultValue="enrolled"
+        validate={required()}
       />
-      <TextInput source="startDate" label="Start Date" />
-      <TextInput source="endDate" label="End Date" />
+      <DateInput source="startDate" label="Start Date" validate={required()} />
+      <DateInput source="endDate" label="End Date" />
     </SimpleForm>
   </Create>
 );

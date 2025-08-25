@@ -6,16 +6,17 @@ import {
   List,
   ReferenceField,
   TextField,
-  DateInput,
-  SelectInput,
   Count,
+  TextInput,
+  SelectInput,
+  DateInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
 import { Calendar, Clock, Users, BookOpen, CheckCircle, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { formatDate } from "@/lib/utils";
 
 // Store keys for different session states
 const storeKeyByStatus = {
@@ -27,17 +28,18 @@ const storeKeyByStatus = {
 
 // Filters
 const sessionFilters = [
+  <TextInput source="q" placeholder="Search sessions..." label="" alwaysOn />,
   <DateInput source="date" placeholder="Filter by date" label="" />,
   <SelectInput 
     source="status" 
     placeholder="Filter by status" 
-    label="" 
+    label=""
     choices={[
       { id: 'scheduled', name: 'Scheduled' },
       { id: 'in-progress', name: 'In Progress' },
       { id: 'completed', name: 'Completed' },
-      { id: 'cancelled', name: 'Cancelled' },
-    ]} 
+      { id: 'cancelled', name: 'Cancelled' }
+    ]}
   />,
 ];
 
@@ -45,7 +47,6 @@ export const AttendanceSessionsList = () => (
   <List
     sort={{ field: "date", order: "DESC" }}
     filters={sessionFilters}
-    perPage={10}
   >
     <TabbedDataTable />
   </List>
@@ -164,12 +165,12 @@ const SessionsTable = ({ storeKey }: { storeKey: string }) => {
 
 const DateDisplay = () => {
   const record = useRecordContext();
-  if (!record || !record.date) return null;
+  if (!record) return null;
   
   return (
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-gray-500" />
-      <span>{format(new Date(record.date), 'MMM dd, yyyy')}</span>
+      <span>{formatDate(record.date)}</span>
     </div>
   );
 };

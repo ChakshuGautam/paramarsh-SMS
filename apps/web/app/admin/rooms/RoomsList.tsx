@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -205,13 +205,17 @@ const RoomsTable = ({ storeKey }: { storeKey: string }) => (
     <DataTable.Col source="type" label="Type" className="hidden lg:table-cell">
       <TypeBadge />
     </DataTable.Col>
+    <DataTable.Col source="facilities" label="Facilities" className="hidden xl:table-cell">
+      <FacilitiesBadge />
+    </DataTable.Col>
     <DataTable.Col source="isActive" label="Status" className="hidden lg:table-cell">
       <StatusBadge />
     </DataTable.Col>
   </DataTable>
 );
 
-const CodeBadge = ({ record }: { record?: any }) => {
+const CodeBadge = () => {
+  const record = useRecordContext();
   if (!record || !record.code) return null;
   
   return (
@@ -221,7 +225,8 @@ const CodeBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const NameWithIcon = ({ record }: { record?: any }) => {
+const NameWithIcon = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const getTypeIcon = (type: string) => {
@@ -245,8 +250,9 @@ const NameWithIcon = ({ record }: { record?: any }) => {
   );
 };
 
-const CapacityBadge = ({ record }: { record?: any }) => {
-  if (!record || record.capacity === undefined) return null;
+const CapacityBadge = () => {
+  const record = useRecordContext();
+  if (!record || record.capacity === undefined) return <span className="text-muted-foreground">-</span>;
   
   const getCapacityColor = (capacity: number) => {
     if (capacity >= 100) return 'text-purple-700 bg-purple-100';
@@ -255,18 +261,29 @@ const CapacityBadge = ({ record }: { record?: any }) => {
     return 'text-gray-700 bg-gray-100';
   };
   
+  // Safely handle _count which may not be included in API response
+  const periodCount = record._count?.periods || 0;
+  
   return (
     <div className="flex items-center gap-2">
       <Users className="w-4 h-4 text-gray-500" />
-      <Badge className={getCapacityColor(record.capacity)}>
-        {record.capacity} seats
-      </Badge>
+      <div className="flex flex-col gap-1">
+        <Badge className={getCapacityColor(record.capacity)}>
+          {record.capacity} seats
+        </Badge>
+        {periodCount > 0 && (
+          <Badge variant="outline" className="text-xs">
+            {periodCount} periods
+          </Badge>
+        )}
+      </div>
     </div>
   );
 };
 
-const BuildingWithIcon = ({ record }: { record?: any }) => {
-  if (!record || !record.building) return null;
+const BuildingWithIcon = () => {
+  const record = useRecordContext();
+  if (!record || !record.building) return <span className="text-muted-foreground">-</span>;
   
   return (
     <div className="flex items-center gap-2">
@@ -276,24 +293,30 @@ const BuildingWithIcon = ({ record }: { record?: any }) => {
   );
 };
 
-const FloorBadge = ({ record }: { record?: any }) => {
-  if (!record || record.floor === undefined) return null;
+const FloorBadge = () => {
+  const record = useRecordContext();
+  if (!record || record.floor === null || record.floor === undefined) return <span className="text-muted-foreground">-</span>;
   
-  const getFloorText = (floor: number) => {
-    if (floor === 0) return 'Ground Floor';
-    if (floor < 0) return `Basement ${Math.abs(floor)}`;
-    return `Floor ${floor}`;
-  };
+  // Handle both string and number floor values
+  const floorDisplay = typeof record.floor === 'string' 
+    ? record.floor 
+    : (() => {
+        const floor = Number(record.floor);
+        if (floor === 0) return 'Ground Floor';
+        if (floor < 0) return `Basement ${Math.abs(floor)}`;
+        return `Floor ${floor}`;
+      })();
   
   return (
     <Badge variant="secondary">
-      {getFloorText(record.floor)}
+      {floorDisplay}
     </Badge>
   );
 };
 
-const TypeBadge = ({ record }: { record?: any }) => {
-  if (!record || !record.type) return null;
+const TypeBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.type) return <span className="text-muted-foreground">-</span>;
   
   const colors = {
     classroom: 'text-blue-700 bg-blue-100',
@@ -313,8 +336,49 @@ const TypeBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const StatusBadge = ({ record }: { record?: any }) => {
-  if (!record) return null;
+const FacilitiesBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.facilities) return <span className="text-muted-foreground">-</span>;
+  
+  try {
+    // Parse JSON string facilities
+    const facilitiesArray = typeof record.facilities === 'string' 
+      ? JSON.parse(record.facilities) 
+      : Array.isArray(record.facilities) 
+        ? record.facilities 
+        : [];
+    
+    if (!Array.isArray(facilitiesArray) || facilitiesArray.length === 0) {
+      return <span className="text-muted-foreground">None</span>;
+    }
+    
+    // Show first 2 facilities and count if more
+    const displayFacilities = facilitiesArray.slice(0, 2);
+    const remainingCount = facilitiesArray.length - 2;
+    
+    return (
+      <div className="flex items-center gap-1 flex-wrap">
+        {displayFacilities.map((facility, index) => (
+          <Badge key={index} variant="outline" className="text-xs">
+            {facility.replace(/_/g, ' ')}
+          </Badge>
+        ))}
+        {remainingCount > 0 && (
+          <Badge variant="outline" className="text-xs">
+            +{remainingCount}
+          </Badge>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.warn('Error parsing facilities:', error);
+    return <span className="text-muted-foreground">Invalid data</span>;
+  }
+};
+
+const StatusBadge = () => {
+  const record = useRecordContext();
+  if (!record || record.isActive === undefined) return <span className="text-muted-foreground">-</span>;
   
   return (
     <Badge variant={record.isActive ? 'default' : 'secondary'}>

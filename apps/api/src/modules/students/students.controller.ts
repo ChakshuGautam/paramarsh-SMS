@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Controller, Get, Post, Put, Delete, Param, Query, Body, Headers } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BaseCrudController } from '../../common/base-crud.controller';
@@ -14,13 +15,13 @@ export class StudentsController extends BaseCrudController<any> {
 
   @Get()
   async getList(
-    @Query('ids') ids?: string | string[],
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: string,
+    @Query('ids') ids?: string | string[],
     @Query() query?: Record<string, any>,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
@@ -28,8 +29,17 @@ export class StudentsController extends BaseCrudController<any> {
       return this.studentsService.getMany(idArray, branchId);
     }
     
-    // Remove pagination params from query to get filters
-    const { page: _p, perPage: _pp, pageSize: _ps, sort: _s, filter: filterStr, ...restQuery } = query || {};
+    // Remove pagination params and other known params from query to get filters
+    const { 
+      page: _p, 
+      perPage: _pp, 
+      pageSize: _ps, 
+      sort: _s, 
+      filter: filterStr, 
+      q, // Extract q from query for search
+      ids: _ids, // Remove ids from restQuery
+      ...restQuery 
+    } = query || {};
     
     // Parse filter if it's a JSON string
     let filter = {};
@@ -50,6 +60,7 @@ export class StudentsController extends BaseCrudController<any> {
       perPage: perPage ? Number(perPage) : (pageSize ? Number(pageSize) : 25),
       sort,
       filter,
+      q, // Pass q separately for search
       branchId, // Pass branchId to service
     });
   }
@@ -57,7 +68,7 @@ export class StudentsController extends BaseCrudController<any> {
   @Get(':id')
   async getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.studentsService.getOne(id, branchId);
   }
@@ -65,7 +76,7 @@ export class StudentsController extends BaseCrudController<any> {
   @Post()
   async create(
     @Body() data: CreateStudentDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.studentsService.create({ ...data, branchId });
   }
@@ -74,7 +85,7 @@ export class StudentsController extends BaseCrudController<any> {
   async update(
     @Param('id') id: string,
     @Body() data: UpdateStudentDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // First check if the student exists in this branch
     await this.studentsService.getOne(id, branchId);
@@ -87,7 +98,7 @@ export class StudentsController extends BaseCrudController<any> {
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     let filter = {};
     if (filterStr) {
@@ -109,7 +120,7 @@ export class StudentsController extends BaseCrudController<any> {
   @Post(':id/restore')
   async restore(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // First check if the student exists in this branch
     await this.studentsService.getOne(id, branchId);
@@ -119,7 +130,7 @@ export class StudentsController extends BaseCrudController<any> {
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Headers('x-user-id') userId?: string,
   ) {
     // First check if the student exists in this branch

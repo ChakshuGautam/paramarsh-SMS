@@ -9,8 +9,8 @@ export class AcademicYearsService {
 
   async list(params: any) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
+    const perPage = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
+    const skip = (page - 1) * perPage;
 
     const where: any = {};
     
@@ -67,7 +67,7 @@ export class AcademicYearsService {
       this.prisma.academicYear.findMany({ 
         where, 
         skip, 
-        take: pageSize, 
+        take: perPage, 
         orderBy,
         select: {
           id: true,

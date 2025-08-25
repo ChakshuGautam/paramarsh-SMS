@@ -64,18 +64,18 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger Configuration
-  // For detailed documentation guidelines, see: docs/swagger-documentation.md
-  // IMPORTANT: All DTOs must have @ApiProperty decorators for proper schema generation
-  const config = new DocumentBuilder()
-    .setTitle('Paramarsh SMS API (Mock/Nest)')
-    .setDescription('Dev API aligned with OpenAPI-first approach')
-    .setVersion('0.1.0')
-    .addServer('/api/v1')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+  // Swagger Configuration - Temporarily disabled due to circular dependency
+  // // For detailed documentation guidelines, see: docs/swagger-documentation.md
+  // // IMPORTANT: All DTOs must have @ApiProperty decorators for proper schema generation
+  // const config = new DocumentBuilder()
+  //   .setTitle('Paramarsh SMS API (Mock/Nest)')
+  //   .setDescription('Dev API aligned with OpenAPI-first approach')
+  //   .setVersion('0.1.0')
+  //   .addServer('/api/v1')
+  //   .addBearerAuth()
+  //   .build();
+  // const document = SwaggerModule.createDocument(app, config);
+  // SwaggerModule.setup('api-docs', app, document);
 
   const port = Number(process.env.PORT || 8080);
   await app.listen(port);

@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -40,7 +41,7 @@ export class TicketsAltController {
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
@@ -88,7 +89,7 @@ export class TicketsAltController {
   @ListDocs('Ticket details')
   async findOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.ticketsService.getOne(id);
   }
@@ -101,7 +102,7 @@ export class TicketsAltController {
   @CreateDocs('Ticket created successfully')
   async create(
     @Body() createTicketDto: CreateTicketDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.ticketsService.create(createTicketDto);
   }
@@ -116,7 +117,7 @@ export class TicketsAltController {
   async update(
     @Param('id') id: string,
     @Body() updateTicketDto: UpdateTicketDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.ticketsService.update(id, updateTicketDto);
   }
@@ -130,7 +131,7 @@ export class TicketsAltController {
   @DeleteDocs('Ticket deleted successfully')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.ticketsService.delete(id);
   }

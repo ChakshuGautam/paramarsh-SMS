@@ -25,10 +25,13 @@ describe('computeVisibleResources', () => {
         'classes',
         'sections',
         'students',
+        'guardians',        // Teachers CAN see guardians (per permissions.ts line 18)
         'attendanceRecords',
         'marks',
         'exams',
         'enrollments',
+        'invoices',         // Teachers CAN see invoices (per permissions.ts line 49)
+        'payments',         // Teachers CAN see payments (per permissions.ts line 50)
       ].sort()
     );
   });

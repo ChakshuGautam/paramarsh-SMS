@@ -6,16 +6,15 @@ import {
   List,
   ReferenceField,
   TextField,
-  DateInput,
-  SelectInput,
-  ReferenceInput,
-  AutocompleteInput,
   Count,
+  TextInput,
+  SelectInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays, startOfWeek, startOfMonth } from "date-fns";
 import { Check, X, Clock, AlertCircle, LogIn, LogOut, Calendar } from "lucide-react";
+import { formatDate, formatTime } from "@/lib/utils";
 
 // Store keys for different date ranges
 const storeKeyByDateRange = {
@@ -43,41 +42,35 @@ const getDateFilter = (range: string) => {
   }
 };
 
-// Filters
-const teacherAttendanceFilters = [
-  <ReferenceInput source="teacherId" reference="teachers">
-    <AutocompleteInput 
-      placeholder="Filter by teacher" 
-      label="" 
-      optionText={(record) => `${record.staff?.firstName} ${record.staff?.lastName}`}
-    />
-  </ReferenceInput>,
+const filters = [
+  <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
   <SelectInput 
     source="status" 
-    placeholder="Filter by status" 
+    placeholder="Filter by status..." 
     label="" 
     choices={[
-      { id: 'present', name: 'Present' },
-      { id: 'absent', name: 'Absent' },
-      { id: 'late', name: 'Late' },
-      { id: 'half-day', name: 'Half Day' },
-      { id: 'leave', name: 'Leave' }
+      { id: 'PRESENT', name: 'Present' },
+      { id: 'ABSENT', name: 'Absent' },
+      { id: 'LATE', name: 'Late' },
+      { id: 'HALF_DAY', name: 'Half Day' },
+      { id: 'ON_LEAVE', name: 'On Leave' },
     ]} 
   />,
-  <DateInput source="date" placeholder="Filter by date" label="" />,
+  <TextInput source="date" placeholder="Filter by date (YYYY-MM-DD)..." label="" />,
 ];
 
 export const TeacherAttendanceList = () => (
   <List
+    filters={filters}
     sort={{ field: "date", order: "DESC" }}
     filterDefaultValues={{ ...getDateFilter("today") }}
-    filters={teacherAttendanceFilters}
     perPage={10}
     resource="teacher-attendance"
   >
     <TabbedDataTable />
   </List>
 );
+
 
 const TabbedDataTable = () => {
   const listContext = useListContext();
@@ -159,11 +152,11 @@ const TeacherAttendanceTable = ({ storeKey }: { storeKey: string }) => (
     storeKey={storeKey}
     rowClassName={(record) => {
       const statusColors = {
-        present: 'border-l-4 border-l-green-500',
-        absent: 'border-l-4 border-l-red-500',
-        late: 'border-l-4 border-l-yellow-500',
-        'half-day': 'border-l-4 border-l-orange-500',
-        leave: 'border-l-4 border-l-blue-500',
+        PRESENT: 'border-l-4 border-l-green-500',
+        ABSENT: 'border-l-4 border-l-red-500',
+        LATE: 'border-l-4 border-l-yellow-500',
+        HALF_DAY: 'border-l-4 border-l-orange-500',
+        ON_LEAVE: 'border-l-4 border-l-blue-500',
       };
       return statusColors[record.status] || '';
     }}
@@ -215,31 +208,31 @@ const StatusBadge = () => {
   if (!record || !record.status) return null;
   
   const statusConfig = {
-    present: {
+    PRESENT: {
       icon: Check,
       label: 'Present',
       className: 'text-green-700 bg-green-100',
       iconClassName: 'text-green-600'
     },
-    absent: {
+    ABSENT: {
       icon: X,
       label: 'Absent',
       className: 'text-red-700 bg-red-100',
       iconClassName: 'text-red-600'
     },
-    late: {
+    LATE: {
       icon: Clock,
       label: 'Late',
       className: 'text-yellow-700 bg-yellow-100',
       iconClassName: 'text-yellow-600'
     },
-    'half-day': {
+    HALF_DAY: {
       icon: AlertCircle,
       label: 'Half Day',
       className: 'text-orange-700 bg-orange-100',
       iconClassName: 'text-orange-600'
     },
-    leave: {
+    ON_LEAVE: {
       icon: AlertCircle,
       label: 'Leave',
       className: 'text-blue-700 bg-blue-100',
@@ -247,7 +240,7 @@ const StatusBadge = () => {
     },
   };
   
-  const config = statusConfig[record.status as keyof typeof statusConfig] || statusConfig.present;
+  const config = statusConfig[record.status as keyof typeof statusConfig] || statusConfig.PRESENT;
   const Icon = config.icon;
   
   return (
@@ -262,17 +255,29 @@ const StatusBadge = () => {
 
 const DateDisplay = () => {
   const record = useRecordContext();
-  if (!record || !record.date) return null;
+  if (!record) return null;
   
-  const date = new Date(record.date);
-  const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-  const isYesterday = format(date, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd');
+  // Safe date comparison with null checks
+  let isToday = false;
+  let isYesterday = false;
+  
+  if (record.date) {
+    try {
+      const date = new Date(record.date);
+      if (!isNaN(date.getTime())) {
+        isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+        isYesterday = format(date, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd');
+      }
+    } catch {
+      // Date formatting failed, continue with safe display
+    }
+  }
   
   return (
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-gray-500" />
       <span className={isToday ? 'font-medium text-blue-600' : isYesterday ? 'text-gray-600' : ''}>
-        {format(date, 'MMM dd, yyyy')}
+        {formatDate(record.date)}
         {isToday && <span className="ml-2 text-xs text-blue-500">(Today)</span>}
         {isYesterday && <span className="ml-2 text-xs text-gray-500">(Yesterday)</span>}
       </span>
@@ -288,7 +293,7 @@ const CheckInTime = () => {
     <div className="flex items-center gap-2">
       <LogIn className="w-4 h-4 text-green-600" />
       <span className="text-sm">
-        {format(new Date(record.checkIn), 'h:mm a')}
+        {formatTime(record.checkIn)}
       </span>
     </div>
   );
@@ -302,7 +307,7 @@ const CheckOutTime = () => {
     <div className="flex items-center gap-2">
       <LogOut className="w-4 h-4 text-red-600" />
       <span className="text-sm">
-        {format(new Date(record.checkOut), 'h:mm a')}
+        {formatTime(record.checkOut)}
       </span>
     </div>
   );

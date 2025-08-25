@@ -32,11 +32,11 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     });
 
     return (
-      <div className="grid w-full gap-2">
-        {label && (
-          <Label htmlFor={source}>
+      <div className="flex flex-col gap-2 min-w-0">
+        {label !== false && (
+          <Label htmlFor={source} className="text-sm whitespace-nowrap min-h-[20px]">
             {label}
-            {isRequired && <span className="ml-1 text-destructive">*</span>}
+            {isRequired && label && <span className="ml-1 text-destructive">*</span>}
           </Label>
         )}
         <Input
@@ -50,15 +50,18 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
           max={max}
           step={step}
           className={cn(
+            "h-10 text-sm min-w-[160px] max-w-[240px]",
             invalid && "border-destructive",
             className
           )}
         />
-        <InputHelperText
-          touched={isTouched}
-          error={error?.message}
-          helperText={helperText}
-        />
+        {(error?.message || helperText) && (
+          <InputHelperText
+            touched={isTouched}
+            error={error?.message}
+            helperText={helperText}
+          />
+        )}
       </div>
     );
   }

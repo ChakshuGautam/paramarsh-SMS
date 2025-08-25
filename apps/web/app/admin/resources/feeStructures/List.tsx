@@ -6,12 +6,12 @@ import {
   List,
   ReferenceField,
   TextField,
-  TextInput,
-  ReferenceInput,
-  AutocompleteInput,
   ArrayField,
   SingleFieldList,
   Count,
+  TextInput,
+  SelectInput,
+  NumberInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -41,9 +41,24 @@ const getGradeLevelFilter = (level: string) => {
 // Label-less filters with placeholders
 const feeStructureFilters = [
   <TextInput source="q" placeholder="Search fee structures..." label="" alwaysOn />,
-  <ReferenceInput source="gradeId" reference="classes">
-    <AutocompleteInput placeholder="Filter by grade" label="" optionText="name" />
-  </ReferenceInput>,
+  <SelectInput 
+    source="gradeId" 
+    placeholder="Filter by grade" 
+    label=""
+    choices={[]} // Would need to be populated with grade data
+  />,
+  <SelectInput 
+    source="gradeLevel" 
+    placeholder="Filter by grade level" 
+    label=""
+    choices={[
+      { id: '1-5', name: 'Primary (1-5)' },
+      { id: '6-8', name: 'Middle (6-8)' },
+      { id: '9-12', name: 'High (9-12)' }
+    ]}
+  />,
+  <NumberInput source="totalAmount_gte" placeholder="Min total amount" label="" />,
+  <NumberInput source="totalAmount_lte" placeholder="Max total amount" label="" />,
 ];
 
 export const FeeStructuresList = () => (
@@ -125,12 +140,8 @@ const FeeStructuresTable = ({ storeKey }: { storeKey: string }) => (
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
-    <DataTable.Col label="Total Amount">
-      <TotalAmountBadge />
-    </DataTable.Col>
-    <DataTable.Col label="Components Count">
-      <ComponentsCountBadge />
-    </DataTable.Col>
+    <DataTable.Col label="Total Amount" render={(record) => <TotalAmountBadge record={record} />} />
+    <DataTable.Col label="Components Count" render={(record) => <ComponentsCountBadge record={record} />} />
     
     {/* Desktop-only columns */}
     <DataTable.Col label="Components" className="hidden lg:table-cell">
@@ -144,14 +155,14 @@ const FeeStructuresTable = ({ storeKey }: { storeKey: string }) => (
         />
       </ArrayField>
     </DataTable.Col>
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
 );
 
 const TotalAmountBadge = ({ record }: { record?: any }) => {
-  if (!record || !record.components) return null;
+  if (!record) return null;
   
-  const total = record.components.reduce((sum: number, component: any) => {
+  const components = record.components || [];
+  const total = components.reduce((sum: number, component: any) => {
     return sum + (parseFloat(component.amount) || 0);
   }, 0);
   
@@ -169,9 +180,10 @@ const TotalAmountBadge = ({ record }: { record?: any }) => {
 };
 
 const ComponentsCountBadge = ({ record }: { record?: any }) => {
-  if (!record || !record.components) return null;
+  if (!record) return null;
   
-  const count = record.components.length;
+  const components = record.components || [];
+  const count = components.length;
   const getCountColor = () => {
     if (count >= 5) return 'text-purple-700 bg-purple-100';
     if (count >= 3) return 'text-blue-700 bg-blue-100';

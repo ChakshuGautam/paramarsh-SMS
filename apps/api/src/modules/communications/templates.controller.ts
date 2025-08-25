@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -28,7 +29,7 @@ export class TemplatesController {
   })
   @CreateDocs('Template created successfully')
   create(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Body() createTemplateDto: CreateTemplateDto,
   ) {
     return this.templatesService.create(createTemplateDto);
@@ -46,7 +47,7 @@ export class TemplatesController {
   @ApiQuery({ name: 'ids', required: false, description: 'Specific IDs to fetch', example: 'id1,id2' })
   @ListDocs('List of message templates')
   async findAll(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
@@ -84,7 +85,7 @@ export class TemplatesController {
   @ApiQuery({ name: 'include', required: false, description: 'Include related data (campaigns)', example: 'campaigns' })
   @ListDocs('Template details')
   findOne(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
     @Query('include') include?: string,
   ) {
@@ -102,7 +103,7 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @UpdateDocs('Template updated successfully')
   update(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
     @Body() updateTemplateDto: UpdateTemplateDto,
   ) {
@@ -117,7 +118,7 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @UpdateDocs('Template updated successfully')
   patch(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
     @Body() updateTemplateDto: UpdateTemplateDto,
   ) {
@@ -132,7 +133,7 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @DeleteDocs('Template deleted successfully')
   remove(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
   ) {
     return this.templatesService.delete(id);

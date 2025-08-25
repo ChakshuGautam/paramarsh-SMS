@@ -1,21 +1,19 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
   ReferenceField,
   TextField,
-  TextInput,
-  ReferenceInput,
-  AutocompleteInput,
-  SelectInput,
-  DateInput,
   Count,
+  TextInput,
+  SelectInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Mail, Smartphone, Phone } from "lucide-react";
+import { formatDateTime } from "@/lib/utils/date-utils";
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
@@ -25,40 +23,34 @@ const storeKeyByStatus = {
   failed: "messages.list.failed",
 };
 
-// Label-less filters with placeholders
-const messageFilters = [
-  <TextInput source="q" placeholder="Search messages..." label="" alwaysOn />,
+const filters = [
+  <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
   <SelectInput 
     source="channel" 
-    placeholder="Filter by channel" 
+    placeholder="Filter by channel..." 
     label="" 
     choices={[
       { id: 'SMS', name: 'SMS' },
       { id: 'EMAIL', name: 'Email' },
-      { id: 'PUSH', name: 'Push Notification' },
-      { id: 'WHATSAPP', name: 'WhatsApp' }
+      { id: 'PUSH', name: 'Push' },
+      { id: 'WHATSAPP', name: 'WhatsApp' },
     ]} 
   />,
-  <ReferenceInput source="templateId" reference="templates">
-    <AutocompleteInput placeholder="Filter by template" label="" optionText="name" />
-  </ReferenceInput>,
-  <ReferenceInput source="campaignId" reference="campaigns">
-    <AutocompleteInput placeholder="Filter by campaign" label="" optionText="name" />
-  </ReferenceInput>,
-  <TextInput source="to" placeholder="Filter by recipient" label="" />,
-  <DateInput source="sentAt_gte" placeholder="Sent after" label="" />,
+  <TextInput source="to" placeholder="Filter by recipient..." label="" />,
+  <TextInput source="sentAt_gte" placeholder="Sent after (YYYY-MM-DD)..." label="" />,
 ];
 
 export const MessagesList = () => (
   <List
+    filters={filters}
     sort={{ field: "sentAt", order: "DESC" }}
     filterDefaultValues={{ status: "sent" }}
-    filters={messageFilters}
     perPage={10}
   >
     <TabbedDataTable />
   </List>
 );
+
 
 const TabbedDataTable = () => {
   const listContext = useListContext();
@@ -145,12 +137,14 @@ const MessagesTable = ({ storeKey }: { storeKey: string }) => (
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
-    <DataTable.Col source="sentAt" label="Sent At" className="hidden lg:table-cell" />
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col source="sentAt" label="Sent At" className="hidden lg:table-cell">
+      <SentAtField />
+    </DataTable.Col>
   </DataTable>
 );
 
-const StatusBadge = ({ record }: { record?: any }) => {
+const StatusBadge = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const variants = {
@@ -167,7 +161,14 @@ const StatusBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const ChannelIcon = ({ record }: { record?: any }) => {
+const SentAtField = () => {
+  const record = useRecordContext();
+  if (!record) return null;
+  return <span>{formatDateTime(record.sentAt)}</span>;
+};
+
+const ChannelIcon = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const icons = {

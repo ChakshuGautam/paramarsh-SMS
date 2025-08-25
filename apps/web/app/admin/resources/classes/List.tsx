@@ -4,11 +4,12 @@ import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
-  TextInput,
-  SelectInput,
   Count,
   ReferenceField,
   TextField,
+  EmptyState,
+  TextInput,
+  SelectInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -35,13 +36,14 @@ const getGradeLevelFilter = (level: string) => {
   }
 };
 
-// Label-less filters with placeholders
+// Standardized filters with placeholders
 const classFilters = [
-  <TextInput source="q" placeholder="Search classes..." label="" alwaysOn />,
+  <TextInput key="search" source="q" placeholder="Search classes..." label="" alwaysOn />,
   <SelectInput 
+    key="gradeLevel"
     source="gradeLevel" 
-    placeholder="Filter by grade" 
-    label="" 
+    placeholder="Filter by grade level" 
+    label=""
     choices={[
       { id: 1, name: 'Grade 1' },
       { id: 2, name: 'Grade 2' },
@@ -55,7 +57,7 @@ const classFilters = [
       { id: 10, name: 'Grade 10' },
       { id: 11, name: 'Grade 11' },
       { id: 12, name: 'Grade 12' },
-    ]} 
+    ]}
   />,
 ];
 
@@ -158,10 +160,9 @@ const ClassesTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col label="Class Teacher" className="hidden md:table-cell">
+    <DataTable.Col label="Class Teacher" responsiveVisibility="md">
       <ClassTeacher />
     </DataTable.Col>
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
 );
 
@@ -191,7 +192,7 @@ const ClassTeacher = () => {
   return (
     <span className="text-gray-500 text-sm">
       {/* This would need to be implemented with proper data */}
-      <em>No teacher assigned</em>
+      <EmptyState type="inline" message="No teacher assigned" />
     </span>
   );
 };

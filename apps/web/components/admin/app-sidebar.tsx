@@ -57,36 +57,36 @@ import { cn } from "@/lib/utils";
 
 // Define resource groups with their icons and resources
 const resourceGroups = {
-  'Student Information': {
+  'Students': {
     icon: GraduationCap,
-    resources: ['students', 'guardians', 'enrollments', 'applications'],
+    resources: ['students', 'guardians', 'classes', 'sections', 'enrollments'],
     resourceIcons: {
       students: Users,
       guardians: UsersRound,
-      enrollments: FileText,
-      applications: FileSpreadsheet,
-    }
-  },
-  'Academic': {
-    icon: BookOpen,
-    resources: ['classes', 'sections', 'subjects', 'teachers'],
-    resourceIcons: {
       classes: School,
       sections: Building2,
-      subjects: BookOpen,
-      teachers: UserCheck,
+      enrollments: FileText,
     }
   },
   'Attendance': {
     icon: ClipboardCheck,
-    resources: ['attendanceRecords', 'attendanceSessions', 'teacherAttendance'],
+    resources: ['attendanceSessions', 'substitutions', 'teacherAttendance'],
     resourceIcons: {
-      attendanceRecords: UserCheck,
       attendanceSessions: Clock,
-      teacherAttendance: Users,
+      substitutions: Users,
+      teacherAttendance: UserCheck,
     }
   },
-  'Exams': {
+  'Academic': {
+    icon: BookOpen,
+    resources: ['subjects', 'teachers', 'academicYears'],
+    resourceIcons: {
+      subjects: BookOpen,
+      teachers: UserCheck,
+      academicYears: Calendar,
+    }
+  },
+  'Assessment': {
     icon: FileSpreadsheet,
     resources: ['exams', 'marks'],
     resourceIcons: {
@@ -94,16 +94,23 @@ const resourceGroups = {
       marks: Award,
     }
   },
+  'Records': {
+    icon: Database,
+    resources: ['attendanceRecords', 'applications'],
+    resourceIcons: {
+      attendanceRecords: UserCheck,
+      applications: FileSpreadsheet,
+    }
+  },
   'Timetable': {
     icon: Calendar,
-    resources: ['timetables', 'timetable', 'sectionTimetables', 'timeSlots', 'rooms', 'substitutions'],
+    resources: ['timetables', 'timetablePeriods', 'sectionTimetables', 'timeSlots', 'rooms'],
     resourceIcons: {
       timetables: CalendarDays,
-      timetable: Calendar,
+      timetablePeriods: Calendar,
       sectionTimetables: CalendarDays,
       timeSlots: Clock,
       rooms: Building2,
-      substitutions: Users,
     }
   },
   'Finance': {
@@ -144,8 +151,8 @@ export function AppSidebar() {
   const roles = (identity as any)?.roles as string[] | undefined;
   const { openMobile, setOpenMobile } = useSidebar();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    'Student Information': true,
-    'Academic': true,
+    'Students': true,
+    'Attendance': true,
   });
 
   const handleClick = () => {

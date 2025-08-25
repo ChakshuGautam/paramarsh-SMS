@@ -479,4 +479,143 @@ describe('Students API (e2e)', () => {
       });
     });
   });
+
+  describe('Query Parameter Issues (TDD Reproduction)', () => {
+    it('should handle search query (q) parameter correctly', async () => {
+      // First get some student data to search for
+      const allStudents = await request(app.getHttpServer())
+        .get('/api/v1/students')
+        .set('X-Branch-Id', 'branch1');
+      
+      if (allStudents.body.data.length === 0) return;
+
+      const firstStudent = allStudents.body.data[0];
+      const searchTerm = firstStudent.firstName.substring(0, 2); // Use first 2 chars
+
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/students?q=${searchTerm}`)
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.total).toBeGreaterThan(0);
+
+      // Verify that returned students match the search
+      response.body.data.forEach(student => {
+        const matchesFirstName = student.firstName.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesLastName = student.lastName.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesAdmissionNo = student.admissionNo.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        expect(matchesFirstName || matchesLastName || matchesAdmissionNo).toBe(true);
+      });
+    });
+
+    it('should handle status filtering with status=active', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/students?status=active')
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+
+      // All returned students should have status 'active'
+      response.body.data.forEach(student => {
+        expect(student.status).toBe('active');
+      });
+    });
+
+    it('should handle composite branch ID (dps-main)', async () => {
+      // First, let's see if we have any data for this composite branch
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/students')
+        .set('X-Branch-Id', 'dps-main')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+
+      // All returned students should have branchId 'dps-main'
+      response.body.data.forEach(student => {
+        expect(student.branchId).toBe('dps-main');
+      });
+    });
+
+    it('should handle pagination with page=1&pageSize=1', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/students?page=1&pageSize=1')
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBeLessThanOrEqual(1);
+
+      if (response.body.total > 0) {
+        expect(response.body.data.length).toBe(1);
+      }
+    });
+
+    it('should handle sorting with sort=-id (descending by id)', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/students?sort=-id&page=1&pageSize=5')
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+
+      if (response.body.data.length > 1) {
+        const ids = response.body.data.map(student => student.id);
+        const sortedIds = [...ids].sort().reverse(); // Descending order
+        expect(ids).toEqual(sortedIds);
+      }
+    });
+
+    it('should handle complex query combination from frontend', async () => {
+      // This reproduces the exact query from the frontend issue
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/students?status=active&q=a&page=1&pageSize=1&sort=-id')
+        .set('X-Branch-Id', 'dps-main')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBeLessThanOrEqual(1);
+
+      // If data exists, verify all filters are applied
+      response.body.data.forEach(student => {
+        // Should have status=active
+        expect(student.status).toBe('active');
+        // Should match search term 'a'
+        const matchesSearch = 
+          student.firstName.toLowerCase().includes('a') ||
+          student.lastName.toLowerCase().includes('a') ||
+          student.admissionNo.toLowerCase().includes('a');
+        expect(matchesSearch).toBe(true);
+        // Should belong to correct branch
+        expect(student.branchId).toBe('dps-main');
+      });
+    });
+
+    it('should handle empty search results gracefully', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/v1/students?q=zzz_nonexistent_search_term')
+        .set('X-Branch-Id', 'branch1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body).toHaveProperty('total');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBe(0);
+      expect(response.body.total).toBe(0);
+    });
+  });
 });

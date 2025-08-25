@@ -53,7 +53,9 @@ import {
   SelectInput,
   EditButton,
   ShowButton,
-  DeleteButton
+  DeleteButton,
+  ReferenceField,
+  TextField
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Mail } from "lucide-react";
@@ -73,8 +75,18 @@ export const [Module]List = () => {
   return (
     <List filters={filters}>
       <DataTable>
-        <DataTable.Col source="id" label="ID" />
+        {/* NEVER show UUID/ID fields - use meaningful fields instead */}
         <DataTable.Col source="name" label="Name" />
+        <DataTable.Col source="email" label="Email" />
+        <DataTable.Col source="code" label="Code" />
+        
+        {/* For relationships, show meaningful data */}
+        <DataTable.Col label="Student">
+          <ReferenceField source="studentId" reference="students" link={false}>
+            <TextField source="fullName" />
+          </ReferenceField>
+        </DataTable.Col>
+        
         <DataTable.Col source="status" label="Status">
           {(record) => (
             <Badge variant={record.status === 'active' ? 'default' : 'secondary'}>
@@ -82,6 +94,7 @@ export const [Module]List = () => {
             </Badge>
           )}
         </DataTable.Col>
+        
         <DataTable.Col label="Actions" align="right">
           <EditButton />
           <ShowButton />
@@ -143,6 +156,8 @@ import {
   SimpleForm,
   TextInput,
   SelectInput,
+  ReferenceInput,
+  AutocompleteInput,
   required
 } from "@/components/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -155,9 +170,18 @@ export const [Module]Edit = () => (
           <CardTitle>Edit [Module]</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <TextInput source="id" disabled />
+          {/* NEVER show ID field - users don't need to see UUIDs */}
           <TextInput source="name" validate={required()} />
           <TextInput source="email" validate={required()} />
+          
+          {/* For relationships, use meaningful displays */}
+          <ReferenceInput source="studentId" reference="students">
+            <AutocompleteInput 
+              optionText={(record) => `${record.fullName} (${record.rollNumber})`}
+              filterToQuery={searchText => ({ q: searchText })}
+            />
+          </ReferenceInput>
+          
           <SelectInput 
             source="status" 
             choices={[
@@ -202,6 +226,51 @@ import * as [module] from "./resources/[module]";
 
 ## Component Patterns to Follow
 
+### CRITICAL: Never Display UUIDs to Users
+```typescript
+// ❌ WRONG - Never show UUIDs in lists or forms
+<DataTable.Col source="id" label="ID" />
+<TextInput source="id" disabled />
+
+// ✅ CORRECT - Show meaningful identifiers
+<DataTable.Col source="name" label="Name" />
+<DataTable.Col source="email" label="Email" />
+<DataTable.Col source="code" label="Code" />
+<DataTable.Col source="rollNumber" label="Roll No" />
+```
+
+### Display Meaningful Relationship Data
+```typescript
+// ❌ WRONG - Don't show relationship IDs
+<DataTable.Col source="studentId" label="Student" />
+<DataTable.Col source="teacherId" label="Teacher" />
+
+// ✅ CORRECT - Show meaningful relationship fields
+<DataTable.Col label="Student">
+  <ReferenceField source="studentId" reference="students" link={false}>
+    <TextField source="fullName" />
+  </ReferenceField>
+</DataTable.Col>
+
+// ✅ CORRECT - For complex relationships
+<DataTable.Col label="Teacher">
+  <ReferenceField source="teacherId" reference="teachers" link={false}>
+    <span className="flex flex-col">
+      <TextField source="staff.fullName" />
+      <TextField source="staff.email" className="text-sm text-gray-500" />
+    </span>
+  </ReferenceField>
+</DataTable.Col>
+
+// ✅ CORRECT - In forms, use AutocompleteInput with meaningful display
+<ReferenceInput source="studentId" reference="students">
+  <AutocompleteInput 
+    optionText={(record) => `${record.fullName} (${record.rollNumber})`}
+    filterToQuery={searchText => ({ q: searchText })}
+  />
+</ReferenceInput>
+```
+
 ### Use DataTable, NOT Table
 ```typescript
 // ✅ CORRECT
@@ -242,6 +311,10 @@ Before completion, verify:
 4. ✅ SimpleForm used for forms
 5. ✅ Resource registered in AdminApp.tsx
 6. ✅ Icons from lucide-react only
+7. ✅ NO UUID fields displayed in lists
+8. ✅ NO UUID fields displayed in forms (except disabled ID in Edit)
+9. ✅ Relationships show meaningful data (names, emails, codes)
+10. ✅ AutocompleteInput shows descriptive text for references
 
 ## Output
 

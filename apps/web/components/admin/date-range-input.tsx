@@ -81,11 +81,11 @@ export const DateRangeInput = React.forwardRef<HTMLDivElement, DateRangeInputPro
     };
 
     return (
-      <div className="grid w-full gap-2" ref={ref}>
-        {label && (
-          <Label>
+      <div className="flex flex-col gap-2 min-w-0" ref={ref}>
+        {label !== false && (
+          <Label className="text-sm whitespace-nowrap min-h-[20px]">
             {label}
-            {isRequired && <span className="ml-1 text-destructive">*</span>}
+            {isRequired && label && <span className="ml-1 text-destructive">*</span>}
           </Label>
         )}
         <DateRangePicker

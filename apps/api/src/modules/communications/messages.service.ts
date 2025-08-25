@@ -1,22 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Message, Prisma, Template } from '@prisma/client';
 import { TemplatesService } from './templates.service';
+import { BaseCrudService } from '../../common/base-crud.service';
 
 @Injectable()
-export class MessagesService {
+export class MessagesService extends BaseCrudService<Message> {
   constructor(
-    private prisma: PrismaService,
+    prisma: PrismaService,
     private templatesService: TemplatesService,
-  ) {}
+  ) {
+    super(prisma, 'message');
+  }
 
-  async create(data: {
-    channel: string;
-    to: string;
-    templateId?: string;
-    campaignId?: string;
-    payload?: any;
-  }): Promise<Message> {
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  protected buildSearchClause(search: string): any[] {
+    return [
+      { to: { contains: search, mode: 'insensitive' } },
+      { status: { contains: search, mode: 'insensitive' } },
+      { channel: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  async create(data: any): Promise<{ data: Message }> {
     let renderedContent: string | undefined;
 
     if (data.templateId && data.payload) {
@@ -32,7 +41,7 @@ export class MessagesService {
     }
 
     const { branchId } = PrismaService.getScope();
-    return this.prisma.message.create({
+    const created = await this.prisma.message.create({
       data: {
         branchId: branchId ?? undefined,
         channel: data.channel,
@@ -42,7 +51,13 @@ export class MessagesService {
         payload: data.payload ? JSON.stringify(data.payload) : null,
         status: 'pending',
       },
+      include: {
+        template: true,
+        campaign: true,
+      },
     });
+    
+    return { data: created };
   }
 
   async sendMessage(messageId: string): Promise<Message> {
@@ -116,14 +131,31 @@ export class MessagesService {
     });
   }
 
-  async findOne(id: string): Promise<Message | null> {
-    return this.prisma.message.findUnique({
-      where: { id },
+  async getOne(id: string): Promise<{ data: Message }> {
+    const { branchId } = PrismaService.getScope();
+    const where: any = { id };
+    if (branchId && this.supportsBranchScoping()) {
+      where.branchId = branchId;
+    }
+    
+    const data = await this.prisma.message.findUnique({
+      where,
       include: {
         template: true,
         campaign: true,
       },
     });
+    
+    if (!data) {
+      throw new NotFoundException('Message not found');
+    }
+    
+    return { data };
+  }
+
+  async findOne(id: string): Promise<Message | null> {
+    const result = await this.getOne(id);
+    return result.data;
   }
 
   async updateStatus(

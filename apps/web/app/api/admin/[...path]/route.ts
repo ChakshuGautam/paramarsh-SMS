@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080/api/v1';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:3005/api/v1';
 
 export async function GET(
   request: NextRequest,
@@ -17,12 +17,23 @@ export async function GET(
       'Accept': 'application/json',
     };
 
-    // Forward tenant/branch headers if present
-    const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
+    // Forward Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
+    // Forward all X- headers (tenant, branch, school, etc.)
+    request.headers.forEach((value, key) => {
+      if (key.toLowerCase().startsWith('x-')) {
+        headers[key] = value;
+      }
+    });
     
-    if (tenantId) headers['X-Tenant-Id'] = tenantId;
-    if (branchId) headers['X-Branch-Id'] = branchId;
+    // Ensure branch ID is always present (use default if not provided)
+    if (!headers['x-branch-id'] && !headers['X-Branch-Id']) {
+      headers['X-Branch-Id'] = 'dps-main';
+    }
 
     const response = await fetch(url, {
       method: 'GET',
@@ -57,12 +68,17 @@ export async function POST(
       'Accept': 'application/json',
     };
 
-    // Forward tenant/branch headers if present
-    const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
+    // Forward all X- headers (tenant, branch, school, etc.)
+    request.headers.forEach((value, key) => {
+      if (key.toLowerCase().startsWith('x-')) {
+        headers[key] = value;
+      }
+    });
     
-    if (tenantId) headers['X-Tenant-Id'] = tenantId;
-    if (branchId) headers['X-Branch-Id'] = branchId;
+    // Ensure branch ID is always present (use default if not provided)
+    if (!headers['x-branch-id'] && !headers['X-Branch-Id']) {
+      headers['X-Branch-Id'] = 'dps-main';
+    }
 
     const response = await fetch(url, {
       method: 'POST',
@@ -98,12 +114,17 @@ export async function PUT(
       'Accept': 'application/json',
     };
 
-    // Forward tenant/branch headers if present
-    const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
+    // Forward all X- headers (tenant, branch, school, etc.)
+    request.headers.forEach((value, key) => {
+      if (key.toLowerCase().startsWith('x-')) {
+        headers[key] = value;
+      }
+    });
     
-    if (tenantId) headers['X-Tenant-Id'] = tenantId;
-    if (branchId) headers['X-Branch-Id'] = branchId;
+    // Ensure branch ID is always present (use default if not provided)
+    if (!headers['x-branch-id'] && !headers['X-Branch-Id']) {
+      headers['X-Branch-Id'] = 'dps-main';
+    }
 
     const response = await fetch(url, {
       method: 'PUT',
@@ -139,12 +160,17 @@ export async function PATCH(
       'Accept': 'application/json',
     };
 
-    // Forward tenant/branch headers if present
-    const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
+    // Forward all X- headers (tenant, branch, school, etc.)
+    request.headers.forEach((value, key) => {
+      if (key.toLowerCase().startsWith('x-')) {
+        headers[key] = value;
+      }
+    });
     
-    if (tenantId) headers['X-Tenant-Id'] = tenantId;
-    if (branchId) headers['X-Branch-Id'] = branchId;
+    // Ensure branch ID is always present (use default if not provided)
+    if (!headers['x-branch-id'] && !headers['X-Branch-Id']) {
+      headers['X-Branch-Id'] = 'dps-main';
+    }
 
     const response = await fetch(url, {
       method: 'PATCH',
@@ -178,12 +204,23 @@ export async function DELETE(
       'Accept': 'application/json',
     };
 
-    // Forward tenant/branch headers if present
-    const tenantId = request.headers.get('X-Tenant-Id');
-    const branchId = request.headers.get('X-Branch-Id') || 'branch1'; // Default to branch1 for now
+    // Forward Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
+
+    // Forward all X- headers (tenant, branch, school, etc.)
+    request.headers.forEach((value, key) => {
+      if (key.toLowerCase().startsWith('x-')) {
+        headers[key] = value;
+      }
+    });
     
-    if (tenantId) headers['X-Tenant-Id'] = tenantId;
-    if (branchId) headers['X-Branch-Id'] = branchId;
+    // Ensure branch ID is always present (use default if not provided)
+    if (!headers['x-branch-id'] && !headers['X-Branch-Id']) {
+      headers['X-Branch-Id'] = 'dps-main';
+    }
 
     const response = await fetch(url, {
       method: 'DELETE',

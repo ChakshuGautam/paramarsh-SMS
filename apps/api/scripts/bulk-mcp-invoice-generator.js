@@ -338,6 +338,6 @@ generator.generateBulkMCPStatements();
 generator.generateReport();
 
 console.log('\n📄 Ready for MCP-based database insertion');
-console.log('Use the returned statements for MCP SQLite Server operations');
+console.log('Use the returned statements for MCP PostgreSQL Server operations');
 
 module.exports = { generator };

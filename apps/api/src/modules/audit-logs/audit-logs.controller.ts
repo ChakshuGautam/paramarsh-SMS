@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -9,7 +10,7 @@ import { AuditLogsService } from './audit-logs.service';
 import { ListParams } from '../../common/base-crud.service';
 import { AuditLogInterceptor } from '../../common/interceptors/audit-log.interceptor';
 
-@Controller('api/v1/audit-logs')
+@Controller('audit-logs')
 @UseInterceptors(AuditLogInterceptor)
 export class AuditLogsController {
   constructor(private readonly auditLogsService: AuditLogsService) {}

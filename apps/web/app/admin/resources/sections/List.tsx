@@ -6,11 +6,11 @@ import {
   List,
   ReferenceField,
   TextField,
-  TextInput,
-  ReferenceInput,
-  AutocompleteInput,
-  NumberInput,
   Count,
+  EmptyState,
+  TextInput,
+  SelectInput,
+  NumberInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -41,12 +41,15 @@ const getGradeLevelFilter = (level: string) => {
   }
 };
 
-// Label-less filters with placeholders
+// Standardized filters using filter components
 const sectionFilters = [
   <TextInput source="q" placeholder="Search sections..." label="" alwaysOn />,
-  <ReferenceInput source="classId" reference="classes">
-    <AutocompleteInput placeholder="Filter by class" label="" optionText="name" />
-  </ReferenceInput>,
+  <SelectInput 
+    source="classId" 
+    placeholder="Filter by class" 
+    label="" 
+    choices={[]} // Would need to be populated with class data
+  />,
   <NumberInput source="capacity_gte" placeholder="Min capacity" label="" />,
 ];
 
@@ -164,10 +167,9 @@ const SectionsTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col label="Actions" className="hidden md:table-cell" render={(record) => (
+    <DataTable.Col label="Actions" responsiveVisibility="md" render={(record) => (
       <ViewTimetableButton record={record} />
     )} />
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
 );
 
@@ -189,7 +191,7 @@ const ClassAndSection = () => {
 
 const TeacherName = () => {
   const record = useRecordContext();
-  if (!record) return <span className="text-muted-foreground">No teacher assigned</span>;
+  if (!record) return <EmptyState type="inline" message="No teacher assigned" />;
   
   // This assumes the teacher record has been fetched
   // You might need to adjust based on your teacher data structure

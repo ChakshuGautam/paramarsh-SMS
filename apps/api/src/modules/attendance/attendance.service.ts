@@ -154,7 +154,7 @@ export class AttendanceService extends BaseCrudService<any> {
           include: {
             period: {
               include: {
-                timeSlot: true,
+                subject: true,
               },
             },
             subject: true,
@@ -211,7 +211,7 @@ export class AttendanceService extends BaseCrudService<any> {
         studentRecords: true,
         period: {
           include: {
-            timeSlot: true,
+            subject: true,
           },
         },
         subject: true,

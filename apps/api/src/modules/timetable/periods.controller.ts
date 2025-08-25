@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -16,20 +17,21 @@ import { PeriodsService } from './periods.service';
 import { CreatePeriodDto } from './dto/create-period.dto';
 import { UpdatePeriodDto } from './dto/update-period.dto';
 
-@Controller('api/v1/timetable/periods')
+@Controller('timetable/periods')
 export class PeriodsController {
   constructor(private readonly periodsService: PeriodsService) {}
 
   @Get()
   async findAll(
     @Query() query: any,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const { page = 1, pageSize = 10, sort, filter } = query;
+    const { page = 1, perPage = 10, pageSize = 10, sort, filter } = query;
+    const effectivePerPage = perPage || pageSize;
     
     const result = await this.periodsService.findAll({
       page: +page,
-      pageSize: +pageSize,
+      perPage: +effectivePerPage,
       sort,
       filter: filter ? JSON.parse(filter) : {},
       branchId,
@@ -41,7 +43,7 @@ export class PeriodsController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const result = await this.periodsService.findOne(id, branchId);
     return { data: result };
@@ -50,7 +52,7 @@ export class PeriodsController {
   @Post()
   async create(
     @Body() createPeriodDto: CreatePeriodDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // Validate that if it's not a break period, subjectId and teacherId are required
     if (!createPeriodDto.isBreak) {
@@ -73,16 +75,16 @@ export class PeriodsController {
   async update(
     @Param('id') id: string,
     @Body() updatePeriodDto: UpdatePeriodDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.periodsService.update(id, updatePeriodDto, branchId);
+    const result = await this.periodsService.update(id, { ...updatePeriodDto, branchId });
     return { data: result };
   }
 
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const result = await this.periodsService.remove(id, branchId);
     return { data: result };

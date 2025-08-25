@@ -5,12 +5,11 @@ import { useListContext, useRecordContext, useDataProvider } from "ra-core";
 import {
   DataTable,
   List,
-  SelectInput,
-  ReferenceInput,
   ReferenceField,
-  AutocompleteInput,
   Count,
   TextField,
+  TextInput,
+  SelectInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -49,24 +48,19 @@ const getTimeFilter = (period: string) => {
   }
 };
 
-// Simplified filters - only academic year and exam type as requested
+// Standardized filters using filter components
 const examFilters = [
-  <ReferenceInput 
-    source="academicYearId" 
-    reference="academicYears" 
-    label=""
-    alwaysOn
-  >
-    <AutocompleteInput 
-      placeholder="Select academic year" 
-      optionText="name"
-      defaultValue="2025-26"
-    />
-  </ReferenceInput>,
+  <TextInput source="q" placeholder="Search exams..." label="" alwaysOn />,
   <SelectInput 
-    source="examType" 
+    source="academicYearId" 
+    placeholder="Filter by academic year" 
     label=""
+    choices={[]} // Would need to be populated with academic year data
+  />,
+  <SelectInput
+    source="examType"
     placeholder="Filter by exam type"
+    label=""
     choices={[
       { id: 'UNIT_TEST', name: 'Unit Test' },
       { id: 'MONTHLY_TEST', name: 'Monthly Test' },

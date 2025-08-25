@@ -1,20 +1,17 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
-  ReferenceField,
-  TextField,
-  TextInput,
-  ReferenceInput,
-  AutocompleteInput,
-  SelectInput,
   Count,
+  TextInput,
+  SelectInput,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Ticket, AlertCircle, Clock, CheckCircle, User, Tag } from "lucide-react";
+import { formatDate } from "@/lib/utils/date-utils";
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
@@ -24,62 +21,55 @@ const storeKeyByStatus = {
   closed: "tickets.list.closed",
 };
 
-// Label-less filters with placeholders
-const ticketFilters = [
-  <TextInput source="q" placeholder="Search tickets..." label="" alwaysOn />,
+const filters = [
+  <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
   <SelectInput 
     source="category" 
-    placeholder="Filter by category" 
+    placeholder="Filter by category..." 
     label="" 
     choices={[
       { id: 'technical', name: 'Technical' },
       { id: 'academic', name: 'Academic' },
       { id: 'administrative', name: 'Administrative' },
       { id: 'billing', name: 'Billing' },
-      { id: 'general', name: 'General' }
+      { id: 'general', name: 'General' },
     ]} 
   />,
   <SelectInput 
     source="priority" 
-    placeholder="Filter by priority" 
+    placeholder="Filter by priority..." 
     label="" 
     choices={[
       { id: 'low', name: 'Low' },
       { id: 'medium', name: 'Medium' },
       { id: 'high', name: 'High' },
-      { id: 'urgent', name: 'Urgent' }
+      { id: 'urgent', name: 'Urgent' },
     ]} 
   />,
   <SelectInput 
     source="ownerType" 
-    placeholder="Filter by owner type" 
+    placeholder="Filter by owner type..." 
     label="" 
     choices={[
       { id: 'student', name: 'Student' },
       { id: 'parent', name: 'Parent' },
       { id: 'teacher', name: 'Teacher' },
-      { id: 'staff', name: 'Staff' }
+      { id: 'staff', name: 'Staff' },
     ]} 
   />,
-  <ReferenceInput source="assigneeId" reference="staff">
-    <AutocompleteInput 
-      placeholder="Filter by assignee" 
-      label="" 
-      optionText={(record) => `${record.firstName} ${record.lastName}`}
-    />
-  </ReferenceInput>,
 ];
 
 export const TicketsList = () => (
   <List
+    filters={filters}
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "open" }}
-    filters={ticketFilters}
     perPage={10}
   >
     <TabbedDataTable />
   </List>
 );
+
 
 const TabbedDataTable = () => {
   const listContext = useListContext();
@@ -173,16 +163,16 @@ const TicketsTable = ({ storeKey }: { storeKey: string }) => (
       <OwnerTypeBadge />
     </DataTable.Col>
     <DataTable.Col label="Assignee" className="hidden lg:table-cell">
-      <ReferenceField reference="staff" source="assigneeId">
-        <TextField source="firstName" />
-      </ReferenceField>
+      <AssigneeField />
     </DataTable.Col>
-    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell" />
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
+      <CreatedDateField />
+    </DataTable.Col>
   </DataTable>
 );
 
-const SubjectWithIcon = ({ record }: { record?: any }) => {
+const SubjectWithIcon = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   return (
@@ -195,7 +185,8 @@ const SubjectWithIcon = ({ record }: { record?: any }) => {
   );
 };
 
-const PriorityBadge = ({ record }: { record?: any }) => {
+const PriorityBadge = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const variants = {
@@ -230,7 +221,8 @@ const PriorityBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const StatusBadge = ({ record }: { record?: any }) => {
+const StatusBadge = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const variants = {
@@ -262,7 +254,8 @@ const StatusBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const CategoryBadge = ({ record }: { record?: any }) => {
+const CategoryBadge = () => {
+  const record = useRecordContext();
   if (!record || !record.category) return null;
   
   const colors = {
@@ -283,7 +276,26 @@ const CategoryBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const OwnerTypeBadge = ({ record }: { record?: any }) => {
+const CreatedDateField = () => {
+  const record = useRecordContext();
+  if (!record || !record.createdAt) return null;
+  return <span>{formatDate(record.createdAt)}</span>;
+};
+
+const AssigneeField = () => {
+  const record = useRecordContext();
+  if (!record || !record.assigneeId) return <span className="text-muted-foreground">-</span>;
+  
+  // Handle case where assignee data might not be loaded
+  if (record.assignee) {
+    return <span>{record.assignee.firstName} {record.assignee.lastName}</span>;
+  }
+  
+  return <span className="text-xs text-muted-foreground">ID: {record.assigneeId}</span>;
+};
+
+const OwnerTypeBadge = () => {
+  const record = useRecordContext();
   if (!record || !record.ownerType) return null;
   
   const colors = {

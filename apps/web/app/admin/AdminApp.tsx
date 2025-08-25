@@ -63,7 +63,7 @@ const AdminApp = () => {
 
   return (
     <Admin dataProvider={raDataProvider} authProvider={authProvider}>
-    {/* Core Academic Resources */}
+    {/* Core Academic Structure */}
     <Resource
       name="students"
       list={Students.List}
@@ -79,13 +79,6 @@ const AdminApp = () => {
       create={Guardians.Create}
     />
     <Resource
-      name="enrollments"
-      list={Enrollments.List}
-      show={Enrollments.Show}
-      edit={Enrollments.Edit}
-      create={Enrollments.Create}
-    />
-    <Resource
       name="classes"
       list={Classes.List}
       show={Classes.Show}
@@ -99,6 +92,35 @@ const AdminApp = () => {
       edit={Sections.Edit}
       create={Sections.Create}
     />
+    <Resource
+      name="enrollments"
+      list={Enrollments.List}
+      show={Enrollments.Show}
+      edit={Enrollments.Edit}
+      create={Enrollments.Create}
+    />
+    
+    {/* Daily Academic Operations */}
+    <Resource
+      name="attendanceSessions"
+      options={{ label: "Daily Attendance" }}
+      list={AttendanceSessions.List}
+      edit={AttendanceSessions.Edit}
+      show={AttendanceSessions.Show}
+    />
+    <Resource
+      name="substitutions"
+      options={{ label: "Substitutions" }}
+      list={Substitutions.List}
+      show={Substitutions.Show}
+      edit={Substitutions.Edit}
+      create={Substitutions.Create}
+    />
+    <Resource
+      name="teacherAttendance"
+      options={{ label: "Teacher Attendance" }}
+      list={TeacherAttendance.List}
+    />
     
     {/* Admissions */}
     <Resource
@@ -110,27 +132,7 @@ const AdminApp = () => {
       create={AdmissionsApplications.Create}
     />
     
-    {/* Academic Records */}
-    <Resource
-      name="attendanceRecords"
-      options={{ label: "Attendance Records" }}
-      list={AttendanceRecords.List}
-      show={AttendanceRecords.Show}
-      edit={AttendanceRecords.Edit}
-      create={AttendanceRecords.Create}
-    />
-    <Resource
-      name="attendanceSessions"
-      options={{ label: "Student Attendance" }}
-      list={AttendanceSessions.List}
-      edit={AttendanceSessions.Edit}
-      show={AttendanceSessions.Show}
-    />
-    <Resource
-      name="teacherAttendance"
-      options={{ label: "Teacher Attendance" }}
-      list={TeacherAttendance.List}
-    />
+    {/* Academic Assessment */}
     <Resource
       name="exams"
       list={Exams.List}
@@ -139,19 +141,31 @@ const AdminApp = () => {
       create={Exams.Create}
     />
     <Resource
+      name="marks"
+      list={Marks.List}
+      show={Marks.Show}
+      edit={Marks.Edit}
+      create={Marks.Create}
+    />
+    
+    {/* Academic Records & History */}
+    <Resource
+      name="attendanceRecords"
+      options={{ label: "Attendance History" }}
+      list={AttendanceRecords.List}
+      show={AttendanceRecords.Show}
+      edit={AttendanceRecords.Edit}
+      create={AttendanceRecords.Create}
+    />
+    
+    {/* Academic Planning */}
+    <Resource
       name="academicYears"
       options={{ label: "Academic Years" }}
       list={AcademicYears.List}
       show={AcademicYears.Show}
       edit={AcademicYears.Edit}
       create={AcademicYears.Create}
-    />
-    <Resource
-      name="marks"
-      list={Marks.List}
-      show={Marks.Show}
-      edit={Marks.Edit}
-      create={Marks.Create}
     />
     
     {/* Financial */}
@@ -203,7 +217,7 @@ const AdminApp = () => {
       create={Teachers.Create}
     />
     
-    {/* Timetable */}
+    {/* Timetable Management */}
     <Resource
       name="subjects"
       options={{ label: "Subjects" }}
@@ -221,21 +235,6 @@ const AdminApp = () => {
       create={Rooms.Create}
     />
     <Resource
-      name="timetablePeriods"
-      options={{ label: "Timetable" }}
-      list={Timetable.List}
-      show={Timetable.Show}
-      edit={Timetable.Edit}
-      create={Timetable.Create}
-    />
-    <Resource
-      name="timetables"
-      options={{ label: "Timetables" }}
-      list={Timetables.List}
-      show={Timetables.Show}
-      edit={Timetables.Edit}
-    />
-    <Resource
       name="timeSlots"
       options={{ label: "Time Slots" }}
       list={TimeSlots.List}
@@ -244,12 +243,20 @@ const AdminApp = () => {
       create={TimeSlots.Create}
     />
     <Resource
-      name="substitutions"
-      options={{ label: "Substitutions" }}
-      list={Substitutions.List}
-      show={Substitutions.Show}
-      edit={Substitutions.Edit}
-      create={Substitutions.Create}
+      name="timetablePeriods"
+      options={{ label: "Timetable Periods" }}
+      list={Timetable.List}
+      show={Timetable.Show}
+      edit={Timetable.Edit}
+      create={Timetable.Create}
+    />
+    <Resource
+      name="timetables"
+      options={{ label: "Timetable Overview" }}
+      list={Timetables.List}
+      show={Timetables.Show}
+      edit={Timetables.Edit}
+      create={Timetables.Create}
     />
     <Resource
       name="sectionTimetables"

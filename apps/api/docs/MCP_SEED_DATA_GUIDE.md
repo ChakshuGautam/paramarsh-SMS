@@ -1,38 +1,38 @@
-# MCP SQLite Server Seed Data Management Guide
+# MCP PostgreSQL Server Seed Data Management Guide
 
-This guide provides comprehensive instructions for managing seed data in the Paramarsh SMS system using **EXCLUSIVELY** SQLite MCP Server tools. 
+This guide provides comprehensive instructions for managing seed data in the Paramarsh SMS system using **EXCLUSIVELY** PostgreSQL MCP Server tools. 
 
-## 🚨 Critical Rule: NO sqlite3 Command Line Usage
+## 🚨 Critical Rule: NO psql Command Line Usage
 
-**All database operations MUST use SQLite MCP Server tools. NEVER use sqlite3 command-line tool.**
+**All database operations MUST use PostgreSQL MCP Server tools. NEVER use psql command-line tool.**
 
 ### ❌ FORBIDDEN Approaches:
 ```bash
 # NEVER do this:
-sqlite3 /path/to/database.db "SELECT * FROM students;"
+psql $DATABASE_URL -c "SELECT * FROM students;"
 bun run prisma db execute --sql "INSERT INTO..."
-echo "SELECT * FROM students" | sqlite3 database.db
+echo "SELECT * FROM students" | psql $DATABASE_URL
 ```
 
 ### ✅ REQUIRED Approach:
 ```typescript
 // Always use MCP tools:
-await mcp__MCP_SQLite_Server__query({"query": "SELECT * FROM students WHERE branchId = 'branch1'"});
-await mcp__MCP_SQLite_Server__create_record({"table": "students", "data": {...}});
+await mcp__MCP_PostgreSQL_Server__query({"query": "SELECT * FROM students WHERE branchId = 'branch1'"});
+await mcp__MCP_PostgreSQL_Server__create_record({"table": "students", "data": {...}});
 ```
 
-## Available MCP SQLite Server Tools
+## Available MCP PostgreSQL Server Tools
 
 | Tool | Purpose | Usage |
 |------|---------|-------|
-| `mcp__MCP_SQLite_Server__db_info` | Check database status | Connection health, metadata |
-| `mcp__MCP_SQLite_Server__list_tables` | List all tables | Schema discovery |
-| `mcp__MCP_SQLite_Server__query` | Execute SELECT queries | Complex queries, aggregations |
-| `mcp__MCP_SQLite_Server__get_table_schema` | Get table structure | Column info, constraints |
-| `mcp__MCP_SQLite_Server__create_record` | Insert single records | Add new data |
-| `mcp__MCP_SQLite_Server__read_records` | Read with conditions | Filtered retrieval |
-| `mcp__MCP_SQLite_Server__update_records` | Update existing records | Modify data |
-| `mcp__MCP_SQLite_Server__delete_records` | Delete records | Remove data |
+| `mcp__MCP_PostgreSQL_Server__db_info` | Check database status | Connection health, metadata |
+| `mcp__MCP_PostgreSQL_Server__list_tables` | List all tables | Schema discovery |
+| `mcp__MCP_PostgreSQL_Server__query` | Execute SELECT queries | Complex queries, aggregations |
+| `mcp__MCP_PostgreSQL_Server__get_table_schema` | Get table structure | Column info, constraints |
+| `mcp__MCP_PostgreSQL_Server__create_record` | Insert single records | Add new data |
+| `mcp__MCP_PostgreSQL_Server__read_records` | Read with conditions | Filtered retrieval |
+| `mcp__MCP_PostgreSQL_Server__update_records` | Update existing records | Modify data |
+| `mcp__MCP_PostgreSQL_Server__delete_records` | Delete records | Remove data |
 
 ## Seed Data Management Commands
 
@@ -271,7 +271,7 @@ const feeComponents = {
 ### Common Issues
 
 1. **"Query failed" errors**
-   - Ensure using MCP tools, not sqlite3 command
+   - Ensure using MCP tools, not psql command
    - Check table names match Prisma schema exactly
    - Verify branchId is included in multi-tenant queries
 
@@ -306,13 +306,13 @@ npm run export:all
 ### 1. Always Use MCP Tools
 ```typescript
 // ✅ Good
-const students = await mcp__MCP_SQLite_Server__read_records({
+const students = await mcp__MCP_PostgreSQL_Server__read_records({
   table: 'Student',
   conditions: { branchId: 'branch1' }
 });
 
 // ❌ Bad
-const result = execSync('sqlite3 database.db "SELECT * FROM Student"');
+const result = execSync('psql $DATABASE_URL -c "SELECT * FROM Student"');
 ```
 
 ### 2. Maintain Referential Integrity
@@ -384,8 +384,8 @@ const report = await generateValidationReport();
 
 ## Quick Start Checklist
 
-1. ✅ Ensure MCP SQLite Server tools are available
-2. ✅ Never use sqlite3 command-line tool
+1. ✅ Ensure MCP PostgreSQL Server tools are available
+2. ✅ Never use psql command-line tool
 3. ✅ Run `npm run seed:indian` for comprehensive data
 4. ✅ Validate with `npm run seed:validate:mcp`
 5. ✅ Check health score is above 90%

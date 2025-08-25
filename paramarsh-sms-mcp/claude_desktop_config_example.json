@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "paramarsh-sms": {
+      "command": "node",
+      "args": ["/Users/__chaks__/repos/paramarsh-SMS/paramarsh-sms-mcp/dist/index.js"],
+      "env": {
+        "PARAMARSH_API_BASE": "http://localhost:3001/api/admin",
+        "PARAMARSH_DEFAULT_BRANCH": "dps-main",
+        "PARAMARSH_AUTH_TOKEN": "your_jwt_token_here",
+        "PARAMARSH_SCHOOL_ID": "dps"
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Controller, Get, Post, Put, Patch, Delete, Param, Query, Body, Headers } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BaseCrudController } from '../../common/base-crud.controller';
@@ -20,16 +21,16 @@ export class ApplicationsController extends BaseCrudController<any> {
     @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: string,
     @Query() query?: Record<string, any>,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
       const idArray = Array.isArray(ids) ? ids : (typeof ids === 'string' ? ids.split(',') : [ids]);
-      return this.applicationsService.getMany(idArray, branchId);
+      return this.applicationsService.getMany(idArray);
     }
     
     // Remove pagination params from query to get filters
-    const { page: _p, perPage: _pp, pageSize: _ps, sort: _s, filter: filterStr, ...restQuery } = query || {};
+    const { page: _p, perPage: _pp, pageSize: _ps, sort: _s, filter: filterStr, q, ...restQuery } = query || {};
     
     // Parse filter if it's a JSON string
     let filter = {};
@@ -50,6 +51,7 @@ export class ApplicationsController extends BaseCrudController<any> {
       pageSize: +(pageSize || perPage || 25),
       sort,
       filter,
+      q,
       branchId
     });
 
@@ -62,7 +64,7 @@ export class ApplicationsController extends BaseCrudController<any> {
   @Get(':id')
   async getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const result = await this.applicationsService.findOne(id, branchId);
     return { data: result };
@@ -71,7 +73,7 @@ export class ApplicationsController extends BaseCrudController<any> {
   @Post()
   async create(
     @Body() createDto: CreateApplicationDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const result = await this.applicationsService.create({ 
       ...createDto, 
@@ -84,9 +86,9 @@ export class ApplicationsController extends BaseCrudController<any> {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateApplicationDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.applicationsService.update(id, updateDto, branchId);
+    const result = await this.applicationsService.update(id, { ...updateDto, branchId });
     return { data: result };
   }
 
@@ -94,16 +96,16 @@ export class ApplicationsController extends BaseCrudController<any> {
   async patch(
     @Param('id') id: string,
     @Body() updateDto: Partial<UpdateApplicationDto>,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.applicationsService.update(id, updateDto, branchId);
+    const result = await this.applicationsService.update(id, { ...updateDto, branchId });
     return { data: result };
   }
 
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const result = await this.applicationsService.remove(id, branchId);
     return { data: result };

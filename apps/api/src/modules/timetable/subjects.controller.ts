@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -30,7 +31,7 @@ export class SubjectsController {
   })
   @CreateDocs('Subject created successfully')
   async create(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Body() createSubjectDto: CreateSubjectDto,
   ) {
     try {
@@ -51,14 +52,16 @@ export class SubjectsController {
   })
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
   @ApiQuery({ name: 'perPage', required: false, description: 'Number of items per page', example: 25 })
+  @ApiQuery({ name: 'pageSize', required: false, description: 'Number of items per page (alias for perPage)', example: 25 })
   @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'name' })
   @ApiQuery({ name: 'filter', required: false, description: 'Filter JSON string' })
   @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated IDs for getMany' })
   @ListDocs('List of all subjects')
   findAll(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
     @Query('ids') idsStr?: string,
@@ -79,9 +82,10 @@ export class SubjectsController {
       return this.subjectsService.findMany(ids);
     }
 
+    const effectivePerPage = perPage || pageSize;
     return this.subjectsService.findAll({
       page: page ? parseInt(page) : 1,
-      perPage: perPage ? parseInt(perPage) : 25,
+      perPage: effectivePerPage ? parseInt(effectivePerPage) : 25,
       sort,
       ...filter,
     });
@@ -98,6 +102,94 @@ export class SubjectsController {
     return this.subjectsService.getSubjectsByClass(classId);
   }
 
+  @Get('appropriate-for-class/:classId')
+  @ApiOperation({ 
+    summary: 'Get grade-appropriate subjects for class',
+    description: 'Retrieves subjects that are educationally appropriate for the specified class grade level'
+  })
+  @ApiParam({ name: 'classId', description: 'Class ID', example: 'class-123' })
+  @ListDocs('List of grade-appropriate subjects for the class')
+  getAppropriateForClass(
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+    @Param('classId') classId: string,
+  ) {
+    return this.subjectsService.getSubjectsForClass(classId);
+  }
+
+  @Get('with-grade-filter')
+  @ApiOperation({ 
+    summary: 'Get subjects with grade-level filtering',
+    description: 'Retrieves subjects filtered by grade level appropriateness'
+  })
+  @ApiQuery({ name: 'gradeLevel', required: false, description: 'Grade level (0-12)', example: 0 })
+  @ApiQuery({ name: 'className', required: false, description: 'Class name', example: 'Nursery' })
+  @ApiQuery({ name: 'classId', required: false, description: 'Class ID', example: 'class-123' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Items per page', example: 25 })
+  @ListDocs('List of grade-appropriate subjects')
+  getWithGradeFilter(
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+    @Query('gradeLevel') gradeLevel?: string,
+    @Query('className') className?: string,
+    @Query('classId') classId?: string,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: string,
+    @Query('q') q?: string,
+  ) {
+    const filters: any = {};
+    if (gradeLevel !== undefined) filters.gradeLevel = parseInt(gradeLevel);
+    if (className) filters.className = className;
+    if (classId) filters.classId = classId;
+    if (page) filters.page = parseInt(page);
+    if (perPage || pageSize) filters.perPage = parseInt(perPage || pageSize || '25');
+    if (sort) filters.sort = sort;
+    if (q) filters.q = q;
+
+    return this.subjectsService.findAllWithGradeFilter(filters);
+  }
+
+  @Get('validate-assignment/:subjectId/:classId')
+  @ApiOperation({ 
+    summary: 'Validate subject-class assignment',
+    description: 'Checks if a subject is appropriate for a specific class grade level'
+  })
+  @ApiParam({ name: 'subjectId', description: 'Subject ID', example: 'subject-123' })
+  @ApiParam({ name: 'classId', description: 'Class ID', example: 'class-123' })
+  @ListDocs('Validation result for subject-class assignment')
+  validateAssignment(
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+    @Param('subjectId') subjectId: string,
+    @Param('classId') classId: string,
+  ) {
+    return this.subjectsService.validateSubjectClassAssignment(subjectId, classId);
+  }
+
+  @Get('inappropriate-assignments')
+  @ApiOperation({ 
+    summary: 'Get inappropriate subject assignments',
+    description: 'Lists all subject-class assignments that are educationally inappropriate (e.g., Physics for Nursery)'
+  })
+  @ListDocs('List of inappropriate subject-class assignments')
+  getInappropriateAssignments(
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.subjectsService.getInappropriateAssignments();
+  }
+
+  @Get('subject-teacher-class-mapping')
+  @ApiOperation({ 
+    summary: 'Get subject-teacher-class mapping overview',
+    description: 'Shows current assignments of subjects to teachers and classes with appropriateness validation'
+  })
+  @ListDocs('Subject-teacher-class mapping with validation')
+  getSubjectTeacherClassMapping(
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.subjectsService.getSubjectTeacherClassMapping();
+  }
+
   @Get(':id')
   @ApiOperation({ 
     summary: 'Get subject by ID',
@@ -106,7 +198,7 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @ListDocs('Subject details')
   async findOne(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
   ) {
     const data = await this.subjectsService.findOne(id);
@@ -135,7 +227,7 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @UpdateDocs('Subject updated successfully')
   async update(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
@@ -158,7 +250,7 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @UpdateDocs('Subject updated successfully')
   async patch(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
@@ -181,7 +273,7 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @DeleteDocs('Subject deleted successfully')
   async remove(
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
   ) {
     try {

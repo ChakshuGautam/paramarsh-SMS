@@ -83,11 +83,11 @@ export const SelectInput = forwardRef<HTMLDivElement, SelectInputProps>(
     };
 
     return (
-      <div className="flex items-center gap-2 min-w-0">
-        {label && (
-          <Label htmlFor={source} className="text-sm whitespace-nowrap">
+      <div className="flex flex-col gap-2 min-w-0">
+        {label !== false && (
+          <Label htmlFor={source} className="text-sm whitespace-nowrap min-h-[20px]">
             {label}
-            {isRequired && <span className="ml-1 text-destructive">*</span>}
+            {isRequired && label && <span className="ml-1 text-destructive">*</span>}
           </Label>
         )}
         <Select
@@ -99,7 +99,7 @@ export const SelectInput = forwardRef<HTMLDivElement, SelectInputProps>(
             ref={ref}
             id={source}
             className={cn(
-              "h-8 text-sm min-w-[160px] max-w-[240px]",
+              "h-10 text-sm min-w-[160px] max-w-[240px]",
               invalid ? "border-destructive" : "",
               className
             )}

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 
 export type FeeSchedule = {
   id?: string;
@@ -17,7 +18,7 @@ export type FeeSchedule = {
 export class FeeSchedulesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; perPage?: number; sort?: string }) {
+  async list(params: { page?: number; perPage?: number; sort?: string; filter?: any; branchId?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? 25)));
     const skip = (page - 1) * pageSize;
@@ -33,25 +34,20 @@ export class FeeSchedulesService {
         })
       : [{ id: 'asc' }];
     
-    const { branchId } = PrismaService.getScope();
-    const where: any = {};
-    if (branchId) where.branchId = branchId;
+    const branchId = params.branchId || DEFAULT_BRANCH_ID;
+    const where: any = { branchId, ...(params.filter || {}) };
     
-    const prismaAny = this.prisma as any;
     const [data, total] = await Promise.all([
-      prismaAny.feeSchedule.findMany({ where, skip, take: pageSize, orderBy }),
-      prismaAny.feeSchedule.count({ where }),
+      this.prisma.feeSchedule.findMany({ where, skip, take: pageSize, orderBy }),
+      this.prisma.feeSchedule.count({ where }),
     ]);
     return { data, total };
   }
 
-  async findOne(id: string) {
-    const { branchId } = PrismaService.getScope();
-    const where: any = { id };
-    if (branchId) where.branchId = branchId;
+  async getOne(id: string, branchId: string = DEFAULT_BRANCH_ID) {
+    const where: any = { id, branchId };
     
-    const prismaAny = this.prisma as any;
-    const feeSchedule = await prismaAny.feeSchedule.findFirst({ where });
+    const feeSchedule = await this.prisma.feeSchedule.findFirst({ where });
     
     if (!feeSchedule) {
       throw new NotFoundException('Fee schedule not found');
@@ -60,12 +56,10 @@ export class FeeSchedulesService {
     return { data: feeSchedule };
   }
 
-  async create(input: FeeSchedule) {
-    const { branchId } = PrismaService.getScope();
-    const prismaAny = this.prisma as any;
-    const created = await prismaAny.feeSchedule.create({
+  async create(input: FeeSchedule, branchId: string = DEFAULT_BRANCH_ID) {
+    const created = await this.prisma.feeSchedule.create({
       data: {
-        branchId: branchId ?? null,
+        branchId,
         feeStructureId: input.feeStructureId,
         recurrence: input.recurrence,
         dueDayOfMonth: input.dueDayOfMonth,
@@ -79,20 +73,17 @@ export class FeeSchedulesService {
     return { data: created };
   }
 
-  async update(id: string, input: Partial<FeeSchedule>) {
-    const { branchId } = PrismaService.getScope();
-    const where: any = { id };
-    if (branchId) where.branchId = branchId;
+  async update(id: string, input: Partial<FeeSchedule>, branchId: string = DEFAULT_BRANCH_ID) {
+    const where: any = { id, branchId };
     
     try {
-      const prismaAny = this.prisma as any;
       // First check if the record exists and belongs to the correct branch
-      const existing = await prismaAny.feeSchedule.findFirst({ where });
+      const existing = await this.prisma.feeSchedule.findFirst({ where });
       if (!existing) {
         throw new NotFoundException('Fee schedule not found');
       }
       
-      const updated = await prismaAny.feeSchedule.update({
+      const updated = await this.prisma.feeSchedule.update({
         where: { id },
         data: {
           feeStructureId: input.feeStructureId ?? undefined,
@@ -112,20 +103,17 @@ export class FeeSchedulesService {
     }
   }
 
-  async remove(id: string) {
-    const { branchId } = PrismaService.getScope();
-    const where: any = { id };
-    if (branchId) where.branchId = branchId;
+  async remove(id: string, branchId: string = DEFAULT_BRANCH_ID) {
+    const where: any = { id, branchId };
     
     try {
-      const prismaAny = this.prisma as any;
       // First check if the record exists and belongs to the correct branch
-      const existing = await prismaAny.feeSchedule.findFirst({ where });
+      const existing = await this.prisma.feeSchedule.findFirst({ where });
       if (!existing) {
         throw new NotFoundException('Fee schedule not found');
       }
       
-      const deleted = await prismaAny.feeSchedule.delete({ where: { id } });
+      const deleted = await this.prisma.feeSchedule.delete({ where: { id } });
       return { data: deleted };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
@@ -156,9 +144,8 @@ export class FeeSchedulesService {
     return { period, dueDate };
   }
 
-  async generateForSchedule(id: string) {
-    const prismaAny = this.prisma as any;
-    const schedule = await prismaAny.feeSchedule.findUnique({ where: { id } });
+  async generateForSchedule(id: string, branchId: string = DEFAULT_BRANCH_ID) {
+    const schedule = await this.prisma.feeSchedule.findFirst({ where: { id, branchId } });
     if (!schedule) throw new NotFoundException('Fee schedule not found');
     if (schedule.status === 'paused') return { created: 0 };
 
@@ -166,14 +153,14 @@ export class FeeSchedulesService {
     const whereStudent: any = {};
     // In real code, filter by class/section via current enrollments
 
-    const students = await this.prisma.student.findMany({ where: whereStudent, select: { id: true } });
+    const students = await this.prisma.student.findMany({ where: { ...whereStudent, branchId }, select: { id: true, branchId: true } });
 
     // Compute period using current month and dueDayOfMonth
     const now = new Date();
     const { period, dueDate } = this.computeNextPeriod(schedule.recurrence as any, new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), schedule.dueDayOfMonth)));
 
     // Create one invoice per student with amount = sum of fee structure components
-    const structure = await this.prisma.feeStructure.findUnique({ where: { id: schedule.feeStructureId }, include: { components: true } });
+    const structure = await this.prisma.feeStructure.findFirst({ where: { id: schedule.feeStructureId, branchId }, include: { components: true } });
     if (!structure) throw new NotFoundException('Fee structure not found');
     const amount = (structure.components || []).reduce((sum, c) => sum + (c.amount || 0), 0);
 
@@ -181,13 +168,17 @@ export class FeeSchedulesService {
     for (const s of students) {
       // Check if invoice already exists for this student and period
       const existing = await this.prisma.invoice.findFirst({
-        where: { studentId: s.id, period }
+        where: { studentId: s.id, period, branchId }
       });
       
       if (!existing) {
+        // Generate a simple invoice number for fee schedule generation
+        const invoiceNumber = `FS-${schedule.id.slice(-8)}-${s.id.slice(-4)}-${created.toString().padStart(3, '0')}`;
+        
         await this.prisma.invoice.create({ 
           data: { 
-            studentId: s.id, 
+            studentId: s.id,
+            invoiceNumber,
             period, 
             dueDate, 
             amount, 

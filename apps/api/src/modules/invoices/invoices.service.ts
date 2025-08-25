@@ -42,12 +42,27 @@ export class InvoicesService extends BaseCrudService<any> {
    * Override getList to add calculated fields and enhanced filtering
    */
   async getList(params: any) {
-    // Handle overdue status calculation
-    if (params.filter?.status === 'overdue') {
-      const today = new Date().toISOString().split('T')[0];
-      params.filter.dueDate_lt = today;
-      params.filter.status = { in: ['pending', 'partial'] }; // Only pending/partial can be overdue
-      delete params.filter.status; // Remove to use the object form
+    // Handle case-insensitive status filtering
+    if (params.filter?.status && typeof params.filter.status === 'string') {
+      const statusValue = params.filter.status.toLowerCase();
+      
+      if (statusValue === 'overdue') {
+        // Handle overdue status calculation
+        const today = new Date().toISOString().split('T')[0];
+        // Remove the overdue status filter and replace with proper date filtering
+        delete params.filter.status;
+        params.filter.dueDate = { lt: today }; // Use object form to avoid string-to-number conversion
+        params.filter.status = { in: ['pending', 'partial', 'PENDING', 'PARTIAL'] }; // Only pending/partial can be overdue (handle case variations)
+      } else {
+        // Handle case-insensitive status matching for regular statuses
+        // Create a case-insensitive filter that matches both uppercase and lowercase variants
+        const upperStatus = statusValue.toUpperCase();
+        const lowerStatus = statusValue.toLowerCase();
+        const titleStatus = statusValue.charAt(0).toUpperCase() + statusValue.slice(1).toLowerCase();
+        
+        // Replace status filter with case-insensitive matching
+        params.filter.status = { in: [upperStatus, lowerStatus, titleStatus] };
+      }
     }
 
     const result = await super.getList(params);
@@ -90,6 +105,7 @@ export class InvoicesService extends BaseCrudService<any> {
    */
   protected buildSearchClause(search: string): any[] {
     return [
+      { invoiceNumber: { contains: search, mode: 'insensitive' } },
       { period: { contains: search, mode: 'insensitive' } },
       { status: { contains: search, mode: 'insensitive' } },
       { student: { firstName: { contains: search, mode: 'insensitive' } } },
@@ -108,14 +124,23 @@ export class InvoicesService extends BaseCrudService<any> {
   /**
    * Legacy list method for backward compatibility
    */
-  async list(params: { page?: number; perPage?: number; sort?: string; studentId?: string; status?: string; branchId: string; filter?: any; ids?: string }) {
+  async list(params: { page?: number; perPage?: number; pageSize?: number; sort?: string; studentId?: string; status?: string; q?: string; branchId: string; filter?: any; ids?: string }) {
     const filter: any = {
       studentId: params.studentId,
-      status: params.status,
       student: {
         branchId: params.branchId
       }
     };
+    
+    // Handle case-insensitive status filtering
+    if (params.status && typeof params.status === 'string') {
+      const statusValue = params.status.toLowerCase();
+      const upperStatus = statusValue.toUpperCase();
+      const lowerStatus = statusValue.toLowerCase();
+      const titleStatus = statusValue.charAt(0).toUpperCase() + statusValue.slice(1).toLowerCase();
+      
+      filter.status = { in: [upperStatus, lowerStatus, titleStatus] };
+    }
     
     if (params.filter) {
       Object.assign(filter, params.filter);
@@ -125,9 +150,15 @@ export class InvoicesService extends BaseCrudService<any> {
       filter.id = { in: params.ids.split(',') };
     }
     
+    // Handle search query 'q'
+    if (params.q && typeof params.q === 'string') {
+      filter.q = params.q;
+    }
+    
+    const effectivePerPage = params.perPage || params.pageSize;
     return this.getList({
       page: params.page,
-      perPage: params.perPage,
+      perPage: effectivePerPage,
       sort: params.sort,
       filter
     });
@@ -156,12 +187,17 @@ export class InvoicesService extends BaseCrudService<any> {
   }
 
   async create(input: { studentId: string; period?: string; dueDate?: string; amount?: number; status?: string; withPayment?: boolean; branchId: string }) {
+    // Generate sequential invoice number in format INV-YYYY-NNN
+    const invoiceNumber = await this.generateSequentialInvoiceNumber(input.branchId);
+    
     const inv = await this.prisma.invoice.create({ data: {
       studentId: input.studentId,
+      invoiceNumber,
       period: input.period ?? null,
       dueDate: input.dueDate ?? null,
       amount: input.amount ?? null,
       status: input.status ?? null,
+      branchId: input.branchId ?? null,
     }});
     if (input.withPayment && inv.amount) {
       await this.prisma.payment.create({ data: {
@@ -251,5 +287,71 @@ export class InvoicesService extends BaseCrudService<any> {
       new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: buffer, ContentType: 'application/pdf' })
     );
     return { key };
+  }
+
+  /**
+   * Generate sequential invoice number in format: INV-YYYY-NNN
+   * e.g., INV-2024-001, INV-2024-002, etc.
+   * Sequence resets each year and is branch-scoped for multi-tenancy
+   */
+  private async generateSequentialInvoiceNumber(branchId: string): Promise<string> {
+    const currentYear = new Date().getFullYear();
+    const yearStr = currentYear.toString();
+    const prefix = `INV-${yearStr}-`;
+
+    try {
+      // Use a transaction to ensure concurrency safety
+      return await this.prisma.$transaction(async (tx) => {
+        // Get the count of invoices for this branch and year
+        const existingCount = await tx.invoice.count({
+          where: {
+            invoiceNumber: {
+              startsWith: prefix
+            },
+            // Filter by branch for multi-tenancy
+            OR: [
+              { branchId },
+              // Also check student's branchId for invoices without branchId
+              {
+                branchId: null,
+                student: {
+                  branchId
+                }
+              }
+            ]
+          }
+        });
+
+        // Generate next sequence number
+        const sequence = (existingCount + 1).toString().padStart(3, '0');
+        const invoiceNumber = `${prefix}${sequence}`;
+
+        // Verify uniqueness (should be unique due to transaction, but double check)
+        const existing = await tx.invoice.findFirst({
+          where: { invoiceNumber }
+        });
+
+        if (existing) {
+          // If somehow there's a conflict, retry with timestamp
+          const timestamp = Date.now().toString().slice(-6);
+          return `${prefix}${sequence}-${timestamp}`;
+        }
+
+        return invoiceNumber;
+      });
+    } catch (error) {
+      // Fallback to timestamp-based invoice number on any error
+      console.error('Error generating sequential invoice number:', error);
+      const timestamp = Date.now().toString().slice(-6);
+      return `INV-${yearStr}-${timestamp}`;
+    }
+  }
+
+  /**
+   * Legacy method - keeping for backward compatibility
+   * @deprecated Use generateSequentialInvoiceNumber instead
+   */
+  private async generateInvoiceNumber(studentId: string, period?: string, branchId?: string): Promise<string> {
+    return this.generateSequentialInvoiceNumber(branchId || 'branch1');
   }
 }

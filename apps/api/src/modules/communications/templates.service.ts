@@ -14,7 +14,7 @@ export class TemplatesService extends BaseCrudService<Template> {
   }
 
   protected buildSearchClause(search: string): any[] {
-    // SQLite doesn't support mode: 'insensitive' for contains
+    // PostgreSQL supports case insensitive search with ilike
     return [
       { name: { contains: search } },
       { content: { contains: search } },

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 
 export type FeeStructure = { id?: string; gradeId?: string };
 export type FeeComponent = { id?: string; feeStructureId: string; name: string; type?: string; amount: number };
@@ -8,22 +9,35 @@ export type FeeComponent = { id?: string; feeStructureId: string; name: string; 
 export class FeeStructuresService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; branchId?: string }) {
+  async list(params: { page?: number; perPage?: number; pageSize?: number; sort?: string; filter?: any; branchId?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
+    const perPage = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
+    const skip = (page - 1) * perPage;
 
     const orderBy: any = params.sort
       ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
       : [{ id: 'asc' }];
 
-    const branchId = params.branchId || 'branch1';
-    const where: any = { branchId };
+    const branchId = params.branchId || DEFAULT_BRANCH_ID;
+    const where: any = { branchId, ...(params.filter || {}) };
     const [data, total] = await Promise.all([
-      this.prisma.feeStructure.findMany({ where, skip, take: pageSize, orderBy, include: { components: true } }),
+      this.prisma.feeStructure.findMany({ where, skip, take: perPage, orderBy, include: { components: true } }),
       this.prisma.feeStructure.count({ where }),
     ]);
     return { data, total };
+  }
+
+  async getOne(id: string, branchId: string) {
+    const feeStructure = await this.prisma.feeStructure.findFirst({
+      where: { id, branchId },
+      include: { components: true }
+    });
+
+    if (!feeStructure) {
+      throw new NotFoundException('Fee structure not found');
+    }
+
+    return { data: feeStructure };
   }
 
   async createStructure(input: FeeStructure, branchId: string) {

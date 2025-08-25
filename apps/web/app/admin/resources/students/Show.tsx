@@ -6,7 +6,6 @@ import { ReferenceField } from "@/components/admin/reference-field";
 export const StudentsShow = () => (
   <Show>
     <SimpleShowLayout>
-      <TextField source="id" label="ID" />
       <TextField source="admissionNo" label="Admission No" />
       <TextField source="firstName" label="First Name" />
       <TextField source="lastName" label="Last Name" />

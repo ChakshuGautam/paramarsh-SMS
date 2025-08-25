@@ -309,37 +309,48 @@ export abstract class BaseCrudService<T> {
           } else if (key.endsWith('_gte')) {
             // Greater than or equal filter
             const field = key.replace('_gte', '');
-            const numericValue = this.convertToNumber(value);
+            // Only convert to number if the field likely contains numeric data
+            const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
             where[field] = { ...where[field], gte: numericValue ?? value };
           } else if (key.endsWith('_lte')) {
             // Less than or equal filter
             const field = key.replace('_lte', '');
-            const numericValue = this.convertToNumber(value);
+            // Only convert to number if the field likely contains numeric data
+            const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
             where[field] = { ...where[field], lte: numericValue ?? value };
           } else if (key.endsWith('_gt')) {
             // Greater than filter
             const field = key.replace('_gt', '');
-            const numericValue = this.convertToNumber(value);
+            // Only convert to number if the field likely contains numeric data
+            const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
             where[field] = { ...where[field], gt: numericValue ?? value };
           } else if (key.endsWith('_lt')) {
             // Less than filter
             const field = key.replace('_lt', '');
-            const numericValue = this.convertToNumber(value);
+            // Only convert to number if the field likely contains numeric data
+            const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
             where[field] = { ...where[field], lt: numericValue ?? value };
           } else if (key.endsWith('_in')) {
             // In array filter
             const field = key.replace('_in', '');
             where[field] = { in: Array.isArray(value) ? value : [value] };
           } else if (key.endsWith('_contains')) {
-            // Text contains filter (SQLite doesn't support mode: 'insensitive')
+            // Text contains filter (PostgreSQL supports case insensitive search)
             const field = key.replace('_contains', '');
             where[field] = { contains: value };
           } else if (Array.isArray(value)) {
             // Array filter (e.g., status in ['ACTIVE', 'PENDING'])
             where[key] = { in: value };
           } else if (typeof value === 'object' && value !== null) {
-            // Handle complex filter objects like { $contains: "value" }
-            this.buildComplexFilter(where, key, value);
+            // Check if it's a date string that got parsed incorrectly
+            if (this.isDateStringObject(value)) {
+              // Reconstruct the date string from the character object
+              const dateStr = this.reconstructDateString(value);
+              where[key] = dateStr;
+            } else {
+              // Handle complex filter objects like { $contains: "value" }
+              this.buildComplexFilter(where, key, value);
+            }
           } else {
             // Exact match
             where[key] = value;
@@ -367,17 +378,21 @@ export abstract class BaseCrudService<T> {
   protected buildComplexFilter(where: any, key: string, value: any): void {
     try {
       if (value.$contains !== undefined) {
-        // SQLite doesn't support 'mode: insensitive' for contains
+        // PostgreSQL supports case insensitive search with ilike
         // Use case-insensitive contains without the mode option
         where[key] = { contains: value.$contains };
       } else if (value.$gte !== undefined) {
-        where[key] = { ...where[key], gte: this.convertToNumber(value.$gte) ?? value.$gte };
+        const numericValue = this.shouldConvertToNumber(key, value.$gte) ? this.convertToNumber(value.$gte) : null;
+        where[key] = { ...where[key], gte: numericValue ?? value.$gte };
       } else if (value.$lte !== undefined) {
-        where[key] = { ...where[key], lte: this.convertToNumber(value.$lte) ?? value.$lte };
+        const numericValue = this.shouldConvertToNumber(key, value.$lte) ? this.convertToNumber(value.$lte) : null;
+        where[key] = { ...where[key], lte: numericValue ?? value.$lte };
       } else if (value.$gt !== undefined) {
-        where[key] = { ...where[key], gt: this.convertToNumber(value.$gt) ?? value.$gt };
+        const numericValue = this.shouldConvertToNumber(key, value.$gt) ? this.convertToNumber(value.$gt) : null;
+        where[key] = { ...where[key], gt: numericValue ?? value.$gt };
       } else if (value.$lt !== undefined) {
-        where[key] = { ...where[key], lt: this.convertToNumber(value.$lt) ?? value.$lt };
+        const numericValue = this.shouldConvertToNumber(key, value.$lt) ? this.convertToNumber(value.$lt) : null;
+        where[key] = { ...where[key], lt: numericValue ?? value.$lt };
       } else if (value.$in !== undefined) {
         where[key] = { in: Array.isArray(value.$in) ? value.$in : [value.$in] };
       } else if (value.$ne !== undefined) {
@@ -453,6 +468,22 @@ export abstract class BaseCrudService<T> {
     return sortFields.map(field => {
       const isDesc = field.startsWith('-');
       const fieldName = isDesc ? field.slice(1) : field;
+      
+      // Handle nested sorting (e.g., "class.gradeLevel" or "section.class.gradeLevel")
+      if (fieldName.includes('.')) {
+        const parts = fieldName.split('.');
+        const direction = isDesc ? 'desc' : 'asc';
+        
+        // Build nested object recursively
+        let orderByObj: any = { [parts[parts.length - 1]]: direction };
+        
+        for (let i = parts.length - 2; i >= 0; i--) {
+          orderByObj = { [parts[i]]: orderByObj };
+        }
+        
+        return orderByObj;
+      }
+      
       return { [fieldName]: isDesc ? 'desc' : 'asc' };
     });
   }
@@ -558,6 +589,31 @@ export abstract class BaseCrudService<T> {
   }
 
   /**
+   * Determine if a field value should be converted to a number
+   */
+  private shouldConvertToNumber(field: string, value: any): boolean {
+    // Don't convert if value is already a number
+    if (typeof value === 'number') return false;
+    
+    // Don't convert if value doesn't look like a number
+    if (typeof value === 'string' && isNaN(parseInt(value, 10))) return false;
+    
+    // Known date/time fields should not be converted to numbers
+    const dateFields = ['date', 'duedate', 'createdat', 'updatedat', 'deletedat', 'dob', 'startedat', 'endedat', 'timestamp'];
+    if (dateFields.some(df => field.toLowerCase().includes(df))) return false;
+    
+    // Fields that typically contain numeric data
+    const numericFields = ['amount', 'price', 'cost', 'fee', 'salary', 'age', 'gradelevel', 'level', 'count', 'total', 'sum'];
+    if (numericFields.some(nf => field.toLowerCase().includes(nf))) return true;
+    
+    // ID fields should not be converted (they're UUIDs)
+    if (field.toLowerCase().endsWith('id')) return false;
+    
+    // Default to not converting for safety
+    return false;
+  }
+
+  /**
    * Convert string values to numbers for numeric filters
    */
   private convertToNumber(value: any): number | null {
@@ -567,5 +623,54 @@ export abstract class BaseCrudService<T> {
       return isNaN(parsed) ? null : parsed;
     }
     return null;
+  }
+
+  /**
+   * Check if an object looks like a date string that was incorrectly parsed into character indices
+   */
+  private isDateStringObject(value: any): boolean {
+    if (typeof value !== 'object' || value === null) return false;
+    
+    // Check if object has numeric string keys (0, 1, 2, etc.) which suggests string indexing
+    const keys = Object.keys(value);
+    const hasNumericKeys = keys.some(key => /^\d+$/.test(key));
+    
+    // Also check if it has other properties that might indicate it's a valid filter object
+    const hasFilterProps = keys.some(key => 
+      ['gte', 'lte', 'gt', 'lt', 'equals', 'in', 'not', 'contains'].includes(key)
+    );
+    
+    return hasNumericKeys && !hasFilterProps;
+  }
+
+  /**
+   * Reconstruct date string from character indices object
+   */
+  private reconstructDateString(value: any): string {
+    try {
+      const keys = Object.keys(value).filter(key => /^\d+$/.test(key)).sort((a, b) => parseInt(a) - parseInt(b));
+      let reconstructed = '';
+      
+      for (const key of keys) {
+        reconstructed += value[key];
+      }
+      
+      // Validate that it looks like a date
+      if (/^\d{4}-\d{2}-\d{2}/.test(reconstructed)) {
+        return reconstructed;
+      }
+      
+      // If reconstruction failed, try to find a valid date among other properties
+      for (const [key, val] of Object.entries(value)) {
+        if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+          return val;
+        }
+      }
+      
+      return reconstructed; // Return whatever we reconstructed as fallback
+    } catch (error) {
+      console.warn('Failed to reconstruct date string:', error);
+      return '';
+    }
   }
 }

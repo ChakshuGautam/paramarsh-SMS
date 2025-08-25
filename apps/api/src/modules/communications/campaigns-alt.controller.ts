@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -40,7 +41,7 @@ export class CampaignsAltController {
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
@@ -88,7 +89,7 @@ export class CampaignsAltController {
   @ListDocs('Campaign details')
   async findOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.campaignsService.getOne(id);
   }
@@ -101,7 +102,7 @@ export class CampaignsAltController {
   @CreateDocs('Campaign created successfully')
   async create(
     @Body() createCampaignDto: CreateCampaignDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.campaignsService.create(createCampaignDto);
   }
@@ -116,7 +117,7 @@ export class CampaignsAltController {
   async update(
     @Param('id') id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.campaignsService.update(id, updateCampaignDto);
   }
@@ -130,7 +131,7 @@ export class CampaignsAltController {
   @DeleteDocs('Campaign deleted successfully')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.campaignsService.delete(id);
   }

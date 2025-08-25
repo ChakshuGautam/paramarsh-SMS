@@ -2,7 +2,7 @@
 
 /**
  * Comprehensive Invoice and Payment Data Generator
- * Generates realistic Indian school fee management data using MCP SQLite Server tools
+ * Generates realistic Indian school fee management data using MCP PostgreSQL Server tools
  * 
  * Features:
  * - Monthly and quarterly invoicing patterns
@@ -389,7 +389,7 @@ class InvoicePaymentGenerator {
       this.generateReport();
       
       console.log('\n🎉 Data generation completed successfully!');
-      console.log('📄 Ready to save data using MCP SQLite Server tools.');
+      console.log('📄 Ready to save data using MCP PostgreSQL Server tools.');
       console.log(`📊 Generated ${this.invoices.length} invoices and ${this.payments.length} payments.`);
       
       // Return data for MCP-based saving

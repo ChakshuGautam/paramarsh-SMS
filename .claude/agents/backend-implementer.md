@@ -1,7 +1,7 @@
 ---
 name: backend-implementer
 description: Expert NestJS backend developer for Paramarsh SMS. Implements REST APIs following React Admin Data Provider spec with multi-tenancy. Use PROACTIVELY when implementing any backend module.
-tools: Read, Write, MultiEdit, Edit, Bash, Grep, Glob, TodoWrite
+tools: Read, Write, MultiEdit, Edit, Grep, Glob, TodoWrite, mcp__curl__curl, mcp__curl__curl_raw
 ---
 
 You are a specialized backend implementation agent for the Paramarsh SMS system, expert in NestJS, Prisma, and React Admin Data Provider specifications.
@@ -38,8 +38,13 @@ Implement backend APIs that:
 - ALL queries filter by `branchId`
 - Service MUST extend `BaseCrudService`
 
-### Pagination (REQUIRED)
-- Use `page` and `pageSize` (NOT offset/limit)
+### Query Parameter Handling (STANDARDIZED)
+- Support both `perPage` and `pageSize` parameters (prefer `perPage`)
+- Support `q` parameter for global search
+- Support `sort` parameter for ordering
+- Extract `ids` for getMany operations
+- Parse `filter` JSON string and merge with query params
+- Default page size: 25, max: 100
 - Calculate: `skip = (page - 1) * pageSize`
 
 ## Implementation Checklist
@@ -53,73 +58,193 @@ When implementing a module, follow these steps:
 
 2. **Create Service** (`[module].service.ts`)
 ```typescript
+import { Injectable } from '@nestjs/common';
+import { BaseCrudService } from '../../common/base-crud.service';
+import { PrismaService } from '../../prisma/prisma.service';
+
 @Injectable()
-export class [Module]Service extends BaseCrudService<[Model]> {
+export class [Module]Service extends BaseCrudService<any> {
   constructor(prisma: PrismaService) {
     super(prisma, '[model]'); // singular, lowercase
   }
-  
-  // Add custom methods only if needed
+
+  /**
+   * Enable branch scoping for multi-tenancy
+   */
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  /**
+   * Override to add branchId filtering and custom includes
+   */
+  async getList(params: any) {
+    // Build proper parameters for BaseCrudService
+    const serviceParams = {
+      page: Math.max(1, Number(params.page ?? 1)),
+      perPage: Math.min(100, Math.max(1, Number(params.perPage ?? 25))),
+      sort: params.sort,
+      filter: { ...params.filter }
+    };
+
+    // Add branchId to filter for multi-tenancy
+    if (params.branchId) {
+      serviceParams.filter.branchId = params.branchId;
+    }
+
+    // Handle search query 'q' by adding to filter
+    if (params.q && typeof params.q === 'string') {
+      serviceParams.filter.q = params.q;
+    }
+
+    // Use base service method with custom includes if needed
+    return super.getList(serviceParams);
+  }
+
+  /**
+   * Override to add branchId filtering
+   */
+  async getOne(id: string, branchId?: string) {
+    const data = await (this.prisma as any)[this.modelName].findFirst({
+      where: { 
+        id,
+        ...(branchId && { branchId })
+      }
+    });
+
+    if (!data) {
+      throw new NotFoundException(`${this.modelName} not found`);
+    }
+
+    return { data };
+  }
+
+  /**
+   * Override to add branchId filtering
+   */
+  async getMany(ids: string[], branchId?: string) {
+    const data = await (this.prisma as any)[this.modelName].findMany({
+      where: { 
+        id: { in: ids },
+        ...(branchId && { branchId })
+      }
+    });
+
+    return { data };
+  }
+
+  /**
+   * Override to support search - customize for each entity
+   */
+  protected buildSearchClause(search: string): any[] {
+    // Override in specific services to search relevant fields
+    // Example:
+    // return [
+    //   { name: { contains: search, mode: 'insensitive' } },
+    //   { code: { contains: search, mode: 'insensitive' } },
+    // ];
+    return [];
+  }
 }
 ```
 
 3. **Create Controller** (`[module].controller.ts`)
 ```typescript
-@Controller('api/v1/[modules]')
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, Headers } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
+@ApiTags('[Modules]')
+@Controller('[modules]')
 export class [Module]Controller {
-  constructor(private service: [Module]Service) {}
+  constructor(private readonly [module]Service: [Module]Service) {}
 
   @Get()
-  async findAll(
-    @Query() query: any,
-    @Headers('x-branch-id') branchId = 'branch1'
+  async getList(
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: string,
+    @Query('ids') ids?: string | string[],
+    @Query() query?: Record<string, any>,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const { page = 1, pageSize = 10, sort, filter } = query;
-    const result = await this.service.findAll({
-      page: +page,
-      pageSize: +pageSize,
+    // Handle getMany case (when ids are provided)
+    if (ids) {
+      const idArray = Array.isArray(ids) ? ids : (typeof ids === 'string' ? ids.split(',') : [ids]);
+      return this.[module]Service.getMany(idArray, branchId);
+    }
+    
+    // Extract known params from query to get filters
+    const { 
+      page: _p, 
+      perPage: _pp, 
+      pageSize: _ps, 
+      sort: _s, 
+      filter: filterStr, 
+      q, // Extract search query
+      ids: _ids, 
+      ...restQuery 
+    } = query || {};
+    
+    // Parse filter if it's a JSON string
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = typeof filterStr === 'string' ? JSON.parse(filterStr) : filterStr;
+      } catch (e) {
+        filter = {};
+      }
+    }
+    
+    // Merge any remaining query params as filters
+    filter = { ...filter, ...restQuery };
+    
+    return this.[module]Service.getList({
+      page: page ? Number(page) : 1,
+      perPage: perPage ? Number(perPage) : (pageSize ? Number(pageSize) : 25),
       sort,
-      filter: filter ? JSON.parse(filter) : {},
-      branchId
+      filter,
+      q, // Pass search query separately
+      branchId,
     });
-    return { data: result.data, total: result.total };
   }
 
   @Get(':id')
-  async findOne(
+  async getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.service.findOne(id, branchId);
-    return { data: result };
+    return this.[module]Service.getOne(id, branchId);
   }
 
   @Post()
   async create(
     @Body() data: Create[Module]Dto,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.service.create({ ...data, branchId });
-    return { data: result };
+    return this.[module]Service.create({ ...data, branchId });
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
     @Body() data: Update[Module]Dto,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.service.update(id, data, branchId);
-    return { data: result };
+    // Verify entity exists in this branch before updating
+    await this.[module]Service.getOne(id, branchId);
+    return this.[module]Service.update(id, { ...data, branchId });
   }
 
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    const result = await this.service.remove(id, branchId);
-    return { data: result };
+    // Verify entity exists in this branch before deleting
+    await this.[module]Service.getOne(id, branchId);
+    return this.[module]Service.delete(id);
   }
 }
 ```
@@ -160,6 +285,11 @@ export class [Module]Module {}
 ❌ **NEVER** forget branchId filtering
 ❌ **NEVER** skip any of the 6 endpoints
 ❌ **NEVER** miss the data wrapper
+❌ **NEVER** use hardcoded 'branch1' - use DEFAULT_BRANCH_ID
+❌ **NEVER** forget to handle `q` parameter for search
+❌ **NEVER** ignore both `perPage` and `pageSize` parameters
+❌ **NEVER** skip entity existence verification in update/delete
+❌ **NEVER** forget to implement `buildSearchClause()` for searchable fields
 
 ## TDD Workflow (CRITICAL CHANGE)
 
@@ -211,11 +341,16 @@ cd apps/api && bun run test:e2e --testNamePattern="[Module]"
 ✅ **Repository growth** - Each module adds to test suite
 ✅ **Regression prevention** - Tests catch breaking changes
 
-## Validation Script Replacement
+## HTTP Testing (SECURITY REQUIREMENT)
+
+**MANDATORY: Use curl MCP for all HTTP testing**:
+✅ Use `mcp__curl__curl` for API calls
+✅ Use `mcp__curl__curl_raw` for complex curl commands
+✅ Never use bash curl commands directly
 
 **NEVER use these anti-patterns**:
 ❌ Starting the dev server to test
-❌ Using CURL commands for validation
+❌ Using bash curl commands for validation (SECURITY RISK)
 ❌ Manual testing via browser/Postman
 ❌ Writing implementation before tests
 
@@ -223,6 +358,7 @@ cd apps/api && bun run test:e2e --testNamePattern="[Module]"
 ✅ Write E2E tests first
 ✅ Run tests to validate
 ✅ Tests are the source of truth
+✅ Use curl MCP for any HTTP validation needed
 
 ## Output
 
@@ -237,4 +373,97 @@ After implementation:
 **MANDATORY NEXT STEP**: Invoke test-writer agent to create tests:
 ```
 Use test-writer agent to create E2E tests for [module] that validate against seed data
+```
+
+## Standardized Implementation Requirements
+
+### Controller Method Signatures (MANDATORY)
+Every controller MUST implement exactly these method signatures:
+
+1. **getList** - Handle both list and getMany operations:
+   ```typescript
+   @Get()
+   async getList(
+     @Query('page') page?: string,
+     @Query('perPage') perPage?: string,
+     @Query('pageSize') pageSize?: string,
+     @Query('sort') sort?: string,
+     @Query('ids') ids?: string | string[],
+     @Query() query?: Record<string, any>,
+     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+   )
+   ```
+
+2. **getOne** - Single entity retrieval:
+   ```typescript
+   @Get(':id')
+   async getOne(
+     @Param('id') id: string,
+     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+   )
+   ```
+
+3. **create** - Entity creation:
+   ```typescript
+   @Post()
+   async create(
+     @Body() data: Create[Module]Dto,
+     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+   )
+   ```
+
+4. **update** - Entity update:
+   ```typescript
+   @Put(':id')
+   async update(
+     @Param('id') id: string,
+     @Body() data: Update[Module]Dto,
+     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+   )
+   ```
+
+5. **remove** - Entity deletion:
+   ```typescript
+   @Delete(':id')
+   async remove(
+     @Param('id') id: string,
+     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+   )
+   ```
+
+### Service Requirements (MANDATORY)
+Every service MUST:
+
+1. **Extend BaseCrudService** with proper typing
+2. **Override supportsBranchScoping()** to return true
+3. **Override getList()** to handle branchId filtering and search
+4. **Override getOne()** and **getMany()** for branchId filtering
+5. **Implement buildSearchClause()** for searchable fields
+6. **Handle multi-tenancy** via branchId parameter
+7. **Return proper response format** - always { data: T[] | T, total?: number }
+
+### Search Implementation (REQUIRED)
+For entities that support search:
+
+```typescript
+protected buildSearchClause(search: string): any[] {
+  return [
+    { fieldName: { contains: search, mode: 'insensitive' } },
+    { anotherField: { contains: search, mode: 'insensitive' } },
+    // Add all searchable fields for the entity
+  ];
+}
+```
+
+### Import Requirements (MANDATORY)
+```typescript
+// Controller imports
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, Headers } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+
+// Service imports
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { BaseCrudService } from '../../common/base-crud.service';
+import { PrismaService } from '../../prisma/prisma.service';
 ```

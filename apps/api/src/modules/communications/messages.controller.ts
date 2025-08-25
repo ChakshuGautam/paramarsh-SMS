@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import {
   Controller,
   Get,
@@ -39,18 +40,39 @@ export class MessagesController {
   @ApiQuery({ name: 'channel', required: false, description: 'Filter by communication channel', example: 'sms' })
   @ListDocs('List of messages')
   findAll(
-    @Query('skip') skip?: string,
-    @Query('take') take?: string,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('sort') sort?: string,
+    @Query('filter') filterStr?: string,
+    @Query('ids') idsStr?: string,
     @Query('status') status?: string,
     @Query('channel') channel?: string,
   ) {
-    return this.messagesService.findAll({
-      skip: skip ? Number(skip) : undefined,
-      take: take ? Number(take) : undefined,
-      where: {
-        ...(status && { status }),
-        ...(channel && { channel }),
-      },
+    // Handle getMany case (when ids are provided)
+    if (idsStr) {
+      const ids = idsStr.split(',');
+      return this.messagesService.getMany(ids);
+    }
+
+    // Parse filter if provided
+    let filter: any = {};
+    if (filterStr) {
+      try {
+        filter = JSON.parse(filterStr);
+      } catch (error) {
+        filter = {};
+      }
+    }
+
+    // Add legacy query params to filter
+    if (status) filter.status = status;
+    if (channel) filter.channel = channel;
+
+    return this.messagesService.getList({
+      page: page ? parseInt(page) : 1,
+      perPage: perPage ? parseInt(perPage) : 20,
+      sort,
+      filter,
     });
   }
 
@@ -62,7 +84,7 @@ export class MessagesController {
   @ApiParam({ name: 'id', description: 'Message ID', example: 'message-123' })
   @ListDocs('Message details')
   findOne(@Param('id') id: string) {
-    return this.messagesService.findOne(id);
+    return this.messagesService.getOne(id);
   }
 
   @Patch(':id/status')

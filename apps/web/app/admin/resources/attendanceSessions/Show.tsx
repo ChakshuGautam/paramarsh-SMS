@@ -19,7 +19,7 @@ import {
   Timer,
   UserX,
 } from "lucide-react";
-import { format } from "date-fns";
+import { formatDate, formatDateTime } from "@/lib/utils";
 
 const SessionDetails = () => {
   const record = useRecordContext();
@@ -35,7 +35,7 @@ const SessionDetails = () => {
           <p className="text-sm text-muted-foreground">Date</p>
           <p className="font-medium flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            {format(new Date(record.date), 'MMM dd, yyyy')}
+            {formatDate(record.date)}
           </p>
         </div>
         <div>
@@ -177,7 +177,7 @@ const TeacherInfo = () => {
           <div>
             <p className="text-sm text-muted-foreground">Locked At</p>
             <p className="font-medium">
-              {format(new Date(record.lockedAt), 'MMM dd, yyyy HH:mm')}
+              {formatDateTime(record.lockedAt)}
             </p>
           </div>
         )}

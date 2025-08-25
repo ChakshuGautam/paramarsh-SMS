@@ -7,10 +7,10 @@ export type Section = { id?: string; branchId?: string; classId: string; name: s
 export class SectionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; pageSize?: number; sort?: string; classId?: string; branchId: string; filter?: any; ids?: string }) {
+  async list(params: { page?: number; perPage?: number; pageSize?: number; sort?: string; classId?: string; branchId: string; filter?: any; ids?: string; q?: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
+    const perPage = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
+    const skip = (page - 1) * perPage;
 
     const where: any = {};
     if (params.classId) where.classId = params.classId;
@@ -27,6 +27,14 @@ export class SectionsService {
     
     // Add branchId filtering
     where.branchId = params.branchId;
+    
+    // Handle search query
+    if (params.q) {
+      where.OR = [
+        { name: { contains: params.q, mode: 'insensitive' } },
+        { class: { name: { contains: params.q, mode: 'insensitive' } } },
+      ];
+    }
     
     // Handle sorting, including nested field sorting
     let orderBy: any = [{ id: 'asc' }]; // default
@@ -46,7 +54,7 @@ export class SectionsService {
       this.prisma.section.findMany({ 
         where, 
         skip, 
-        take: pageSize, 
+        take: perPage, 
         orderBy,
         include: {
           class: true,

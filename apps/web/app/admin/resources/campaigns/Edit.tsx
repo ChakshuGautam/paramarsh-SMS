@@ -1,21 +1,34 @@
 "use client";
 
-import { Edit, SimpleForm, TextInput } from "@/components/admin";
+import { 
+  Edit, 
+  SimpleForm, 
+  TextInput,
+  SelectInput,
+  DateInput,
+  required 
+} from "@/components/admin";
 import { ReferenceInput } from "@/components/admin/reference-input";
 import { AutocompleteInput } from "@/components/admin/autocomplete-input";
 
 export const CampaignsEdit = () => (
   <Edit>
     <SimpleForm>
-      <TextInput source="id" label="ID" disabled />
-      <TextInput source="name" label="Name" />
-      <ReferenceInput source="templateId" reference="templates" label="Template">
+      <TextInput source="name" label="Name" validate={required()} />
+      <ReferenceInput source="templateId" reference="templates" label="Template" validate={required()}>
         <AutocompleteInput optionText="name" />
       </ReferenceInput>
-      <TextInput 
+      <SelectInput 
         source="status" 
         label="Status" 
-        helperText="draft, scheduled, active, completed, or paused" 
+        choices={[
+          { id: 'draft', name: 'Draft' },
+          { id: 'scheduled', name: 'Scheduled' },
+          { id: 'running', name: 'Running' },
+          { id: 'completed', name: 'Completed' },
+          { id: 'paused', name: 'Paused' },
+        ]}
+        validate={required()}
       />
       <TextInput
         source="audienceQuery"
@@ -24,7 +37,7 @@ export const CampaignsEdit = () => (
         rows={3}
         helperText='e.g., {"type": "all_students"} or {"type": "class", "classId": "xxx"}'
       />
-      <TextInput source="schedule" label="Schedule At" helperText="ISO date format" />
+      <DateInput source="schedule" label="Schedule At" />
     </SimpleForm>
   </Edit>
 );

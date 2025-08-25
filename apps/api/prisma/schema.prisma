@@ -1,112 +1,93 @@
-// School Management System Database Schema
-// 
-// TERMINOLOGY NOTE:
-// - "branchId" in the database represents "schoolId" in the API/UI layer
-// - This allows the system to support multiple schools in a multi-tenant architecture
-// - Each "branch" is an independent school with its own data
-// - The term "branch" is used internally for historical/technical reasons
-// - All API endpoints and UI should refer to "school" for better user understanding
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "darwin-arm64", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Student {
-  id               String             @id @default(uuid())
-  branchId         String?            // Represents schoolId - which school this student belongs to
-  admissionNo      String?
+  id               String                    @id @default(uuid())
+  branchId         String?
+  admissionNo      String?                   @unique
   firstName        String
   lastName         String
   dob              String?
-  gender           String?            // male | female | other
+  gender           String?
   classId          String?
   sectionId        String?
-  status           String?            @default("active") // active | inactive | graduated
-  rollNumber       String?            // Add roll number for attendance display
-  photoUrl         String?            // Add photo URL for visual identification
-  // Soft delete fields
-  deletedAt        DateTime?          // Null if not deleted, timestamp if soft deleted
-  deletedBy        String?            // User ID who deleted the record
-  // Note: branchId is used internally but represents schoolId in the API layer
-  // This allows multi-school support where each school is a separate branch
-  guardians        StudentGuardian[]  // Many-to-many relationship via junction table
-  invoices         Invoice[]
-  enrollments      Enrollment[]
-  MarksEntry       MarksEntry[]
+  status           String?                   @default("active")
+  rollNumber       String?
+  photoUrl         String?
+  deletedAt        DateTime?
+  deletedBy        String?
   AttendanceRecord AttendanceRecord[]
-  periodAttendance StudentPeriodAttendance[]  // New period-based attendance
-  marks            Mark[]  // New exam marks
+  enrollments      Enrollment[]
+  invoices         Invoice[]
+  marks            Mark[]
+  MarksEntry       MarksEntry[]
+  guardians        StudentGuardian[]
+  periodAttendance StudentPeriodAttendance[]
 
-  @@unique([admissionNo])
   @@index([deletedAt])
 }
 
 model Guardian {
   id                   String            @id @default(uuid())
-  branchId             String?           // Represents schoolId - which school this guardian belongs to
+  branchId             String?
   name                 String
   email                String?
-  phoneNumber          String?           // Primary phone number
-  alternatePhoneNumber String?           // Secondary phone number
+  phoneNumber          String?
+  alternatePhoneNumber String?
   address              String?
-  occupation           String?           // Guardian's occupation
-  // Soft delete fields
-  deletedAt            DateTime?         // Null if not deleted, timestamp if soft deleted
-  deletedBy            String?           // User ID who deleted the record
-  // Many-to-many relationship with students
+  occupation           String?
+  deletedAt            DateTime?
+  deletedBy            String?
   students             StudentGuardian[]
-  
+
   @@index([branchId])
   @@index([email])
   @@index([phoneNumber])
   @@index([deletedAt])
 }
 
-// Junction table for many-to-many relationship between students and guardians
 model StudentGuardian {
   id               String   @id @default(uuid())
   studentId        String
   guardianId       String
-  relation         String   // father, mother, guardian, grandfather, grandmother, uncle, aunt, other
-  isPrimary        Boolean  @default(false) // Primary contact for the student
-  canPickup        Boolean  @default(true)  // Can pickup the student from school
-  emergencyContact Boolean  @default(true) // Can be contacted in emergency
-  
-  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  relation         String
+  isPrimary        Boolean  @default(false)
+  canPickup        Boolean  @default(true)
+  emergencyContact Boolean  @default(true)
   guardian         Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
-  
-  @@unique([studentId, guardianId]) // A guardian can only have one relationship type with a student
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, guardianId])
   @@index([guardianId])
   @@index([studentId])
 }
 
 model Exam {
   id               String        @id @default(uuid())
-  branchId         String?       // Represents schoolId - which school this exam belongs to
+  branchId         String?
   name             String
-  examType         String?       // UNIT_TEST, MONTHLY_TEST, QUARTERLY, HALF_YEARLY, ANNUAL, etc.
-  academicYearId   String?       // Reference to academic year
-  term             Int?          // 1, 2, or 3
-  weightagePercent Float?        // 0-100 weightage in final grade
-  minPassingMarks  Float?        // Minimum marks to pass
-  maxMarks         Float?        // Total marks for the exam
-  status           String?       @default("SCHEDULED") // SCHEDULED, ONGOING, COMPLETED, CANCELLED
+  examType         String?
+  academicYearId   String?
+  term             Int?
+  weightagePercent Float?
+  minPassingMarks  Float?
+  maxMarks         Float?
+  status           String?       @default("SCHEDULED")
   startDate        String?
   endDate          String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-  
-  // Relations
   academicYear     AcademicYear? @relation(fields: [academicYearId], references: [id])
   sessions         ExamSession[]
   marks            Mark[]
-  
+
   @@index([branchId, academicYearId])
   @@index([branchId, status])
   @@index([branchId, examType])
@@ -114,7 +95,7 @@ model Exam {
 
 model FeeStructure {
   id         String         @id @default(uuid())
-  branchId   String?        // Represents schoolId - which school this fee structure belongs to
+  branchId   String?
   gradeId    String?
   components FeeComponent[]
   schedules  FeeSchedule[]
@@ -122,7 +103,7 @@ model FeeStructure {
 
 model FeeComponent {
   id             String       @id @default(uuid())
-  branchId       String?      // Represents schoolId - inherited from fee structure
+  branchId       String?
   feeStructureId String
   name           String
   type           String?
@@ -131,128 +112,127 @@ model FeeComponent {
 }
 
 model FeeSchedule {
-  id             String   @id @default(uuid())
-  branchId       String?  // Represents schoolId - which school this fee schedule belongs to
+  id             String       @id @default(uuid())
+  branchId       String?
   feeStructureId String
-  recurrence     String   // monthly | quarterly | halfYearly | annual
+  recurrence     String
   dueDayOfMonth  Int
   startDate      String?
   endDate        String?
   classId        String?
   sectionId      String?
-  status         String?  // active | paused
+  status         String?
   feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
 }
 
 model Invoice {
-  id        String    @id @default(uuid())
-  branchId  String?   // Represents schoolId - which school this invoice belongs to
-  studentId String
-  period    String?
-  dueDate   String?
-  amount    Int?
-  status    String?
-  // Soft delete fields
-  deletedAt DateTime? // Null if not deleted, timestamp if soft deleted
-  deletedBy String?   // User ID who deleted the record
-  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  payments  Payment[]
+  id            String    @id @default(uuid())
+  branchId      String?
+  invoiceNumber String    @unique
+  studentId     String
+  period        String?
+  dueDate       String?
+  amount        Int?
+  status        String?
+  deletedAt     DateTime?
+  deletedBy     String?
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  payments      Payment[]
 
   @@unique([studentId, period])
   @@index([deletedAt])
+  @@index([invoiceNumber])
 }
 
 model Application {
-  id                String   @id @default(uuid())
-  branchId          String   // Represents schoolId - which school this application is for
-  applicationNo     String   @unique // Unique application number like APP20250001
-  firstName         String
-  lastName          String
-  dob               String   // Date of birth in YYYY-MM-DD format
-  gender            String   // male | female | other
-  guardianName      String
-  guardianPhone     String   // Guardian's primary phone number
-  guardianEmail     String?  // Guardian's email (optional)
-  previousSchool    String?  // Previous school name (optional)
-  classAppliedFor   String   // Class applying for (e.g., "Class 1", "Class 2")
-  status            String   @default("PENDING") // PENDING | APPROVED | REJECTED | WAITLISTED
-  submittedAt       DateTime @default(now()) // When application was submitted
-  reviewedAt        DateTime? // When application was reviewed
-  reviewedBy        String?  // ID of staff member who reviewed
-  notes             String?  // Additional notes about the application
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+  id              String    @id @default(uuid())
+  branchId        String
+  applicationNo   String    @unique
+  firstName       String
+  lastName        String
+  dob             String
+  gender          String
+  guardianName    String
+  guardianPhone   String
+  guardianEmail   String?
+  previousSchool  String?
+  classAppliedFor String
+  status          String    @default("PENDING")
+  submittedAt     DateTime  @default(now())
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
   @@index([branchId])
   @@index([branchId, status])
   @@index([branchId, classAppliedFor])
 }
 
 model Tenant {
-  id        String @id @default(uuid())
-  branchId  String? // Optional branch association for multi-school tenants
+  id        String  @id @default(uuid())
+  branchId  String?
   name      String
   subdomain String
 }
 
 model Class {
   id         String    @id @default(uuid())
-  branchId   String?   // Represents schoolId - which school offers this class
+  branchId   String?
   name       String
   gradeLevel Int?
   sections   Section[]
 }
 
 model Section {
-  id          String       @id @default(uuid())
-  branchId    String?      // Represents schoolId - which school this section belongs to
-  classId     String
-  name        String
-  capacity    Int?
-  homeroomTeacherId String?
-  homeroomTeacher   Teacher?    @relation(fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
-  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  enrollments Enrollment[]
-  periods     TimetablePeriod[]
-  attendanceSessions AttendanceSession[]  // Add reverse relation
+  id                 String              @id @default(uuid())
+  branchId           String?
+  classId            String
+  name               String
+  capacity           Int?
+  homeroomTeacherId  String?
+  attendanceSessions AttendanceSession[]
+  enrollments        Enrollment[]
+  class              Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
+  homeroomTeacher    Teacher?            @relation(fields: [homeroomTeacherId], references: [id])
+  periods            TimetablePeriod[]
 }
 
 model Enrollment {
   id        String  @id @default(uuid())
-  branchId  String? // Represents schoolId - inherited from section
+  branchId  String?
   studentId String
   sectionId String
   status    String?
   startDate String?
   endDate   String?
-  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Payment {
   id        String    @id @default(uuid())
-  branchId  String?   // Represents schoolId - inherited from invoice
+  branchId  String?
   invoiceId String
   gateway   String?
   amount    Int?
   status    String?
-  reference String?
+  reference String?   @unique
   method    String?
-  // Soft delete fields
-  deletedAt DateTime? // Null if not deleted, timestamp if soft deleted
-  deletedBy String?   // User ID who deleted the record
-  invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  deletedAt DateTime?
+  deletedBy String?
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+  invoice   Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  @@unique([reference])
   @@index([invoiceId])
   @@index([deletedAt])
 }
 
 model ExamSession {
   id        String       @id @default(uuid())
-  branchId  String?      // Represents schoolId - inherited from exam
+  branchId  String?
   examId    String
   subjectId String?
   roomId    String?
@@ -263,21 +243,22 @@ model ExamSession {
 
 model MarksEntry {
   id        String      @id @default(uuid())
-  branchId  String?     // Represents schoolId - inherited from exam session
+  branchId  String?
   studentId String
   sessionId String
   rawMarks  Float?
   grade     String?
   comments  String?
-  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   session   ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
   @@index([studentId])
   @@index([sessionId])
 }
 
 model AttendanceRecord {
   id        String  @id @default(uuid())
-  branchId  String? // Represents schoolId - inherited from student
+  branchId  String?
   studentId String
   date      String
   status    String?
@@ -290,8 +271,8 @@ model AttendanceRecord {
 }
 
 model Staff {
-  id             String  @id @default(uuid())
-  branchId       String? // Represents schoolId - which school this staff member works at
+  id             String    @id @default(uuid())
+  branchId       String?
   firstName      String
   lastName       String
   email          String?
@@ -301,54 +282,49 @@ model Staff {
   employmentType String?
   joinDate       String?
   status         String?
-  // Soft delete fields
-  deletedAt      DateTime? // Null if not deleted, timestamp if soft deleted
-  deletedBy      String?   // User ID who deleted the record
+  deletedAt      DateTime?
+  deletedBy      String?
   Teacher        Teacher?
-  
+
   @@index([deletedAt])
 }
 
 model Teacher {
-  id              String  @id @default(uuid())
-  branchId        String? // Represents schoolId - inherited from staff
-  staffId         String  @unique
-  subjects        String?
-  qualifications  String?
-  experienceYears Int?
-  // Soft delete fields
-  deletedAt       DateTime? // Null if not deleted, timestamp if soft deleted
-  deletedBy       String?   // User ID who deleted the record
-  staff           Staff   @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  homeroomSections Section[]
-  periods         TimetablePeriod[]
-  substitutions   Substitution[]
-  constraints     TeacherConstraint[]
-  
-  // New attendance relations
-  assignedSessions    AttendanceSession[] @relation("AssignedSessions")
-  actualSessions      AttendanceSession[] @relation("ActualSessions")
-  markedAttendance    StudentPeriodAttendance[] @relation("MarkedAttendance")
-  dailyAttendance     TeacherDailyAttendance[] @relation("TeacherAttendance")
-  substitutingFor     TeacherDailyAttendance[] @relation("SubstituteFor")
-  attendanceRecords   TeacherAttendance[] @relation("TeacherAttendanceRecords")
-  
+  id                String                    @id @default(uuid())
+  branchId          String?
+  staffId           String                    @unique
+  subjects          String?
+  qualifications    String?
+  experienceYears   Int?
+  deletedAt         DateTime?
+  deletedBy         String?
+  actualSessions    AttendanceSession[]       @relation("ActualSessions")
+  assignedSessions  AttendanceSession[]       @relation("AssignedSessions")
+  homeroomSections  Section[]
+  markedAttendance  StudentPeriodAttendance[] @relation("MarkedAttendance")
+  substitutions     Substitution[]
+  staff             Staff                     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  attendanceRecords TeacherAttendance[]       @relation("TeacherAttendanceRecords")
+  constraints       TeacherConstraint[]
+  substitutingFor   TeacherDailyAttendance[]  @relation("SubstituteFor")
+  dailyAttendance   TeacherDailyAttendance[]  @relation("TeacherAttendance")
+  periods           TimetablePeriod[]
+
   @@index([deletedAt])
 }
 
-// Communications Module
 model Template {
   id        String     @id @default(uuid())
-  branchId  String?    // Represents schoolId - which school this template belongs to
+  branchId  String?
   name      String
-  channel   String     // email | sms | push | whatsapp
+  channel   String
   locale    String     @default("en")
   content   String
-  variables String?    // JSON array of variable names
-  campaigns Campaign[]
-  messages  Message[]
+  variables String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  campaigns Campaign[]
+  messages  Message[]
 }
 
 model Campaign {
@@ -356,31 +332,31 @@ model Campaign {
   branchId      String?
   name          String
   templateId    String?
-  template      Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  audienceQuery String?   // JSON query for selecting recipients
+  audienceQuery String?
   schedule      DateTime?
-  status        String    // draft | scheduled | active | completed | paused
-  messages      Message[]
+  status        String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  template      Template? @relation(fields: [templateId], references: [id])
+  messages      Message[]
 }
 
 model Message {
   id         String    @id @default(uuid())
   branchId   String?
-  channel    String    // email | sms | push | whatsapp
-  to         String    // recipient identifier
+  channel    String
+  to         String
   templateId String?
-  template   Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   campaignId String?
-  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  payload    String?   // JSON payload with variable values
-  status     String    // pending | sent | delivered | failed | bounced
-  providerId String?   // external provider message ID
-  error      String?   // error message if failed
+  payload    String?
+  status     String
+  providerId String?
+  error      String?
   sentAt     DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+  campaign   Campaign? @relation(fields: [campaignId], references: [id])
+  template   Template? @relation(fields: [templateId], references: [id])
 
   @@index([status])
   @@index([campaignId])
@@ -389,11 +365,11 @@ model Message {
 model Preference {
   id         String   @id @default(uuid())
   branchId   String?
-  ownerType  String   // student | guardian | staff
+  ownerType  String
   ownerId    String
-  channel    String   // email | sms | push | whatsapp
+  channel    String
   consent    Boolean  @default(true)
-  quietHours String?  // JSON object with start and end times
+  quietHours String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -401,23 +377,23 @@ model Preference {
 }
 
 model Ticket {
-  id          String         @id @default(uuid())
+  id          String             @id @default(uuid())
   branchId    String?
-  ownerType   String         // student | guardian | staff
+  ownerType   String
   ownerId     String
-  category    String?        // academic | fees | technical | general
-  priority    String         @default("normal") // low | normal | high | urgent
-  status      String         @default("open") // open | in_progress | resolved | closed
+  category    String?
+  priority    String             @default("normal")
+  status      String             @default("open")
   assigneeId  String?
   subject     String
   description String
   slaDueAt    DateTime?
-  messages    TicketMessage[]
-  attachments TicketAttachment[]
   resolvedAt  DateTime?
   closedAt    DateTime?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  attachments TicketAttachment[]
+  messages    TicketMessage[]
 
   @@index([status])
   @@index([assigneeId])
@@ -425,107 +401,104 @@ model Ticket {
 }
 
 model TicketMessage {
-  id        String   @id @default(uuid())
-  branchId  String?  // Represents schoolId - inherited from ticket
-  ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  authorId  String
-  authorType String  // staff | requester
-  content   String
-  internal  Boolean  @default(false) // internal notes not visible to requester
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  branchId   String?
+  ticketId   String
+  authorId   String
+  authorType String
+  content    String
+  internal   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }
 
 model TicketAttachment {
   id        String   @id @default(uuid())
-  branchId  String?  // Represents schoolId - inherited from ticket
+  branchId  String?
   ticketId  String
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   fileName  String
   fileUrl   String
   fileSize  Int?
   mimeType  String?
   createdAt DateTime @default(now())
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 }
 
-// ============== TIMETABLE MODULE ==============
-
 model Subject {
-  id              String            @id @default(uuid())
-  branchId        String?           // Represents schoolId - which school offers this subject
-  code            String            @unique
-  name            String
-  description     String?
-  credits         Int?
-  isElective      Boolean           @default(false)
-  prerequisites   String?           // JSON array of subject IDs
-  periods         TimetablePeriod[]
-  constraints     SubjectConstraint[]
-  attendanceSessions AttendanceSession[]  // Add reverse relation
-  marks           Mark[]  // New exam marks relation
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                 String              @id @default(uuid())
+  branchId           String?
+  code               String              @unique
+  name               String
+  description        String?
+  credits            Int?
+  isElective         Boolean             @default(false)
+  prerequisites      String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  attendanceSessions AttendanceSession[]
+  marks              Mark[]
+  constraints        SubjectConstraint[]
+  periods            TimetablePeriod[]
 }
 
 model Room {
-  id          String            @id @default(uuid())
-  branchId    String?           // Represents schoolId - which school this room belongs to
-  code        String            @unique
-  name        String
-  building    String?
-  floor       String?
-  capacity    Int
-  type        String            // classroom | lab | auditorium | sports
-  facilities  String?           // JSON array of facilities
-  isActive    Boolean           @default(true)
-  periods     TimetablePeriod[]
-  constraints RoomConstraint[]
+  id            String            @id @default(uuid())
+  branchId      String?
+  code          String            @unique
+  name          String
+  building      String?
+  floor         String?
+  capacity      Int
+  type          String
+  facilities    String?
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  constraints   RoomConstraint[]
   substitutions Substitution[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  periods       TimetablePeriod[]
 }
 
 model TimeSlot {
-  id          String            @id @default(uuid())
+  id          String               @id @default(uuid())
   branchId    String?
-  dayOfWeek   Int              // 0=Sunday, 1=Monday, etc.
-  startTime   String           // HH:MM format
-  endTime     String           // HH:MM format
-  slotType    String           @default("regular") // regular | break | assembly
-  slotOrder   Int              // Order of the slot in the day
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  slotType    String               @default("regular")
+  slotOrder   Int
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
   constraints TimeSlotConstraint[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
 
-  @@unique([dayOfWeek, slotOrder])
+  @@unique([branchId, dayOfWeek, slotOrder])
   @@index([dayOfWeek])
+  @@index([branchId])
 }
 
 model TimetablePeriod {
-  id               String            @id @default(uuid())
-  branchId         String?           // Multi-tenancy support
-  sectionId        String
-  section          Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  dayOfWeek        Int               // 1-6 for Monday-Saturday
-  periodNumber     Int               // Period number in the day
-  startTime        String            // HH:MM format
-  endTime          String            // HH:MM format
-  subjectId        String?           // Optional for break periods
-  subject          Subject?          @relation(fields: [subjectId], references: [id])
-  teacherId        String?           // Optional for break periods
-  teacher          Teacher?          @relation(fields: [teacherId], references: [id])
-  roomId           String?           // Optional
-  room             Room?             @relation(fields: [roomId], references: [id])
-  isBreak          Boolean           @default(false)  // Is this a break period
-  breakType        String?           // SHORT/LUNCH (only for break periods)
-  academicYearId   String
-  academicYear     AcademicYear      @relation(fields: [academicYearId], references: [id])
-  
-  // Keep existing relations for backwards compatibility
-  substitutions    Substitution[]
+  id                 String              @id @default(uuid())
+  branchId           String?
+  sectionId          String
+  dayOfWeek          Int
+  periodNumber       Int
+  startTime          String
+  endTime            String
+  subjectId          String?
+  teacherId          String?
+  roomId             String?
+  isBreak            Boolean             @default(false)
+  breakType          String?
+  academicYearId     String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   attendanceSessions AttendanceSession[]
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  substitutions      Substitution[]
+  academicYear       AcademicYear        @relation(fields: [academicYearId], references: [id])
+  room               Room?               @relation(fields: [roomId], references: [id])
+  section            Section             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  subject            Subject?            @relation(fields: [subjectId], references: [id])
+  teacher            Teacher?            @relation(fields: [teacherId], references: [id])
 
   @@unique([sectionId, dayOfWeek, periodNumber, academicYearId])
   @@index([branchId])
@@ -536,236 +509,218 @@ model TimetablePeriod {
 }
 
 model Substitution {
-  id              String           @id @default(uuid())
-  branchId        String?          // Represents schoolId - inherited from period
-  periodId        String
-  period          TimetablePeriod  @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(uuid())
+  branchId            String?
+  periodId            String
   substituteTeacherId String?
-  substituteTeacher   Teacher?     @relation(fields: [substituteTeacherId], references: [id])
   substituteRoomId    String?
-  substituteRoom      Room?        @relation(fields: [substituteRoomId], references: [id])
-  date            DateTime
-  reason          String?
-  status          String           @default("pending") // pending | approved | rejected
-  approvedBy      String?
-  approvedAt      DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  date                DateTime
+  reason              String?
+  status              String          @default("pending")
+  approvedBy          String?
+  approvedAt          DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  period              TimetablePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  substituteRoom      Room?           @relation(fields: [substituteRoomId], references: [id])
+  substituteTeacher   Teacher?        @relation(fields: [substituteTeacherId], references: [id])
 
   @@unique([periodId, date])
   @@index([date])
   @@index([substituteTeacherId])
 }
 
-// Constraint Models for Timetable Generation
 model SubjectConstraint {
-  id          String    @id @default(uuid())
-  branchId    String?   // Represents schoolId - inherited from subject
-  subjectId   String
-  subject     Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  type        String    // max_per_day | min_gap | preferred_slots | consecutive
-  value       String    // JSON with constraint details
-  priority    Int       @default(1) // 1=soft, 2=medium, 3=hard
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(uuid())
+  branchId  String?
+  subjectId String
+  type      String
+  value     String
+  priority  Int      @default(1)
+  createdAt DateTime @default(now())
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   @@index([subjectId])
 }
 
 model TeacherConstraint {
-  id          String    @id @default(uuid())
-  branchId    String?   // Represents schoolId - inherited from teacher
-  teacherId   String
-  teacher     Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  type        String    // max_periods_per_day | unavailable_slots | max_consecutive
-  value       String    // JSON with constraint details
-  priority    Int       @default(1)
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(uuid())
+  branchId  String?
+  teacherId String
+  type      String
+  value     String
+  priority  Int      @default(1)
+  createdAt DateTime @default(now())
+  teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@index([teacherId])
 }
 
 model RoomConstraint {
-  id          String    @id @default(uuid())
-  branchId    String?   // Represents schoolId - inherited from room
-  roomId      String
-  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  type        String    // unavailable_slots | reserved_for
-  value       String    // JSON with constraint details
-  priority    Int       @default(1)
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(uuid())
+  branchId  String?
+  roomId    String
+  type      String
+  value     String
+  priority  Int      @default(1)
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
 
   @@index([roomId])
 }
 
 model TimeSlotConstraint {
-  id          String    @id @default(uuid())
-  branchId    String?   // Represents schoolId - inherited from time slot
-  timeSlotId  String
-  timeSlot    TimeSlot  @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
-  type        String    // no_core_subjects | assembly_only
-  value       String    // JSON with constraint details
-  priority    Int       @default(1)
-  createdAt   DateTime  @default(now())
+  id         String   @id @default(uuid())
+  branchId   String?
+  timeSlotId String
+  type       String
+  value      String
+  priority   Int      @default(1)
+  createdAt  DateTime @default(now())
+  timeSlot   TimeSlot @relation(fields: [timeSlotId], references: [id], onDelete: Cascade)
 
   @@index([timeSlotId])
 }
 
 model TimetableTemplate {
-  id          String    @id @default(uuid())
-  branchId    String?   // Represents schoolId - which school this template is for
-  name        String
-  description String?
-  gradeLevel  Int?
+  id           String   @id @default(uuid())
+  branchId     String?
+  name         String
+  description  String?
+  gradeLevel   Int?
   academicYear String?
-  isDefault   Boolean   @default(false)
-  config      String    // JSON with periods per day, working days, etc.
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isDefault    Boolean  @default(false)
+  config       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
-// ============================================
-// PERIOD-BASED ATTENDANCE MODELS
-// ============================================
-
 model AttendanceSession {
-  id                String   @id @default(uuid())
-  branchId          String?  // Represents schoolId
-  date              DateTime // Remove @db.Date for SQLite
-  periodId          String   // From TimetablePeriod
+  id                String                    @id @default(uuid())
+  branchId          String?
+  date              DateTime
+  periodId          String
   sectionId         String
   subjectId         String
-  assignedTeacherId String   // Originally assigned teacher
-  actualTeacherId   String?  // Substitute if different
+  assignedTeacherId String
+  actualTeacherId   String?
   startTime         DateTime?
   endTime           DateTime?
-  status            String   @default("scheduled") // scheduled, in-progress, completed, cancelled
+  status            String                    @default("scheduled")
   lockedAt          DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  // Relations
-  period            TimetablePeriod @relation(fields: [periodId], references: [id])
-  section           Section @relation(fields: [sectionId], references: [id])
-  subject           Subject @relation(fields: [subjectId], references: [id])
-  assignedTeacher   Teacher @relation("AssignedSessions", fields: [assignedTeacherId], references: [id])
-  actualTeacher     Teacher? @relation("ActualSessions", fields: [actualTeacherId], references: [id])
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  actualTeacher     Teacher?                  @relation("ActualSessions", fields: [actualTeacherId], references: [id])
+  assignedTeacher   Teacher                   @relation("AssignedSessions", fields: [assignedTeacherId], references: [id])
+  period            TimetablePeriod           @relation(fields: [periodId], references: [id])
+  section           Section                   @relation(fields: [sectionId], references: [id])
+  subject           Subject                   @relation(fields: [subjectId], references: [id])
   studentRecords    StudentPeriodAttendance[]
-  
+
+  @@unique([date, periodId, sectionId])
   @@index([date, sectionId])
   @@index([date, assignedTeacherId])
-  @@unique([date, periodId, sectionId])
 }
 
 model StudentPeriodAttendance {
-  id           String   @id @default(uuid())
-  sessionId    String
-  studentId    String
-  status       String   // present, absent, late, excused, medical, suspended, activity
-  minutesLate  Int?
-  reason       String?
-  notes        String?
-  markedAt     DateTime
-  markedBy     String   // Teacher ID who marked attendance
-  
-  // Relations
-  session      AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  student      Student @relation(fields: [studentId], references: [id])
-  marker       Teacher @relation("MarkedAttendance", fields: [markedBy], references: [id])
-  
+  id          String            @id @default(uuid())
+  sessionId   String
+  studentId   String
+  status      String
+  minutesLate Int?
+  reason      String?
+  notes       String?
+  markedAt    DateTime
+  markedBy    String
+  marker      Teacher           @relation("MarkedAttendance", fields: [markedBy], references: [id])
+  session     AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student     Student           @relation(fields: [studentId], references: [id])
+
   @@unique([sessionId, studentId])
   @@index([studentId, status])
   @@index([sessionId])
 }
 
 model TeacherDailyAttendance {
-  id           String   @id @default(uuid())
-  branchId     String?  // Represents schoolId
+  id           String    @id @default(uuid())
+  branchId     String?
   teacherId    String
-  date         DateTime // Remove @db.Date for SQLite
+  date         DateTime
   checkIn      DateTime?
   checkOut     DateTime?
-  status       String   // present, absent, leave, holiday, half-day
+  status       String
   leaveType    String?
-  substituteId String?  // Who's substituting for this teacher
+  substituteId String?
   totalHours   Float?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relations
-  teacher      Teacher @relation("TeacherAttendance", fields: [teacherId], references: [id])
-  substitute   Teacher? @relation("SubstituteFor", fields: [substituteId], references: [id])
-  
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  substitute   Teacher?  @relation("SubstituteFor", fields: [substituteId], references: [id])
+  teacher      Teacher   @relation("TeacherAttendance", fields: [teacherId], references: [id])
+
   @@unique([teacherId, date])
   @@index([date, status])
 }
 
 model TeacherAttendance {
   id        String   @id @default(uuid())
-  branchId  String   // Represents schoolId - which school this attendance record belongs to
+  branchId  String
   teacherId String
-  date      String   // Date in YYYY-MM-DD format
-  checkIn   String?  // Time in HH:MM format
-  checkOut  String?  // Time in HH:MM format
-  status    String   // PRESENT | ABSENT | LATE | HALF_DAY | ON_LEAVE
-  leaveType String?  // CASUAL | SICK | EARNED | UNPAID (optional, only when status is ON_LEAVE)
-  remarks   String?  // Additional notes or comments
+  date      String
+  checkIn   String?
+  checkOut  String?
+  status    String
+  leaveType String?
+  remarks   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relations
   teacher   Teacher  @relation("TeacherAttendanceRecords", fields: [teacherId], references: [id])
-  
+
   @@unique([teacherId, branchId, date])
   @@index([branchId, date])
   @@index([branchId, teacherId])
   @@index([branchId, status])
 }
 
-// ========== Academic Year Management ==========
 model AcademicYear {
-  id        String   @id @default(uuid())
-  branchId  String   // REQUIRED - Each branch has its own academic calendar
-  name      String   // "2024-25"
+  id        String            @id @default(uuid())
+  branchId  String
+  name      String
   startDate String
   endDate   String
-  terms     String?  // JSON string - Array of terms with dates
-  isActive  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  
-  // Relations
+  terms     String?
+  isActive  Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
   exams     Exam[]
   periods   TimetablePeriod[]
-  
+
   @@unique([branchId, name])
   @@index([branchId, isActive])
 }
 
-// ========== Exam Templates (Master Tables) ==========
 model ExamTemplate {
   id                String   @id @default(uuid())
-  boardType         String?  // CBSE, ICSE, STATE_BOARD, CUSTOM
-  examType          String   // UNIT_TEST, MONTHLY_TEST, QUARTERLY, etc.
-  name              String   // Template name e.g., "CBSE Class 10 Board Exam"
+  boardType         String?
+  examType          String
+  name              String
   description       String?
-  term              Int?     // 1, 2, or 3
-  weightagePercent  Float?   // 0-100
+  term              Int?
+  weightagePercent  Float?
   minPassingMarks   Float?
   maxMarks          Float?
   isGraded          Boolean  @default(false)
   affectsPromotion  Boolean  @default(true)
-  applicableClasses String?  // JSON string - Array of applicable class levels
-  suggestedDuration Int?     // Suggested exam duration in days
-  isSystemTemplate  Boolean  @default(false) // System-provided vs custom
-  createdBy         String?  // User who created custom template
+  applicableClasses String?
+  suggestedDuration Int?
+  isSystemTemplate  Boolean  @default(false)
+  createdBy         String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
 
-// ========== Marks Management ==========
 model Mark {
   id             String    @id @default(uuid())
-  branchId       String    // REQUIRED - For data isolation
+  branchId       String
   examId         String
   subjectId      String
   studentId      String
@@ -777,62 +732,57 @@ model Mark {
   grade          String?
   remarks        String?
   isAbsent       Boolean   @default(false)
-  evaluatedBy    String?   // Teacher ID
+  evaluatedBy    String?
   evaluatedAt    DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  
-  // Relations
   exam           Exam      @relation(fields: [examId], references: [id])
-  subject        Subject   @relation(fields: [subjectId], references: [id])
   student        Student   @relation(fields: [studentId], references: [id])
-  
+  subject        Subject   @relation(fields: [subjectId], references: [id])
+
   @@unique([examId, subjectId, studentId])
   @@index([branchId, studentId])
   @@index([branchId, examId])
 }
 
-// ========== Grading System ==========
 model GradingScale {
   id             String   @id @default(uuid())
-  branchId       String   // REQUIRED - Branch-specific grading
+  branchId       String
   name           String
-  type           String   // MARKS, GRADE, CGPA, PERCENTAGE
+  type           String
   isDefault      Boolean  @default(false)
-  grades         String   // JSON string - Array of GradeRange objects
-  applicableFrom String?  // Academic year
-  applicableTo   String?  // Academic year
-  classes        String?  // JSON string - Applicable classes
+  grades         String
+  applicableFrom String?
+  applicableTo   String?
+  classes        String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-  
+
   @@index([branchId, isDefault])
 }
 
-// ========== Audit Log ==========
 model AuditLog {
-  id             String   @id @default(uuid())
-  branchId       String?  // Branch/School where action occurred
-  userId         String?  // User who performed the action
-  userEmail      String?  // User email for reference
-  action         String   // CREATE, UPDATE, DELETE, SOFT_DELETE, RESTORE, LOGIN, LOGOUT
-  method         String   // GET, POST, PUT, PATCH, DELETE
-  endpoint       String   // API endpoint path
-  entityType     String?  // Model/Entity type affected
-  entityId       String?  // ID of the affected entity
-  oldData        String?  // JSON string of old data (for updates/deletes)
-  newData        String?  // JSON string of new data (for creates/updates)
-  ipAddress      String?  // Client IP address
-  userAgent      String?  // Browser/client user agent
-  statusCode     Int?     // HTTP response status code
-  errorMessage   String?  // Error message if request failed
-  duration       Int?     // Request duration in milliseconds
-  createdAt      DateTime @default(now())
-  
+  id           String   @id @default(uuid())
+  branchId     String?
+  userId       String?
+  userEmail    String?
+  action       String
+  method       String
+  endpoint     String
+  entityType   String?
+  entityId     String?
+  oldData      String?
+  newData      String?
+  ipAddress    String?
+  userAgent    String?
+  statusCode   Int?
+  errorMessage String?
+  duration     Int?
+  createdAt    DateTime @default(now())
+
   @@index([branchId])
   @@index([userId])
   @@index([entityType, entityId])
   @@index([action])
   @@index([createdAt])
 }
-

@@ -20,16 +20,18 @@ export class StaffService {
 
   async list(params: { 
     page?: number; 
-    perPage?: number; 
+    perPage?: number;
+    pageSize?: number; 
     sort?: string; 
     filter?: string;
+    q?: string;
     ids?: string;
     department?: string; 
     status?: string;
     branchId?: string;
   }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? 25)));
+    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
@@ -37,6 +39,16 @@ export class StaffService {
     // Add branchId filtering for multi-tenancy
     if (params.branchId) {
       where.branchId = params.branchId;
+    }
+
+    // Handle search query 'q'
+    if (params.q && typeof params.q === 'string') {
+      where.OR = [
+        { firstName: { contains: params.q, mode: 'insensitive' } },
+        { lastName: { contains: params.q, mode: 'insensitive' } },
+        { designation: { contains: params.q, mode: 'insensitive' } },
+        { department: { contains: params.q, mode: 'insensitive' } },
+      ];
     }
 
     // Handle specific IDs (for getMany)

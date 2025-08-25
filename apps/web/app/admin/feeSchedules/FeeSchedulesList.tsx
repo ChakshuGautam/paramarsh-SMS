@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -10,32 +10,26 @@ import {
   ReferenceInput,
   AutocompleteInput,
   SelectInput,
-  DateInput,
   Count,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { format, isAfter, isBefore } from "date-fns";
+import { formatDate } from "@/lib/utils";
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
-  upcoming: "feeSchedules.list.upcoming",
   current: "feeSchedules.list.current",
-  overdue: "feeSchedules.list.overdue",
+  inactive: "feeSchedules.list.inactive",
   all: "feeSchedules.list.all",
 };
 
-// Helper function to get due date filters
-const getDueDateFilter = (status: string) => {
-  const today = format(new Date(), "yyyy-MM-dd");
-  
+// Helper function to get status-based filters
+const getStatusFilter = (status: string) => {
   switch (status) {
-    case "upcoming":
-      return { dueDate_gt: today };
     case "current":
-      return { dueDate: today };
-    case "overdue":
-      return { dueDate_lt: today };
+      return { status: "active" };
+    case "inactive":
+      return { status: "inactive" };
     default:
       return {};
   }
@@ -47,9 +41,12 @@ const feeScheduleFilters = [
   <ReferenceInput source="feeStructureId" reference="feeStructures">
     <AutocompleteInput placeholder="Filter by fee structure" label="" optionText="name" />
   </ReferenceInput>,
+  <ReferenceInput source="classId" reference="classes">
+    <AutocompleteInput placeholder="Filter by class" label="" optionText="name" />
+  </ReferenceInput>,
   <SelectInput 
-    source="frequency" 
-    placeholder="Filter by frequency" 
+    source="recurrence" 
+    placeholder="Filter by recurrence" 
     label="" 
     choices={[
       { id: 'monthly', name: 'Monthly' },
@@ -58,13 +55,21 @@ const feeScheduleFilters = [
       { id: 'one_time', name: 'One Time' }
     ]} 
   />,
-  <DateInput source="dueDate" placeholder="Filter by due date" label="" />,
+  <SelectInput 
+    source="status" 
+    placeholder="Filter by status" 
+    label="" 
+    choices={[
+      { id: 'active', name: 'Active' },
+      { id: 'inactive', name: 'Inactive' }
+    ]} 
+  />,
 ];
 
 export const FeeSchedulesList = () => {
   return (
     <List
-      sort={{ field: "dueDate", order: "ASC" }}
+      sort={{ field: "dueDayOfMonth", order: "ASC" }}
       filters={feeScheduleFilters}
       perPage={10}
     >
@@ -78,17 +83,14 @@ const TabbedDataTable = () => {
   const { filterValues, setFilters, displayedFilters } = listContext;
   
   const handleChange = (value: string) => () => {
-    const dueDateFilter = getDueDateFilter(value);
-    setFilters({ ...filterValues, ...dueDateFilter }, displayedFilters);
+    const statusFilter = getStatusFilter(value);
+    setFilters({ ...filterValues, ...statusFilter }, displayedFilters);
   };
   
   // Determine current tab based on filter values
   const getCurrentTab = () => {
-    const today = format(new Date(), "yyyy-MM-dd");
-    
-    if (filterValues.dueDate_gt === today) return "upcoming";
-    if (filterValues.dueDate === today) return "current";
-    if (filterValues.dueDate_lt === today) return "overdue";
+    if (filterValues.status === "active") return "current";
+    if (filterValues.status === "inactive") return "inactive";
     return "all";
   };
   
@@ -96,38 +98,29 @@ const TabbedDataTable = () => {
     <Tabs value={getCurrentTab()}>
       <TabsList>
         <TabsTrigger value="current" onClick={handleChange("current")}>
-          Due Today
+          Active Schedules
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getDueDateFilter("current") }} />
+            <Count filter={{ ...filterValues, ...getStatusFilter("current") }} />
           </Badge>
         </TabsTrigger>
-        <TabsTrigger value="upcoming" onClick={handleChange("upcoming")}>
-          Upcoming
+        <TabsTrigger value="inactive" onClick={handleChange("inactive")}>
+          Inactive Schedules
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getDueDateFilter("upcoming") }} />
-          </Badge>
-        </TabsTrigger>
-        <TabsTrigger value="overdue" onClick={handleChange("overdue")}>
-          Overdue
-          <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getDueDateFilter("overdue") }} />
+            <Count filter={{ ...filterValues, ...getStatusFilter("inactive") }} />
           </Badge>
         </TabsTrigger>
         <TabsTrigger value="all" onClick={handleChange("all")}>
           All Schedules
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getDueDateFilter("all") }} />
+            <Count filter={{ ...filterValues, ...getStatusFilter("all") }} />
           </Badge>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="current">
         <FeeSchedulesTable storeKey={storeKeyByStatus.current} />
       </TabsContent>
-      <TabsContent value="upcoming">
-        <FeeSchedulesTable storeKey={storeKeyByStatus.upcoming} />
-      </TabsContent>
-      <TabsContent value="overdue">
-        <FeeSchedulesTable storeKey={storeKeyByStatus.overdue} />
+      <TabsContent value="inactive">
+        <FeeSchedulesTable storeKey="feeSchedules.list.inactive" />
       </TabsContent>
       <TabsContent value="all">
         <FeeSchedulesTable storeKey={storeKeyByStatus.all} />
@@ -140,78 +133,93 @@ const FeeSchedulesTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
     storeKey={storeKey}
     rowClassName={(record) => {
-      const today = new Date();
-      const dueDate = new Date(record.dueDate);
-      
-      if (isBefore(dueDate, today)) {
-        return 'border-l-4 border-l-red-500'; // overdue
-      } else if (format(dueDate, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
-        return 'border-l-4 border-l-yellow-500'; // due today
-      } else {
-        return 'border-l-4 border-l-green-500'; // upcoming
+      if (record.status === 'active') {
+        return 'border-l-4 border-l-green-500'; // active
+      } else if (record.status === 'inactive') {
+        return 'border-l-4 border-l-gray-500'; // inactive
       }
+      return 'border-l-4 border-l-blue-500'; // default
     }}
   >
     {/* Always visible columns */}
-    <DataTable.Col source="name" label="Schedule Name" />
-    <DataTable.Col source="amount" label="Amount">
-      <AmountBadge />
+    <DataTable.Col source="dueDayOfMonth" label="Due Day">
+      <DueDayBadge />
     </DataTable.Col>
-    <DataTable.Col source="dueDate" label="Due Date">
-      <DueDateBadge />
+    <DataTable.Col source="status" label="Status">
+      <StatusBadge />
     </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col source="frequency" label="Frequency" className="hidden md:table-cell">
-      <FrequencyBadge />
+    <DataTable.Col source="recurrence" label="Recurrence" className="hidden md:table-cell">
+      <RecurrenceBadge />
+    </DataTable.Col>
+    <DataTable.Col label="Class" className="hidden md:table-cell">
+      <ReferenceField reference="classes" source="classId">
+        <TextField source="name" />
+      </ReferenceField>
     </DataTable.Col>
     <DataTable.Col label="Fee Structure" className="hidden lg:table-cell">
       <ReferenceField reference="feeStructures" source="feeStructureId">
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
-    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell" />
+    <DataTable.Col source="startDate" label="Period" className="hidden lg:table-cell">
+      <PeriodBadge />
+    </DataTable.Col>
   </DataTable>
 );
 
-const AmountBadge = ({ record }: { record?: any }) => {
-  if (!record || !record.amount) return null;
+const ScheduleIdBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.id) return <span className="text-gray-400">-</span>;
   
-  const amount = parseFloat(record.amount);
-  const getAmountColor = () => {
-    if (amount >= 10000) return 'text-red-700 bg-red-100';
-    if (amount >= 5000) return 'text-orange-700 bg-orange-100';
-    return 'text-green-700 bg-green-100';
-  };
+  // Show first 8 characters of ID for readability
+  const truncatedId = record.id.substring(0, 8);
   
   return (
-    <Badge className={getAmountColor()}>
-      ₹{amount.toLocaleString()}
+    <Badge variant="outline" className="font-mono text-xs">
+      {truncatedId}...
     </Badge>
   );
 };
 
-const DueDateBadge = ({ record }: { record?: any }) => {
-  if (!record || !record.dueDate) return null;
+const DueDayBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.dueDayOfMonth) return <span className="text-gray-400">-</span>;
   
-  const dueDate = new Date(record.dueDate);
-  const today = new Date();
-  
-  const getDateColor = () => {
-    if (isBefore(dueDate, today)) return 'text-red-700 bg-red-100';
-    if (format(dueDate, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) return 'text-yellow-700 bg-yellow-100';
-    return 'text-green-700 bg-green-100';
+  const day = record.dueDayOfMonth;
+  const getOrdinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
   };
   
   return (
-    <Badge className={getDateColor()}>
-      {format(dueDate, 'MMM dd, yyyy')}
+    <Badge className="text-blue-700 bg-blue-100">
+      {getOrdinal(day)} of month
     </Badge>
   );
 };
 
-const FrequencyBadge = ({ record }: { record?: any }) => {
-  if (!record || !record.frequency) return null;
+const StatusBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.status) return <span className="text-gray-400">-</span>;
+  
+  const colors = {
+    active: 'text-green-700 bg-green-100',
+    inactive: 'text-gray-700 bg-gray-100',
+  };
+  
+  return (
+    <Badge className={colors[record.status as keyof typeof colors] || 'text-gray-700 bg-gray-100'}>
+      {record.status.toUpperCase()}
+    </Badge>
+  );
+};
+
+const RecurrenceBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.recurrence) return <span className="text-gray-400">-</span>;
   
   const colors = {
     monthly: 'text-blue-700 bg-blue-100',
@@ -221,8 +229,23 @@ const FrequencyBadge = ({ record }: { record?: any }) => {
   };
   
   return (
-    <Badge className={colors[record.frequency as keyof typeof colors] || 'text-gray-700 bg-gray-100'}>
-      {record.frequency.replace('_', ' ')}
+    <Badge className={colors[record.recurrence as keyof typeof colors] || 'text-gray-700 bg-gray-100'}>
+      {record.recurrence.replace('_', ' ').toUpperCase()}
     </Badge>
   );
 };
+
+const PeriodBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.startDate) return <span className="text-gray-400">-</span>;
+  
+  const startDate = formatDate(record.startDate, 'MMM yyyy');
+  const endDate = record.endDate ? formatDate(record.endDate, 'MMM yyyy') : 'Ongoing';
+  
+  return (
+    <Badge variant="outline" className="text-gray-600">
+      {startDate} - {endDate}
+    </Badge>
+  );
+};
+

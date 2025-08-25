@@ -451,7 +451,7 @@ class InvoicePaymentSeeder {
 export { InvoicePaymentSeeder };
 
 // Direct execution if run as script
-if (import.meta.main) {
+if (require.main === module) {
   const seeder = new InvoicePaymentSeeder();
-  await seeder.execute();
+  seeder.execute().catch(console.error);
 }

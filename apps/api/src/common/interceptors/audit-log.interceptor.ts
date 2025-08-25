@@ -17,6 +17,11 @@ export class AuditLogInterceptor implements NestInterceptor {
     const response = context.switchToHttp().getResponse();
     const startTime = Date.now();
 
+    // Skip audit logging for GET requests and health checks
+    if (request.method === 'GET' || request.url.includes('/health')) {
+      return next.handle();
+    }
+
     // Extract request metadata
     const {
       method,
@@ -54,11 +59,6 @@ export class AuditLogInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(async (responseData) => {
         const duration = Date.now() - startTime;
-
-        // Don't log GET requests or health checks
-        if (method === 'GET' || url.includes('/health')) {
-          return;
-        }
 
         // Create audit log entry
         try {
@@ -183,33 +183,33 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private mapToModelName(entityType: string): string | null {
-    // Map plural API endpoints to singular model names
+    // Map plural API endpoints to singular model names (matching Prisma schema exactly)
     const mappings: Record<string, string> = {
-      'students': 'student',
-      'guardians': 'guardian',
-      'teachers': 'teacher',
-      'staff': 'staff',
-      'classes': 'class',
-      'sections': 'section',
-      'invoices': 'invoice',
-      'payments': 'payment',
-      'enrollments': 'enrollment',
-      'exams': 'exam',
-      'marks': 'mark',
-      'attendance': 'attendanceRecord',
-      'attendance-sessions': 'attendanceSession',
-      'academic-years': 'academicYear',
-      'fee-schedules': 'feeSchedule',
-      'fee-structures': 'feeStructure',
-      'applications': 'application',
-      'templates': 'template',
-      'campaigns': 'campaign',
-      'tickets': 'ticket',
-      'messages': 'message',
-      'subjects': 'subject',
-      'rooms': 'room',
-      'timetable': 'timetablePeriod',
-      'timeslots': 'timeSlot',
+      'students': 'Student',
+      'guardians': 'Guardian',
+      'teachers': 'Teacher',
+      'staff': 'Staff',
+      'classes': 'Class',
+      'sections': 'Section',
+      'invoices': 'Invoice',
+      'payments': 'Payment',
+      'enrollments': 'Enrollment',
+      'exams': 'Exam',
+      'marks': 'Mark',
+      'attendance': 'AttendanceRecord',
+      'attendance-sessions': 'AttendanceSession',
+      'academic-years': 'AcademicYear',
+      'fee-schedules': 'FeeSchedule',
+      'fee-structures': 'FeeStructure',
+      'applications': 'Application',
+      'templates': 'Template',
+      'campaigns': 'Campaign',
+      'tickets': 'Ticket',
+      'messages': 'Message',
+      'subjects': 'Subject',
+      'rooms': 'Room',
+      'timetable': 'TimetablePeriod',
+      'timeslots': 'TimeSlot',
     };
 
     return mappings[entityType] || entityType;

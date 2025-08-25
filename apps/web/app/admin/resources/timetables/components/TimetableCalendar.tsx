@@ -79,12 +79,14 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
   const [editingData, setEditingData] = useState<any>(null);
   const [teachers, setTeachers] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
+  const [rooms, setRooms] = useState<any[]>([]);
 
   useEffect(() => {
     if (sectionId) {
       loadTimetableData();
       loadTeachers();
       loadSubjects();
+      loadRooms();
     }
   }, [sectionId]);
 
@@ -93,24 +95,24 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
       setLoading(true);
       
       // Load time slots
-      const timeSlotsResponse = await fetch('/api/v1/timetable/time-slots', {
+      const timeSlotsResponse = await fetch('/api/admin/timeSlots?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
-          'X-Branch-Id': 'branch1',
         },
       });
       const timeSlotsData = await timeSlotsResponse.json();
-      setTimeSlots(timeSlotsData || []);
+      setTimeSlots(timeSlotsData.data || []);
+      console.log('Loaded time slots:', (timeSlotsData.data || []).length, 'slots');
 
       // Load periods for this section
-      const periodsResponse = await fetch(`/api/v1/timetable/periods?sectionId=${sectionId}&pageSize=1000`, {
+      const periodsResponse = await fetch(`/api/admin/timetable?filter={"sectionId":"${sectionId}"}&pagination={"page":1,"perPage":1000}`, {
         headers: {
           'Content-Type': 'application/json',
-          'X-Branch-Id': 'branch1',
         },
       });
       const periodsData = await periodsResponse.json();
       setPeriods(periodsData.data || []);
+      console.log('Loaded periods:', (periodsData.data || []).length, 'periods for section', sectionId);
       
     } catch (error) {
       console.error('Error loading timetable data:', error);
@@ -121,10 +123,9 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
   const loadTeachers = async () => {
     try {
-      const response = await fetch('/api/v1/hr/teachers?pageSize=1000', {
+      const response = await fetch('/api/admin/teachers?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
-          'X-Branch-Id': 'branch1',
         },
       });
       const data = await response.json();
@@ -135,6 +136,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
           : teacher.name || 'Unknown Teacher'
       }));
       setTeachers(formattedTeachers);
+      console.log('Loaded teachers:', formattedTeachers.length, 'teachers');
     } catch (error) {
       console.error('Error loading teachers:', error);
     }
@@ -142,16 +144,31 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
   const loadSubjects = async () => {
     try {
-      const response = await fetch('/api/v1/subjects?pageSize=1000', {
+      const response = await fetch('/api/admin/subjects?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
-          'X-Branch-Id': 'branch1',
         },
       });
       const data = await response.json();
       setSubjects(data.data || []);
+      console.log('Loaded subjects:', (data.data || []).length, 'subjects');
     } catch (error) {
       console.error('Error loading subjects:', error);
+    }
+  };
+
+  const loadRooms = async () => {
+    try {
+      const response = await fetch('/api/admin/rooms?pagination={"page":1,"perPage":1000}', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      setRooms(data.data || []);
+      console.log('Loaded rooms:', (data.data || []).length, 'rooms');
+    } catch (error) {
+      console.error('Error loading rooms:', error);
     }
   };
 
@@ -169,11 +186,16 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
       const row: any[] = [];
       
       DAYS.forEach((day, dayIndex) => {
-        // Find period for this day and time slot using timeSlot ID
-        const period = periods.find(p => 
-          p.timeSlot.dayOfWeek === dayIndex + 1 && 
-          p.timeSlot.id === timeSlot.id
-        );
+        // Find period for this day and time slot
+        const period = periods.find(p => {
+          // Handle different possible data structures
+          const periodDay = p.timeSlot?.dayOfWeek || p.dayOfWeek;
+          const periodSlotId = p.timeSlot?.id || p.timeSlotId;
+          const periodSlotOrder = p.timeSlot?.slotOrder || p.slotOrder;
+          
+          return (periodDay === dayIndex + 1) && 
+                 (periodSlotId === timeSlot.id || periodSlotOrder === timeSlot.slotOrder);
+        });
         
         row.push({
           dayIndex,
@@ -203,8 +225,9 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
       // Start editing
       setEditingCell(cellKey);
       setEditingData({
-        teacherId: cellData.period?.teacher?.id || '',
-        subjectId: cellData.period?.subject?.id || '',
+        teacherId: cellData.period?.teacher?.id || cellData.period?.teacherId || '',
+        subjectId: cellData.period?.subject?.id || cellData.period?.subjectId || '',
+        roomId: cellData.period?.room?.id || cellData.period?.roomId || '',
         periodId: cellData.period?.id,
         timeSlotId: cellData.timeSlot.id,
         dayOfWeek: cellData.dayIndex + 1,
@@ -213,33 +236,61 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
   };
 
   const handleSave = async () => {
-    if (!editingData) return;
+    if (!editingData || !editingData.subjectId || !editingData.teacherId) {
+      alert('Please select both subject and teacher');
+      return;
+    }
 
     try {
+      let response;
+      
       if (editingData.periodId) {
         // Update existing period
-        await onPeriodUpdate?.(editingData.periodId, {
-          teacherId: editingData.teacherId,
-          subjectId: editingData.subjectId,
+        response = await fetch(`/api/admin/timetable/${editingData.periodId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            teacherId: editingData.teacherId,
+            subjectId: editingData.subjectId,
+            roomId: editingData.roomId || null,
+          }),
         });
       } else {
         // Create new period
-        await onPeriodCreate?.({
-          sectionId,
-          subjectId: editingData.subjectId,
-          teacherId: editingData.teacherId,
-          timeSlotId: editingData.timeSlotId,
+        response = await fetch('/api/admin/timetable', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sectionId,
+            subjectId: editingData.subjectId,
+            teacherId: editingData.teacherId,
+            roomId: editingData.roomId || null,
+            timeSlotId: editingData.timeSlotId,
+            dayOfWeek: editingData.dayOfWeek,
+          }),
         });
       }
 
-      // Reload data
-      await loadTimetableData();
-      
-      // Reset editing state
-      setEditingCell(null);
-      setEditingData(null);
+      if (response.ok) {
+        console.log('Period saved successfully');
+        // Reload data
+        await loadTimetableData();
+        
+        // Reset editing state
+        setEditingCell(null);
+        setEditingData(null);
+      } else {
+        const errorData = await response.json();
+        console.error('Error saving period:', errorData);
+        alert('Failed to save period: ' + (errorData.message || 'Unknown error'));
+      }
     } catch (error) {
       console.error('Error saving period:', error);
+      alert('Failed to save period. Please try again.');
     }
   };
 
@@ -249,21 +300,27 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
     if (isEditing && !readOnly) {
       return (
-        <div className="p-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 h-20">
+        <div className="p-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 min-h-20">
           <div className="space-y-1">
             <Select 
               value={editingData?.subjectId || ''} 
               onValueChange={(value) => setEditingData(prev => ({ ...prev, subjectId: value }))}
             >
               <SelectTrigger className="h-6 text-xs">
-                <SelectValue placeholder="Subject" />
+                <SelectValue placeholder="Select Subject" />
               </SelectTrigger>
-              <SelectContent>
-                {subjects.map(subject => (
+              <SelectContent className="max-h-32">
+                {subjects.length > 0 ? subjects.map(subject => (
                   <SelectItem key={subject.id} value={subject.id}>
-                    {subject.name}
+                    <span title={subject.name} className="truncate">
+                      {subject.name}
+                    </span>
                   </SelectItem>
-                ))}
+                )) : (
+                  <SelectItem value="" disabled>
+                    Loading subjects...
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
 
@@ -272,26 +329,63 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
               onValueChange={(value) => setEditingData(prev => ({ ...prev, teacherId: value }))}
             >
               <SelectTrigger className="h-6 text-xs">
-                <SelectValue placeholder="Teacher" />
+                <SelectValue placeholder="Select Teacher" />
               </SelectTrigger>
-              <SelectContent>
-                {teachers.map(teacher => (
+              <SelectContent className="max-h-32">
+                {teachers.length > 0 ? teachers.map(teacher => (
                   <SelectItem key={teacher.id} value={teacher.id}>
-                    {teacher.name}
+                    <span title={teacher.name} className="truncate">
+                      {teacher.name}
+                    </span>
                   </SelectItem>
-                ))}
+                )) : (
+                  <SelectItem value="" disabled>
+                    Loading teachers...
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
 
-            <div className="flex gap-1">
-              <Button size="sm" onClick={handleSave} className="h-5 text-xs px-1">
-                <Save className="h-3 w-3" />
+            <Select 
+              value={editingData?.roomId || ''} 
+              onValueChange={(value) => setEditingData(prev => ({ ...prev, roomId: value }))}
+            >
+              <SelectTrigger className="h-6 text-xs">
+                <SelectValue placeholder="Select Room (Optional)" />
+              </SelectTrigger>
+              <SelectContent className="max-h-32">
+                <SelectItem value="">
+                  <span className="text-muted-foreground">No Room</span>
+                </SelectItem>
+                {rooms.length > 0 ? rooms.map(room => (
+                  <SelectItem key={room.id} value={room.id}>
+                    <span title={room.name} className="truncate">
+                      {room.name}
+                    </span>
+                  </SelectItem>
+                )) : (
+                  <SelectItem value="" disabled>
+                    Loading rooms...
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+
+            <div className="flex gap-1 pt-1">
+              <Button 
+                size="sm" 
+                onClick={handleSave} 
+                className="h-6 text-xs px-2 flex-1"
+                disabled={!editingData?.subjectId || !editingData?.teacherId}
+              >
+                <Save className="h-3 w-3 mr-1" />
+                Save
               </Button>
               <Button 
                 size="sm" 
                 variant="outline" 
                 onClick={() => { setEditingCell(null); setEditingData(null); }} 
-                className="h-5 text-xs px-1"
+                className="h-6 text-xs px-2"
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -316,7 +410,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
     return (
       <div 
-        className={`p-2 h-20 border border-border bg-card ${!readOnly ? 'cursor-pointer hover:bg-muted/30' : ''} transition-colors`}
+        className={`p-2 min-h-20 border border-border bg-card ${!readOnly ? 'cursor-pointer hover:bg-muted/30' : ''} transition-colors flex flex-col justify-between`}
         onClick={() => handleCellClick(cellData)}
       >
         <div className="space-y-1">
@@ -326,11 +420,16 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <User className="h-3 w-3" />
-            <span className="truncate">{period.teacher?.name || 'Unknown'}</span>
+            <span className="truncate">
+              {period.teacher?.staff 
+                ? `${period.teacher.staff.firstName} ${period.teacher.staff.lastName}` 
+                : period.teacher?.name || 'Unknown Teacher'
+              }
+            </span>
           </div>
-          {period.room && (
+          {(period.room?.name || period.roomName) && (
             <div className="text-xs text-muted-foreground">
-              📍 {period.room.name}
+              📍 {period.room?.name || period.roomName}
             </div>
           )}
           {!readOnly && (
@@ -378,19 +477,20 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
         </div>
       </CardHeader>
       
-      <CardContent className="p-4">
-        <div className="overflow-x-auto max-w-full">
-          <table className="w-full min-w-[800px] border border-border rounded-lg">
+      <CardContent className="p-6">
+        <div className="overflow-x-auto bg-background rounded-lg border">
+          <table className="w-full min-w-[1200px] border-collapse">
             {/* Header */}
             <thead>
-              <tr className="bg-muted/50">
-                <th className="w-24 p-3 text-left text-sm font-medium text-foreground border-r border-border">
-                  Time
+              <tr className="bg-muted/50 sticky top-0">
+                <th className="w-32 p-4 text-left text-sm font-semibold text-foreground border-r border-border bg-muted/50">
+                  <Clock className="h-4 w-4 inline mr-2" />
+                  Time Slot
                 </th>
                 {DAYS.map((day, index) => (
                   <th 
                     key={day} 
-                    className="p-3 text-center text-sm font-medium text-foreground border-r border-border min-w-48"
+                    className="p-4 text-center text-sm font-semibold text-foreground border-r border-border min-w-52 bg-muted/50"
                   >
                     {day}
                   </th>
@@ -401,15 +501,19 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
             {/* Body */}
             <tbody>
               {grid.map((row, rowIndex) => (
-                <tr key={rowIndex} className="border-t border-border">
+                <tr key={rowIndex} className="border-t border-border hover:bg-muted/20 transition-colors">
                   {/* Time slot header */}
-                  <td className="p-3 bg-muted/50 border-r border-border">
-                    <div className="text-xs font-medium text-foreground">
-                      <Clock className="h-3 w-3 inline mr-1" />
-                      {row[0].timeSlot.startTime}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {row[0].timeSlot.endTime}
+                  <td className="p-4 bg-muted/30 border-r border-border">
+                    <div className="space-y-1">
+                      <div className="text-sm font-semibold text-foreground">
+                        {row[0].timeSlot.startTime}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {row[0].timeSlot.endTime}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Period {row[0].timeSlot.slotOrder}
+                      </div>
                     </div>
                   </td>
                   

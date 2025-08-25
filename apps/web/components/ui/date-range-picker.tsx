@@ -52,7 +52,7 @@ export function DateRangePicker({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-full justify-start text-left font-normal",
+              "w-full h-10 justify-start text-left font-normal",
               !dateRange && "text-muted-foreground"
             )}
             disabled={disabled}

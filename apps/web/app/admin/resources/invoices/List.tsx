@@ -5,12 +5,10 @@ import {
   List,
   DataTable,
   TextField,
+  Count,
   TextInput,
   ReferenceInput,
   AutocompleteInput,
-  DateRangeInput,
-  NumberInput,
-  Count,
 } from "@/components/admin";
 import { ReferenceField } from "@/components/admin/reference-field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,25 +23,15 @@ const storeKeyByStatus = {
   cancelled: "invoices.list.cancelled",
 };
 
-// Label-less filters with placeholders
 const filters = [
-  <TextInput source="q" placeholder="Search invoices..." label="" alwaysOn />,
-  <ReferenceInput source="studentId" reference="students">
-    <AutocompleteInput 
-      placeholder="Filter by student" 
-      label=""
-      optionText={(record: any) => `${record.firstName} ${record.lastName}`}
-    />
+  <TextInput source="q" placeholder="Search" label="" />,
+  <ReferenceInput
+    source="studentId"
+    reference="students"
+    sort={{ field: "firstName", order: "ASC" }}
+  >
+    <AutocompleteInput placeholder="Filter by student" label="" />
   </ReferenceInput>,
-  <DateRangeInput 
-    source="dueDate"
-    sourceFrom="dueDate_gte"
-    sourceTo="dueDate_lte"
-    label=""
-    placeholder="Filter by due date"
-  />,
-  <NumberInput source="amount_gte" placeholder="Min amount" label="" min={0} />,
-  <NumberInput source="amount_lte" placeholder="Max amount" label="" min={0} />,
 ];
 
 export const InvoicesList = () => (
@@ -133,7 +121,7 @@ const InvoicesTable = ({ storeKey }: { storeKey: string }) => {
   return (
     <DataTable storeKey={storeKey} rowClassName={getRowClassName}>
       {/* Always visible columns */}
-      <DataTable.Col source="id" label="Invoice #" />
+      <DataTable.Col source="invoiceNumber" label="Invoice #" />
       <DataTable.Col label="Student">
         <ReferenceField reference="students" source="studentId">
           <TextField source="firstName" />

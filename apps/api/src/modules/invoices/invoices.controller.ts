@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
@@ -68,17 +69,24 @@ export class InvoicesController {
 
   @Get()
   @ListDocs('List invoices')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page (alias for perPage)' })
+  @ApiQuery({ name: 'sort', required: false, type: String, description: 'Sort field and direction' })
   @ApiQuery({ name: 'studentId', required: false })
   @ApiQuery({ name: 'status', required: false })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query for period, status, and student details' })
   list(
     @Query('page') page?: number,
     @Query('perPage') perPage?: number,
+    @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('studentId') studentId?: string,
     @Query('status') status?: string,
+    @Query('q') q?: string,
     @Query('filter') filterStr?: string,
     @Query('ids') ids?: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     const filter = filterStr ? JSON.parse(filterStr) : undefined;
     
@@ -89,14 +97,15 @@ export class InvoicesController {
       }));
     }
     
-    return this.service.list({ page, perPage, sort, studentId, status, filter, branchId });
+    const effectivePerPage = perPage || pageSize;
+    return this.service.list({ page, perPage: effectivePerPage, sort, studentId, status, q, filter, branchId });
   }
 
   @Get(':id')
   @ApiTags('Invoices')
   getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.getOneWithBranch(id, branchId);
   }
@@ -105,7 +114,7 @@ export class InvoicesController {
   @CreateDocs('Create invoice')
   create(
     @Body() body: UpsertInvoiceDto,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.create({ ...body, branchId });
   }
@@ -115,7 +124,7 @@ export class InvoicesController {
   update(
     @Param('id') id: string,
     @Body() body: Partial<UpsertInvoiceDto>,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.updateWithBranch(id, body, branchId);
   }
@@ -124,7 +133,7 @@ export class InvoicesController {
   @DeleteDocs('Delete invoice')
   remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.remove(id, branchId);
   }

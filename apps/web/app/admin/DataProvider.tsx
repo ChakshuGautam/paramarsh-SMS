@@ -115,7 +115,7 @@ function mapListParams(resource: string, params: ListParams) {
   const path = resourceToPath(resource);
   const { pagination = {}, sort = {}, filter = {} } = params || {};
   const page = Number(pagination.page ?? 1);
-  const pageSize = Number(pagination.perPage ?? pagination.pageSize ?? 10);
+  const perPage = Number(pagination.perPage ?? 10);
   const field = sort.field as string | undefined;
   const order = ((sort.order as string | undefined)?.toUpperCase() || "ASC") as
     | "ASC"
@@ -128,7 +128,13 @@ function mapListParams(resource: string, params: ListParams) {
     Object.entries(filter).forEach(([k, v]) => (filterQuery[k] = v as unknown));
   }
 
-  const qs = toQuery({ page, pageSize, sort: sortExpr, ...filterQuery });
+  // Use page and perPage directly as the backend expects
+  const qs = toQuery({ 
+    page, 
+    perPage,
+    sort: sortExpr, 
+    ...filterQuery 
+  });
   const url = `${apiUrl}/${path}${qs}`;
   return url;
 }
@@ -297,23 +303,23 @@ function resourceToPath(resource: string): string {
     applications: "admissions/applications",
     
     // Attendance - Fixed to match actual backend paths
-    attendanceRecords: "attendance",
-    attendanceSessions: "attendance-sessions",
-    attendance: "attendance",
-    teacherAttendance: "teacher-attendance", // Missing backend implementation
+    attendanceRecords: "attendance-records",
+    attendanceSessions: "attendance/sessions",
+    attendance: "attendance-records",
+    teacherAttendance: "teacher-attendance",
     
     // Exams & Marks
     exams: "exams",
     marks: "marks",
     
     // Fees & Payments
-    feeStructures: "fee-structures",
-    feeSchedules: "fee-schedules", 
+    feeStructures: "fees/structures",
+    feeSchedules: "fees/schedules", 
     invoices: "invoices",
     payments: "payments",
     
     // HR & Staff
-    staff: "staff",
+    staff: "hr/staff",
     teachers: "teachers",
     
     // Timetable
@@ -328,11 +334,11 @@ function resourceToPath(resource: string): string {
     sectionTimetables: "sections",
     timetables: "timetable",
     
-    // Communications - Fixed to match actual backend paths
+    // Communications - Using alt controllers (non-comms prefix)
     templates: "templates",
     campaigns: "campaigns", 
-    messages: "messages",
-    preferences: "preferences",
+    messages: "comms/messages",
+    preferences: "comms/preferences",
     tickets: "tickets",
     
     // Files & Documents

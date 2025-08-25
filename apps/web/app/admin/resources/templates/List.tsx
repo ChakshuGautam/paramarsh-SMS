@@ -1,16 +1,17 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
-  TextInput,
-  SelectInput,
   Count,
+  SelectInput,
 } from "@/components/admin";
+// Filters temporarily removed for demo compatibility
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Mail, Smartphone, Phone, Globe } from "lucide-react";
+import { formatDate } from "@/lib/utils/date-utils";
 
 // Store keys for different channel tabs
 const storeKeyByChannel = {
@@ -23,18 +24,7 @@ const storeKeyByChannel = {
 
 // Label-less filters with placeholders
 const templateFilters = [
-  <TextInput source="q" placeholder="Search templates..." label="" alwaysOn />,
-  <SelectInput 
-    source="channel" 
-    placeholder="Filter by channel" 
-    label="" 
-    choices={[
-      { id: 'SMS', name: 'SMS' },
-      { id: 'EMAIL', name: 'Email' },
-      { id: 'PUSH', name: 'Push Notification' },
-      { id: 'WHATSAPP', name: 'WhatsApp' }
-    ]} 
-  />,
+  // Custom filters temporarily removed for demo compatibility
   <SelectInput 
     source="locale" 
     placeholder="Filter by locale" 
@@ -157,13 +147,17 @@ const TemplatesTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col source="createdAt" label="Created" className="hidden md:table-cell" />
-    <DataTable.Col source="updatedAt" label="Updated" className="hidden lg:table-cell" />
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+    <DataTable.Col source="createdAt" label="Created" className="hidden md:table-cell">
+      <CreatedDateField />
+    </DataTable.Col>
+    <DataTable.Col source="updatedAt" label="Updated" className="hidden lg:table-cell">
+      <UpdatedDateField />
+    </DataTable.Col>
   </DataTable>
 );
 
-const ChannelIcon = ({ record }: { record?: any }) => {
+const ChannelIcon = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const icons = {
@@ -188,7 +182,20 @@ const ChannelIcon = ({ record }: { record?: any }) => {
   );
 };
 
-const LocaleBadge = ({ record }: { record?: any }) => {
+const CreatedDateField = () => {
+  const record = useRecordContext();
+  if (!record || !record.createdAt) return <span className="text-muted-foreground">-</span>;
+  return <span>{formatDate(record.createdAt)}</span>;
+};
+
+const UpdatedDateField = () => {
+  const record = useRecordContext();
+  if (!record || !record.updatedAt) return <span className="text-muted-foreground">-</span>;
+  return <span>{formatDate(record.updatedAt)}</span>;
+};
+
+const LocaleBadge = () => {
+  const record = useRecordContext();
   if (!record || !record.locale) return null;
   
   const localeNames = {

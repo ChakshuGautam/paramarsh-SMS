@@ -1,18 +1,18 @@
 /**
- * MCP SQLite Server Helper Functions
+ * MCP PostgreSQL Server Helper Functions
  * 
  * This module provides utility functions for common database operations
- * using EXCLUSIVELY SQLite MCP Server tools. Never uses sqlite3 command-line.
+ * using EXCLUSIVELY PostgreSQL MCP Server tools. Never uses psql command-line.
  * 
  * Available MCP Tools:
- * - mcp__MCP_SQLite_Server__db_info
- * - mcp__MCP_SQLite_Server__list_tables
- * - mcp__MCP_SQLite_Server__query
- * - mcp__MCP_SQLite_Server__get_table_schema
- * - mcp__MCP_SQLite_Server__create_record
- * - mcp__MCP_SQLite_Server__read_records
- * - mcp__MCP_SQLite_Server__update_records
- * - mcp__MCP_SQLite_Server__delete_records
+ * - mcp__MCP_PostgreSQL_Server__db_info
+ * - mcp__MCP_PostgreSQL_Server__list_tables
+ * - mcp__MCP_PostgreSQL_Server__query
+ * - mcp__MCP_PostgreSQL_Server__get_table_schema
+ * - mcp__MCP_PostgreSQL_Server__create_record
+ * - mcp__MCP_PostgreSQL_Server__read_records
+ * - mcp__MCP_PostgreSQL_Server__update_records
+ * - mcp__MCP_PostgreSQL_Server__delete_records
  */
 
 // Types for MCP operations
@@ -47,22 +47,22 @@ export interface ValidationResult {
   details?: any;
 }
 
+// MCP function stubs (these would be actual MCP calls in production)
+declare const mcp__MCP_PostgreSQL_Server__db_info: () => Promise<any>;
+declare const mcp__MCP_PostgreSQL_Server__list_tables: () => Promise<{ tables: string[] }>;
+declare const mcp__MCP_PostgreSQL_Server__query: (params: { query: string, values?: any[] }) => Promise<{ rows: any[], columns?: string[], rowCount?: number }>;
+declare const mcp__MCP_PostgreSQL_Server__get_table_schema: (params: { table: string }) => Promise<any>;
+declare const mcp__MCP_PostgreSQL_Server__create_record: (params: { table: string, data: Record<string, any> }) => Promise<any>;
+declare const mcp__MCP_PostgreSQL_Server__read_records: (params: { table: string, conditions?: Record<string, any>, limit?: number, offset?: number }) => Promise<any[]>;
+declare const mcp__MCP_PostgreSQL_Server__update_records: (params: { table: string, conditions: Record<string, any>, data: Record<string, any> }) => Promise<{ updatedCount: number }>;
+declare const mcp__MCP_PostgreSQL_Server__delete_records: (params: { table: string, conditions: Record<string, any> }) => Promise<{ deletedCount: number }>;
+
 /**
  * Check database connection and status using MCP tools
  */
 export async function checkDatabaseStatus(): Promise<any> {
   try {
-    // In real implementation, this would be:
-    // return await mcp__MCP_SQLite_Server__db_info();
-    
-    // For now, simulate the response
-    return {
-      connected: true,
-      database: 'paramarsh_sms',
-      version: '3.x',
-      tables: 42,
-      status: 'healthy'
-    };
+    return await mcp__MCP_PostgreSQL_Server__db_info();
   } catch (error) {
     throw new Error(`Database status check failed: ${error.message}`);
   }
@@ -73,22 +73,8 @@ export async function checkDatabaseStatus(): Promise<any> {
  */
 export async function listAllTables(): Promise<string[]> {
   try {
-    // In real implementation:
-    // const result = await mcp__MCP_SQLite_Server__list_tables();
-    // return result.tables;
-    
-    // Simulate table list based on Prisma schema
-    return [
-      'Student', 'Guardian', 'StudentGuardian', 'Staff', 'Teacher',
-      'Class', 'Section', 'Subject', 'Enrollment', 'AcademicYear',
-      'Exam', 'ExamSession', 'Mark', 'MarksEntry', 'GradingScale',
-      'FeeStructure', 'FeeComponent', 'FeeSchedule', 'Invoice', 'Payment',
-      'AttendanceRecord', 'AttendanceSession', 'StudentPeriodAttendance', 'TeacherDailyAttendance',
-      'Room', 'TimeSlot', 'TimetablePeriod', 'Substitution',
-      'SubjectConstraint', 'TeacherConstraint', 'RoomConstraint', 'TimeSlotConstraint',
-      'Template', 'Campaign', 'Message', 'Preference', 'Ticket', 'TicketMessage', 'TicketAttachment',
-      'Application', 'Tenant'
-    ];
+    const result = await mcp__MCP_PostgreSQL_Server__list_tables();
+    return result.tables;
   } catch (error) {
     throw new Error(`Failed to list tables: ${error.message}`);
   }
@@ -97,17 +83,14 @@ export async function listAllTables(): Promise<string[]> {
 /**
  * Execute a SELECT query using MCP tools
  */
-export async function executeQuery(query: string): Promise<MCPQueryResult> {
+export async function executeQuery(query: string, values?: any[]): Promise<MCPQueryResult> {
   try {
-    // In real implementation:
-    // return await mcp__MCP_SQLite_Server__query({ query });
-    
-    // For now, simulate based on common queries
-    if (query.includes('COUNT(*)')) {
-      return { rows: [{ count: Math.floor(Math.random() * 1000) }] };
-    }
-    
-    return { rows: [], rowsAffected: 0 };
+    const result = await mcp__MCP_PostgreSQL_Server__query({ query, values });
+    return {
+      rows: result.rows,
+      columns: result.columns,
+      rowsAffected: result.rowCount
+    };
   } catch (error) {
     throw new Error(`Query execution failed: ${error.message}`);
   }
@@ -118,21 +101,11 @@ export async function executeQuery(query: string): Promise<MCPQueryResult> {
  */
 export async function getTableSchema(tableName: string): Promise<MCPTableSchema> {
   try {
-    // In real implementation:
-    // return await mcp__MCP_SQLite_Server__get_table_schema({ table: tableName });
-    
-    // Simulate schema based on common tables
-    const commonSchema = {
+    const result = await mcp__MCP_PostgreSQL_Server__get_table_schema({ table: tableName });
+    return {
       name: tableName,
-      columns: [
-        { name: 'id', type: 'TEXT', nullable: false, primaryKey: true },
-        { name: 'branchId', type: 'TEXT', nullable: true, primaryKey: false },
-        { name: 'createdAt', type: 'DATETIME', nullable: false, primaryKey: false },
-        { name: 'updatedAt', type: 'DATETIME', nullable: false, primaryKey: false }
-      ]
+      columns: result.columns || []
     };
-    
-    return commonSchema;
   } catch (error) {
     throw new Error(`Failed to get schema for ${tableName}: ${error.message}`);
   }
@@ -152,14 +125,10 @@ export async function createRecord(tableName: string, data: Record<string, any>)
       updatedAt: data.updatedAt || new Date().toISOString()
     };
     
-    // In real implementation:
-    // return await mcp__MCP_SQLite_Server__create_record({ 
-    //   table: tableName, 
-    //   data: recordData 
-    // });
-    
-    console.log(`📝 Creating record in ${tableName}:`, recordData);
-    return { id: recordData.id, created: true };
+    return await mcp__MCP_PostgreSQL_Server__create_record({ 
+      table: tableName, 
+      data: recordData 
+    });
   } catch (error) {
     throw new Error(`Failed to create record in ${tableName}: ${error.message}`);
   }
@@ -174,17 +143,12 @@ export async function readRecords(
   options: { limit?: number; offset?: number; orderBy?: string } = {}
 ): Promise<any[]> {
   try {
-    // In real implementation:
-    // return await mcp__MCP_SQLite_Server__read_records({
-    //   table: tableName,
-    //   conditions,
-    //   limit: options.limit,
-    //   offset: options.offset,
-    //   orderBy: options.orderBy
-    // });
-    
-    console.log(`🔍 Reading records from ${tableName} with conditions:`, conditions);
-    return []; // Simulate empty result
+    return await mcp__MCP_PostgreSQL_Server__read_records({
+      table: tableName,
+      conditions,
+      limit: options.limit,
+      offset: options.offset
+    });
   } catch (error) {
     throw new Error(`Failed to read records from ${tableName}: ${error.message}`);
   }
@@ -205,15 +169,13 @@ export async function updateRecords(
       updatedAt: new Date().toISOString()
     };
     
-    // In real implementation:
-    // return await mcp__MCP_SQLite_Server__update_records({
-    //   table: tableName,
-    //   conditions,
-    //   updates: updateData
-    // });
+    const result = await mcp__MCP_PostgreSQL_Server__update_records({
+      table: tableName,
+      conditions,
+      data: updateData
+    });
     
-    console.log(`✏️ Updating records in ${tableName}:`, { conditions, updates: updateData });
-    return { updated: 1 };
+    return { updated: result.updatedCount };
   } catch (error) {
     throw new Error(`Failed to update records in ${tableName}: ${error.message}`);
   }
@@ -227,14 +189,12 @@ export async function deleteRecords(
   conditions: Record<string, any>
 ): Promise<{ deleted: number }> {
   try {
-    // In real implementation:
-    // return await mcp__MCP_SQLite_Server__delete_records({
-    //   table: tableName,
-    //   conditions
-    // });
+    const result = await mcp__MCP_PostgreSQL_Server__delete_records({
+      table: tableName,
+      conditions
+    });
     
-    console.log(`🗑️ Deleting records from ${tableName} with conditions:`, conditions);
-    return { deleted: 1 };
+    return { deleted: result.deletedCount };
   } catch (error) {
     throw new Error(`Failed to delete records from ${tableName}: ${error.message}`);
   }
@@ -590,7 +550,7 @@ export class MCPSeedDataGenerator {
     const guardiansToGenerate = Math.ceil(students.length * studentsPerGuardian);
     
     for (let i = 0; i < guardiansToGenerate; i++) {
-      const guardian = {
+      const guardianData = {
         branchId: this.branchId,
         name: `${IndianDataGenerators.firstName('male')} ${IndianDataGenerators.lastName()}`,
         email: `guardian${i + 1}@example.com`,
@@ -599,7 +559,7 @@ export class MCPSeedDataGenerator {
         occupation: IndianDataGenerators.occupation()
       };
       
-      await createRecord('Guardian', guardian);
+      const guardianResult = await createRecord('Guardian', guardianData);
       
       // Create relationships with students
       const relationshipTypes = ['father', 'mother', 'guardian'];
@@ -608,7 +568,7 @@ export class MCPSeedDataGenerator {
       for (const student of randomStudents) {
         const relationship = {
           studentId: student.id,
-          guardianId: guardian.id,
+          guardianId: guardianResult.id,
           relation: relationshipTypes[Math.floor(Math.random() * relationshipTypes.length)],
           isPrimary: Math.random() > 0.5,
           canPickup: true,

@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { 
   Controller, 
   Get, 
@@ -12,16 +13,16 @@ import {
 import { TeacherAttendanceService } from './teacher-attendance.service';
 import { CreateTeacherAttendanceDto, UpdateTeacherAttendanceDto } from './dto/teacher-attendance.dto';
 
-@Controller('api/v1/teacher-attendance')
+@Controller('teacher-attendance')
 export class TeacherAttendanceController {
   constructor(private readonly service: TeacherAttendanceService) {}
 
   @Get()
   async findAll(
     @Query() query: any,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
-    const { page = 1, pageSize = 10, sort, filter, id } = query;
+    const { page = 1, perPage = 10, pageSize = 10, sort, filter, id } = query;
 
     // Handle getMany case (when specific IDs are requested)
     if (id) {
@@ -33,10 +34,11 @@ export class TeacherAttendanceController {
       return { data: filteredData };
     }
 
+    const effectivePerPage = perPage || pageSize;
     const result = await this.service.findAll({
       page: +page,
-      pageSize: +pageSize,
-      sort: sort ? JSON.parse(sort) : undefined,
+      perPage: +effectivePerPage,
+      sort: sort,
       filter: filter ? JSON.parse(filter) : {},
       branchId
     });
@@ -46,7 +48,7 @@ export class TeacherAttendanceController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     const result = await this.service.findOne(id, branchId);
     return { data: result };
@@ -55,7 +57,7 @@ export class TeacherAttendanceController {
   @Post()
   async create(
     @Body() data: CreateTeacherAttendanceDto,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     const result = await this.service.create({ ...data, branchId });
     return { data: result };
@@ -65,16 +67,16 @@ export class TeacherAttendanceController {
   async update(
     @Param('id') id: string,
     @Body() data: UpdateTeacherAttendanceDto,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
-    const result = await this.service.update(id, data, branchId);
+    const result = await this.service.update(id, { ...data, branchId });
     return { data: result };
   }
 
   @Delete(':id')
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     const result = await this.service.remove(id, branchId);
     return { data: result };

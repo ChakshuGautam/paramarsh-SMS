@@ -2,7 +2,6 @@
 "use client";
 
 import React, { Suspense } from "react";
-import { ClerkProvider } from "@clerk/nextjs";
 import AdminApp from "./AdminApp";
 
 function AdminLoader() {
@@ -17,24 +16,10 @@ function AdminLoader() {
 }
 
 export default function Page() {
-  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
-  if (!publishableKey) {
-    console.warn(
-      "@clerk/nextjs: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is missing; rendering Admin without auth.",
-    );
-    return (
-      <Suspense fallback={<AdminLoader />}>
-        <AdminApp />
-      </Suspense>
-    );
-  }
-
+  // ClerkProvider is already in the root layout.tsx, no need to duplicate it here
   return (
-    <ClerkProvider publishableKey={publishableKey}>
-      <Suspense fallback={<AdminLoader />}>
-        <AdminApp />
-      </Suspense>
-    </ClerkProvider>
+    <Suspense fallback={<AdminLoader />}>
+      <AdminApp />
+    </Suspense>
   );
 }

@@ -28,8 +28,7 @@ export class AttendanceSessionsService {
     const period = await this.prisma.timetablePeriod.findFirst({
       where: {
         teacherId,
-        timeSlotId: timeSlot.id,
-        isActive: true,
+        dayOfWeek: new Date().getDay(),
       },
       include: {
         section: true,
@@ -112,7 +111,6 @@ export class AttendanceSessionsService {
         subject: true,
         period: {
           include: {
-            timeSlot: true
           }
         }
       },
@@ -360,7 +358,6 @@ export class AttendanceSessionsService {
         },
         period: {
           include: {
-            timeSlot: true
           }
         },
         studentRecords: {
@@ -430,8 +427,7 @@ export class AttendanceSessionsService {
           },
           period: {
             include: {
-              timeSlot: true
-            }
+              }
           },
           _count: {
             select: {
@@ -466,19 +462,9 @@ export class AttendanceSessionsService {
     const periods = await this.prisma.timetablePeriod.findMany({
       where: {
         branchId,
-        isActive: true,
-        timeSlot: {
-          dayOfWeek: dayOfWeek,
-          slotType: 'regular', // Only regular periods, not breaks
-        },
-        effectiveFrom: { lte: date },
-        OR: [
-          { effectiveTo: null },
-          { effectiveTo: { gte: date } },
-        ],
+        dayOfWeek: dayOfWeek,
       },
       include: {
-        timeSlot: true,
         section: {
           include: {
             enrollments: {

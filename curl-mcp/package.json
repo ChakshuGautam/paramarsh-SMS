@@ -1,0 +1,20 @@
+{
+  "name": "curl-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server wrapping curl commands with jq support",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest"
+  },
+  "keywords": [
+    "mcp",
+    "curl",
+    "http",
+    "api",
+    "json"
+  ]
+}

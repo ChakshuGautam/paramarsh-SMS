@@ -255,6 +255,7 @@ function DataTableHeadCell<
     sortByOrder,
     className,
     headerClassName,
+    responsiveVisibility = 'always',
   } = props;
 
   const sort = useDataTableSortContext();
@@ -282,8 +283,16 @@ function DataTableHeadCell<
     _: translate("ra.action.sort"),
   });
 
+  const visibilityClasses: Record<string, string> = {
+    always: '',
+    sm: 'hidden sm:table-cell',
+    md: 'hidden md:table-cell',
+    lg: 'hidden lg:table-cell',
+    xl: 'hidden xl:table-cell'
+  };
+
   return (
-    <TableHead className={cn(className, headerClassName)}>
+    <TableHead className={cn(visibilityClasses[responsiveVisibility], className, headerClassName)}>
       {handleSort && sort && !disableSort && source ? (
         <TooltipProvider>
           <Tooltip>
@@ -346,6 +355,7 @@ function DataTableCell<
     className,
     cellClassName,
     conditionalClassName,
+    responsiveVisibility = 'always',
   } = props;
 
   const record = useRecordContext<RecordType>();
@@ -355,10 +365,19 @@ function DataTableCell<
     );
   }
 
+  const visibilityClasses: Record<string, string> = {
+    always: '',
+    sm: 'hidden sm:table-cell',
+    md: 'hidden md:table-cell',
+    lg: 'hidden lg:table-cell',
+    xl: 'hidden xl:table-cell'
+  };
+
   return (
     <TableCell
       className={cn(
         "py-1",
+        visibilityClasses[responsiveVisibility],
         className,
         cellClassName,
         record && conditionalClassName?.(record)
@@ -388,6 +407,7 @@ export interface DataTableColumnProps<
   label?: React.ReactNode;
   disableSort?: boolean;
   sortByOrder?: SortPayload["order"];
+  responsiveVisibility?: 'always' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export function DataTableNumberColumn<

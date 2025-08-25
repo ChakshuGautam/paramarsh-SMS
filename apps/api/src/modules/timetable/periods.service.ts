@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BaseCrudService } from '../../common/base-crud.service';
 import { TimetablePeriod } from '@prisma/client';
@@ -26,11 +26,48 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
     ];
   }
 
+  // Override buildOrderBy to handle timetable-specific sorting
+  protected buildOrderBy(sort?: string): any {
+    if (!sort) {
+      return { id: 'asc' };
+    }
+
+    // Handle multiple sort fields
+    const sortFields = sort.split(',');
+    return sortFields.map(field => {
+      const isDesc = field.startsWith('-');
+      const fieldName = isDesc ? field.slice(1) : field;
+      const direction = isDesc ? 'desc' : 'asc';
+      
+      // Handle specific timetable sorting cases
+      if (fieldName === 'class.gradeLevel') {
+        return { section: { class: { gradeLevel: direction } } };
+      }
+      if (fieldName === 'class.name') {
+        return { section: { class: { name: direction } } };
+      }
+      
+      // Handle nested sorting generally
+      if (fieldName.includes('.')) {
+        const parts = fieldName.split('.');
+        let orderByObj: any = { [parts[parts.length - 1]]: direction };
+        
+        for (let i = parts.length - 2; i >= 0; i--) {
+          orderByObj = { [parts[i]]: orderByObj };
+        }
+        
+        return orderByObj;
+      }
+      
+      return { [fieldName]: direction };
+    });
+  }
+
   // Override getList to include relations
   async getList(params: any): Promise<{ data: TimetablePeriod[]; total: number }> {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(100, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
+    const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
+    const skip = (page - 1) * perPage;
 
     const where = this.buildWhereClause(params.filter);
     const orderBy = this.buildOrderBy(params.sort);
@@ -39,10 +76,14 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
       this.prisma.timetablePeriod.findMany({
         where,
         skip,
-        take: pageSize,
+        take: perPage,
         orderBy,
         include: {
-          section: true,
+          section: {
+            include: {
+              class: true,
+            },
+          },
           subject: true,
           teacher: {
             include: {
@@ -59,12 +100,40 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
     return { data, total };
   }
 
+  // Override getMany to include relations
+  async getMany(ids: string[]): Promise<{ data: TimetablePeriod[] }> {
+    const data = await this.prisma.timetablePeriod.findMany({
+      where: { id: { in: ids } },
+      include: {
+        section: {
+          include: {
+            class: true,
+          },
+        },
+        subject: true,
+        teacher: {
+          include: {
+            staff: true,
+          },
+        },
+        room: true,
+        academicYear: true,
+      },
+    });
+
+    return { data };
+  }
+
   // Override getOne to include relations
   async getOne(id: string): Promise<{ data: TimetablePeriod }> {
     const data = await this.prisma.timetablePeriod.findUnique({
       where: { id },
       include: {
-        section: true,
+        section: {
+          include: {
+            class: true,
+          },
+        },
         subject: true,
         teacher: {
           include: {
@@ -86,7 +155,8 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
   // Custom method to find periods by branchId with pagination
   async findAll(params: {
     page: number;
-    pageSize: number;
+    perPage?: number;
+    pageSize?: number; // Keep for backward compatibility
     sort?: string;
     filter?: any;
     branchId: string;
@@ -96,8 +166,11 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
       branchId: params.branchId,
     };
 
+    const effectivePerPage = params.perPage || params.pageSize;
     return this.getList({
-      ...params,
+      page: params.page,
+      perPage: effectivePerPage,
+      sort: params.sort,
       filter: { ...params.filter, branchId: params.branchId },
     });
   }
@@ -110,7 +183,11 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
         branchId,
       },
       include: {
-        section: true,
+        section: {
+          include: {
+            class: true,
+          },
+        },
         subject: true,
         teacher: {
           include: {
@@ -130,27 +207,41 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
   }
 
   // Custom method to create with branchId
-  async create(data: any): Promise<TimetablePeriod> {
-    const created = await this.prisma.timetablePeriod.create({
-      data,
-      include: {
-        section: true,
-        subject: true,
-        teacher: {
-          include: {
-            staff: true,
+  async create(data: any) {
+    try {
+      const created = await this.prisma.timetablePeriod.create({
+        data,
+        include: {
+          section: {
+            include: {
+              class: true,
+            },
           },
+          subject: true,
+          teacher: {
+            include: {
+              staff: true,
+            },
+          },
+          room: true,
+          academicYear: true,
         },
-        room: true,
-        academicYear: true,
-      },
-    });
+      });
 
-    return created;
+      return { data: created };
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException('Period already exists for this section, day, period number and academic year');
+      }
+      throw error;
+    }
   }
 
   // Custom method to update with branchId validation
-  async update(id: string, data: any, branchId: string): Promise<TimetablePeriod> {
+  async update(id: string, data: any) {
+    // Get branchId from data or scope
+    const branchId = data.branchId || PrismaService.getScope().branchId;
+    
     // First verify the period exists and belongs to the branch
     await this.findOne(id, branchId);
 
@@ -158,7 +249,11 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
       where: { id },
       data,
       include: {
-        section: true,
+        section: {
+          include: {
+            class: true,
+          },
+        },
         subject: true,
         teacher: {
           include: {
@@ -170,7 +265,7 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
       },
     });
 
-    return updated;
+    return { data: updated };
   }
 
   // Custom method to remove with branchId validation
@@ -181,7 +276,11 @@ export class PeriodsService extends BaseCrudService<TimetablePeriod> {
     const deleted = await this.prisma.timetablePeriod.delete({
       where: { id },
       include: {
-        section: true,
+        section: {
+          include: {
+            class: true,
+          },
+        },
         subject: true,
         teacher: {
           include: {

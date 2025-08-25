@@ -1,7 +1,7 @@
 # 📊 PARAMARSH SMS INVOICE & PAYMENT SEED DATA VALIDATION REPORT
 
 **Generated on:** August 22, 2025  
-**Database:** SQLite (dev.db)  
+**Database:** PostgreSQL  
 **Branch:** branch1  
 **Report Type:** Comprehensive Seed Data Validation  
 

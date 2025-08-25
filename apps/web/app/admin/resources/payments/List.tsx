@@ -6,13 +6,11 @@ import {
   List,
   ReferenceField,
   TextField,
+  Count,
   TextInput,
-  ReferenceInput,
-  AutocompleteInput,
   SelectInput,
   NumberInput,
   DateInput,
-  Count,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -26,16 +24,19 @@ const storeKeyByStatus = {
   refunded: "payments.list.refunded",
 };
 
-// Label-less filters with placeholders
+// Standardized filters using filter components
 const paymentFilters = [
   <TextInput source="q" placeholder="Search payments..." label="" alwaysOn />,
-  <ReferenceInput source="invoiceId" reference="invoices">
-    <AutocompleteInput placeholder="Filter by invoice" label="" optionText="id" />
-  </ReferenceInput>,
+  <SelectInput
+    source="invoiceId"
+    placeholder="Filter by invoice"
+    label=""
+    choices={[]} // Would need to be populated with invoice data
+  />,
   <SelectInput 
     source="method" 
-    placeholder="Filter by method" 
-    label="" 
+    placeholder="Filter by payment method" 
+    label=""
     choices={[
       { id: 'cash', name: 'Cash' },
       { id: 'card', name: 'Card' },
@@ -43,7 +44,7 @@ const paymentFilters = [
       { id: 'bank_transfer', name: 'Bank Transfer' },
       { id: 'cheque', name: 'Cheque' },
       { id: 'online', name: 'Online' }
-    ]} 
+    ]}
   />,
   <NumberInput source="amount_gte" placeholder="Min amount" label="" />,
   <DateInput source="createdAt_gte" placeholder="From date" label="" />,
@@ -139,11 +140,10 @@ const PaymentsTable = ({ storeKey }: { storeKey: string }) => (
     {/* Desktop-only columns */}
     <DataTable.Col label="Invoice" className="hidden md:table-cell">
       <ReferenceField reference="invoices" source="invoiceId">
-        <TextField source="id" />
+        <TextField source="invoiceNumber" />
       </ReferenceField>
     </DataTable.Col>
     <DataTable.Col source="createdAt" label="Date" className="hidden lg:table-cell" />
-    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
 );
 

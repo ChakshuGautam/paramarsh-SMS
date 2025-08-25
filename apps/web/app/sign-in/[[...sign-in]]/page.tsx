@@ -1,6 +1,6 @@
 "use client"
 
-import { useSignIn } from "@clerk/nextjs"
+import { useSignIn, useUser } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -54,6 +54,7 @@ const schools = [
 
 export default function SignInPage() {
   const { isLoaded, signIn, setActive } = useSignIn()
+  const { user } = useUser()
   const router = useRouter()
   
   const [selectedSchool, setSelectedSchool] = useState('')
@@ -63,6 +64,13 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // If user is already signed in, redirect to admin
+  useEffect(() => {
+    if (user) {
+      router.push('/admin')
+    }
+  }, [user, router])
 
   // Update available branches when school changes
   useEffect(() => {
@@ -241,19 +249,27 @@ export default function SignInPage() {
         {/* Test Credentials Info for Development */}
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-blue-900 mb-2">Test Credentials:</p>
-            <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
-              <div>
-                <strong>Admin:</strong> admin / Admin@123
+            <p className="text-sm font-medium text-blue-900 mb-2">Test Credentials (Updated - Secure Passwords):</p>
+            <div className="space-y-2 text-xs">
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Admin:</strong>
+                <div className="ml-4">Username: admin</div>
+                <div className="ml-4">Password: P@ramarsh#Admin2024$Secure</div>
               </div>
-              <div>
-                <strong>Teacher:</strong> teacher / Teacher@123
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Teacher:</strong>
+                <div className="ml-4">Username: teacher</div>
+                <div className="ml-4">Password: Teach@Paramarsh#2024$Safe</div>
               </div>
-              <div>
-                <strong>Student:</strong> student / Student@123
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Student:</strong>
+                <div className="ml-4">Username: student</div>
+                <div className="ml-4">Password: Stud3nt@SMS#2024$Strong</div>
               </div>
-              <div>
-                <strong>Parent:</strong> parent / Parent@123
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Parent:</strong>
+                <div className="ml-4">Username: parent</div>
+                <div className="ml-4">Password: Par3nt@School#2024$Protect</div>
               </div>
             </div>
           </CardContent>

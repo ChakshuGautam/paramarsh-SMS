@@ -15,15 +15,24 @@ export type Payment = {
 export class PaymentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params: { page?: number; perPage?: number; sort?: string; status?: string; method?: string; invoiceId?: string; filter?: any; branchId: string }) {
+  async list(params: { page?: number; perPage?: number; pageSize?: number; sort?: string; status?: string; method?: string; invoiceId?: string; q?: string; filter?: any; branchId: string }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? 25)));
+    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
     if (params.status) where.status = params.status;
     if (params.method) where.method = params.method;
     if (params.invoiceId) where.invoiceId = params.invoiceId;
+    
+    // Handle search query 'q'
+    if (params.q && typeof params.q === 'string') {
+      where.OR = [
+        { reference: { contains: params.q, mode: 'insensitive' } },
+        { gateway: { contains: params.q, mode: 'insensitive' } },
+        { method: { contains: params.q, mode: 'insensitive' } },
+      ];
+    }
     
     // Handle filter parameter
     if (params.filter) {
