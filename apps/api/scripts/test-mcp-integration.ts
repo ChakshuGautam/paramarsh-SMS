@@ -1,8 +1,14 @@
 #!/usr/bin/env bun
 /**
+<<<<<<< HEAD
  * Test MCP PostgreSQL Server Integration
  * 
  * This script demonstrates the correct usage of MCP PostgreSQL Server tools
+=======
+ * Test MCP SQLite Server Integration
+ * 
+ * This script demonstrates the correct usage of MCP SQLite Server tools
+>>>>>>> origin/main
  * and validates that the MCP-only approach is working correctly.
  */
 
@@ -14,7 +20,11 @@ import {
 } from '../src/utils/mcp-helpers';
 
 async function testMCPIntegration() {
+<<<<<<< HEAD
   console.log('🚀 Testing MCP PostgreSQL Server Integration');
+=======
+  console.log('🚀 Testing MCP SQLite Server Integration');
+>>>>>>> origin/main
   console.log('=' .repeat(60));
   
   try {
@@ -133,7 +143,11 @@ async function testMCPIntegration() {
 }
 
 // Run test if called directly
+<<<<<<< HEAD
 if (require.main === module) {
+=======
+if (import.meta.main) {
+>>>>>>> origin/main
   testMCPIntegration()
     .then(success => {
       process.exit(success ? 0 : 1);

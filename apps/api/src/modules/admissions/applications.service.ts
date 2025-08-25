@@ -5,7 +5,11 @@ import { Application } from '@prisma/client';
 
 @Injectable()
 export class ApplicationsService extends BaseCrudService<Application> {
+<<<<<<< HEAD
   constructor(protected readonly prisma: PrismaService) {
+=======
+  constructor(private prisma: PrismaService) {
+>>>>>>> origin/main
     super(prisma, 'application');
   }
 
@@ -29,8 +33,13 @@ export class ApplicationsService extends BaseCrudService<Application> {
   /**
    * Find all applications with branch scoping
    */
+<<<<<<< HEAD
   async findAll(params: { page?: number; pageSize?: number; sort?: string; filter?: any; q?: string; branchId: string }) {
     const { page = 1, pageSize = 25, sort, filter = {}, q, branchId } = params;
+=======
+  async findAll(params: { page?: number; pageSize?: number; sort?: string; filter?: any; branchId: string }) {
+    const { page = 1, pageSize = 25, sort, filter = {}, branchId } = params;
+>>>>>>> origin/main
     const skip = (page - 1) * pageSize;
 
     const where = {
@@ -38,11 +47,14 @@ export class ApplicationsService extends BaseCrudService<Application> {
       branchId
     };
 
+<<<<<<< HEAD
     // Handle search query 'q'
     if (q && typeof q === 'string') {
       where.OR = this.buildSearchClause(q);
     }
 
+=======
+>>>>>>> origin/main
     const orderBy = this.buildOrderBy(sort);
 
     const [data, total] = await Promise.all([
@@ -88,8 +100,12 @@ export class ApplicationsService extends BaseCrudService<Application> {
         data.reviewedAt = new Date();
       }
 
+<<<<<<< HEAD
       const created = await this.prisma.application.create({ data });
       return { data: created };
+=======
+      return this.prisma.application.create({ data });
+>>>>>>> origin/main
     } catch (error: any) {
       if (error.code === 'P2002') {
         // Unique constraint violation
@@ -102,10 +118,14 @@ export class ApplicationsService extends BaseCrudService<Application> {
   /**
    * Update application with branch scoping and review handling
    */
+<<<<<<< HEAD
   async update(id: string, data: any) {
     // Get branchId from the data or scope
     const branchId = data.branchId || PrismaService.getScope().branchId;
     
+=======
+  async update(id: string, data: any, branchId: string) {
+>>>>>>> origin/main
     // Check if application exists in this branch
     const existing = await this.prisma.application.findFirst({
       where: { id, branchId }
@@ -122,12 +142,19 @@ export class ApplicationsService extends BaseCrudService<Application> {
       }
     }
 
+<<<<<<< HEAD
     const updated = await this.prisma.application.update({
       where: { id },
       data
     });
     
     return { data: updated };
+=======
+    return this.prisma.application.update({
+      where: { id },
+      data
+    });
+>>>>>>> origin/main
   }
 
   /**
@@ -151,6 +178,7 @@ export class ApplicationsService extends BaseCrudService<Application> {
   /**
    * Get many applications by IDs with branch scoping
    */
+<<<<<<< HEAD
   async getMany(ids: string[]) {
     // Get branchId from scope
     const branchId = PrismaService.getScope().branchId;
@@ -159,13 +187,24 @@ export class ApplicationsService extends BaseCrudService<Application> {
       where: {
         id: { in: ids },
         ...(branchId && { branchId })
+=======
+  async getMany(ids: string[], branchId: string) {
+    const data = await this.prisma.application.findMany({
+      where: {
+        id: { in: ids },
+        branchId
+>>>>>>> origin/main
       }
     });
 
     return { data };
   }
 
+<<<<<<< HEAD
   protected buildOrderBy(sort?: string): any {
+=======
+  private buildOrderBy(sort?: string): any {
+>>>>>>> origin/main
     if (!sort) {
       return { submittedAt: 'desc' };
     }
@@ -240,6 +279,10 @@ export class ApplicationsService extends BaseCrudService<Application> {
       }
     }
 
+<<<<<<< HEAD
     return super.update(id, data);
+=======
+    return this.update(id, data);
+>>>>>>> origin/main
   }
 }

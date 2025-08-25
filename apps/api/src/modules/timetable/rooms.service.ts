@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Injectable, NotFoundException } from '@nestjs/common';
+=======
+import { Injectable } from '@nestjs/common';
+>>>>>>> origin/main
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -8,6 +12,7 @@ export class RoomsService {
 
   async create(data: Prisma.RoomCreateInput) {
     const { branchId } = PrismaService.getScope();
+<<<<<<< HEAD
     const room = await this.prisma.room.create({ 
       data: {
         ...data,
@@ -25,6 +30,14 @@ export class RoomsService {
     });
 
     return { data: room };
+=======
+    return this.prisma.room.create({ 
+      data: {
+        ...data,
+        branchId: branchId ?? undefined,
+      }
+    });
+>>>>>>> origin/main
   }
 
   async findAll(filters?: {
@@ -42,7 +55,11 @@ export class RoomsService {
     if (filters?.minCapacity) where.capacity = { gte: filters.minCapacity };
     if (filters?.isActive !== undefined) where.isActive = filters.isActive;
 
+<<<<<<< HEAD
     const data = await this.prisma.room.findMany({
+=======
+    return this.prisma.room.findMany({
+>>>>>>> origin/main
       where,
       include: {
         constraints: true,
@@ -54,20 +71,35 @@ export class RoomsService {
         },
       },
     });
+<<<<<<< HEAD
 
     return data; // Return raw data for backward compatibility
   }
 
   async findOne(id: string) {
     const data = await this.prisma.room.findUnique({
+=======
+  }
+
+  async findOne(id: string) {
+    return this.prisma.room.findUnique({
+>>>>>>> origin/main
       where: { id },
       include: {
         constraints: true,
         periods: {
+<<<<<<< HEAD
+=======
+          where: { isActive: true },
+>>>>>>> origin/main
           include: {
             subject: true,
             teacher: true,
             section: true,
+<<<<<<< HEAD
+=======
+            timeSlot: true,
+>>>>>>> origin/main
           },
         },
         substitutions: {
@@ -79,6 +111,7 @@ export class RoomsService {
         },
       },
     });
+<<<<<<< HEAD
 
     if (!data) {
       throw new NotFoundException('Room not found');
@@ -123,15 +156,43 @@ export class RoomsService {
   }
 
   async checkAvailability(roomId: string, dayOfWeek: number, periodNumber: number, academicYearId: string, date?: Date) {
+=======
+  }
+
+  async update(id: string, data: Prisma.RoomUpdateInput) {
+    return this.prisma.room.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.room.delete({
+      where: { id },
+    });
+  }
+
+  async checkAvailability(roomId: string, timeSlotId: string, date?: Date) {
+>>>>>>> origin/main
     const effectiveDate = date || new Date();
     
     // Check regular timetable
     const regularPeriod = await this.prisma.timetablePeriod.findFirst({
       where: {
         roomId,
+<<<<<<< HEAD
         dayOfWeek,
         periodNumber,
         academicYearId,
+=======
+        timeSlotId,
+        isActive: true,
+        effectiveFrom: { lte: effectiveDate },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: effectiveDate } },
+        ],
+>>>>>>> origin/main
       },
     });
 
@@ -165,7 +226,11 @@ export class RoomsService {
     if (constraint) {
       try {
         const constraintValue = JSON.parse(constraint.value);
+<<<<<<< HEAD
         if (constraintValue.dayOfWeek === dayOfWeek && constraintValue.periodNumbers?.includes(periodNumber)) {
+=======
+        if (constraintValue.slots?.includes(timeSlotId)) {
+>>>>>>> origin/main
           return { available: false, reason: 'Room unavailable due to constraint' };
         }
       } catch (e) {
@@ -176,6 +241,7 @@ export class RoomsService {
     return { available: true };
   }
 
+<<<<<<< HEAD
   async getRoomUtilization(roomId: string, academicYearId: string) {
     const where: Prisma.TimetablePeriodWhereInput = {
       roomId,
@@ -194,6 +260,35 @@ export class RoomsService {
       day: i,
       slotsUsed: periods.filter(p => p.dayOfWeek === i).length,
       totalSlots: i === 0 ? 0 : periodsPerDay, // Sunday has 0 slots
+=======
+  async getRoomUtilization(roomId: string, startDate?: Date, endDate?: Date) {
+    const where: Prisma.TimetablePeriodWhereInput = {
+      roomId,
+      isActive: true,
+    };
+
+    if (startDate && endDate) {
+      where.effectiveFrom = { lte: endDate };
+      where.OR = [
+        { effectiveTo: null },
+        { effectiveTo: { gte: startDate } },
+      ];
+    }
+
+    const periods = await this.prisma.timetablePeriod.findMany({
+      where,
+      include: { timeSlot: true },
+    });
+
+    const totalSlots = await this.prisma.timeSlot.count({
+      where: { slotType: 'regular' },
+    });
+
+    const utilizationByDay = Array.from({ length: 7 }, (_, i) => ({
+      day: i,
+      slotsUsed: periods.filter(p => p.timeSlot.dayOfWeek === i).length,
+      totalSlots: totalSlots / 7,
+>>>>>>> origin/main
       percentage: 0,
     }));
 
@@ -225,6 +320,7 @@ export class RoomsService {
       },
     });
   }
+<<<<<<< HEAD
 
   // React Admin format methods
   async getList(params: {
@@ -367,4 +463,6 @@ export class RoomsService {
 
     return { data };
   }
+=======
+>>>>>>> origin/main
 }

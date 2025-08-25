@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { 
   Edit, 
   SimpleForm, 
@@ -9,16 +10,25 @@ import {
   AutocompleteInput,
   required 
 } from "@/components/admin";
+=======
+import { Edit, SimpleForm, TextInput } from "@/components/admin";
+>>>>>>> origin/main
 
 export const TicketsEdit = () => (
   <Edit>
     <SimpleForm>
+<<<<<<< HEAD
       <TextInput source="subject" label="Subject" validate={required()} />
+=======
+      <TextInput source="id" label="ID" disabled />
+      <TextInput source="subject" label="Subject" />
+>>>>>>> origin/main
       <TextInput
         source="description"
         label="Description"
         multiline
         rows={5}
+<<<<<<< HEAD
         validate={required()}
       />
       <SelectInput 
@@ -58,6 +68,25 @@ export const TicketsEdit = () => (
       <ReferenceInput source="assigneeId" reference="staff">
         <AutocompleteInput optionText={(choice) => `${choice.firstName} ${choice.lastName}`} label="Assignee (Staff)" />
       </ReferenceInput>
+=======
+      />
+      <TextInput 
+        source="category" 
+        label="Category" 
+        helperText="academic, fees, technical, or general"
+      />
+      <TextInput 
+        source="priority" 
+        label="Priority" 
+        helperText="low, normal, high, or urgent"
+      />
+      <TextInput 
+        source="status" 
+        label="Status" 
+        helperText="open, in_progress, resolved, or closed"
+      />
+      <TextInput source="assigneeId" label="Assignee ID" />
+>>>>>>> origin/main
     </SimpleForm>
   </Edit>
 );

@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { Show } from "@/components/admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,6 +255,32 @@ const InvoiceTemplate = () => {
   );
 };
 
+=======
+import { Show, SimpleShowLayout, TextField } from "@/components/admin";
+import { Button } from "@/components/ui/button";
+import { ReferenceField } from "@/components/admin/reference-field";
+import { useCallback } from "react";
+
+export const InvoicesShow = () => (
+  <Show
+    actions={
+      <ExportInvoiceButton />
+    }
+  >
+    <SimpleShowLayout>
+      <TextField source="id" label="ID" />
+      <ReferenceField reference="students" source="studentId">
+        <TextField source="firstName" label="Student" />
+      </ReferenceField>
+      <TextField source="period" label="Period" />
+      <TextField source="dueDate" label="Due" />
+      <TextField source="amount" label="Amount" />
+      <TextField source="status" label="Status" />
+    </SimpleShowLayout>
+  </Show>
+);
+
+>>>>>>> origin/main
 const ExportInvoiceButton = () => {
   const handleExport = useCallback(async () => {
     const id = window.location.pathname.split('/').pop();
@@ -272,6 +299,7 @@ const ExportInvoiceButton = () => {
       window.open(data.url, '_blank');
     }
   }, []);
+<<<<<<< HEAD
   
   return (
     <Button onClick={handleExport} variant="secondary" className="flex items-center gap-2">
@@ -282,3 +310,16 @@ const ExportInvoiceButton = () => {
 };
 
 export default InvoicesShow;
+=======
+  return (
+    <Button onClick={handleExport} variant="secondary">Export PDF</Button>
+  );
+};
+
+export default InvoicesShow;
+
+
+
+
+
+>>>>>>> origin/main

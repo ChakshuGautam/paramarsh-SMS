@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import type { ReactNode } from "react";
 import {
   useRecordContext,
@@ -121,6 +122,53 @@ const FilterCategory = ({
     </h3>
     <div className="flex flex-col items-start ml-3 mb-4">{children}</div>
   </>
+=======
+import { useRecordContext } from "ra-core";
+import {
+  DataTable,
+  List,
+  TextInput,
+  BooleanInput,
+  TextField,
+} from "@/components/admin";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { Calendar, CheckCircle, XCircle } from "lucide-react";
+
+const academicYearFilters = [
+  <TextInput source="q" placeholder="Search academic years..." label="" alwaysOn />,
+  <BooleanInput source="isActive" label="Active Only" />,
+];
+
+export const AcademicYearsList = () => (
+  <List
+    sort={{ field: "startDate", order: "DESC" }}
+    filters={academicYearFilters}
+    perPage={10}
+  >
+    <AcademicYearsTable />
+  </List>
+);
+
+const AcademicYearsTable = () => (
+  <DataTable>
+    <DataTable.Col source="name" label="Academic Year">
+      <AcademicYearName />
+    </DataTable.Col>
+    <DataTable.Col source="startDate" label="Start Date">
+      <DateDisplay source="startDate" />
+    </DataTable.Col>
+    <DataTable.Col source="endDate" label="End Date">
+      <DateDisplay source="endDate" />
+    </DataTable.Col>
+    <DataTable.Col source="terms" label="Terms">
+      <TermsDisplay />
+    </DataTable.Col>
+    <DataTable.Col source="isActive" label="Status">
+      <ActiveStatus />
+    </DataTable.Col>
+  </DataTable>
+>>>>>>> origin/main
 );
 
 const AcademicYearName = () => {
@@ -137,11 +185,19 @@ const AcademicYearName = () => {
 
 const DateDisplay = ({ source }: { source: string }) => {
   const record = useRecordContext();
+<<<<<<< HEAD
   if (!record) return null;
   
   return (
     <span className="text-sm">
       {formatDate(record[source])}
+=======
+  if (!record || !record[source]) return null;
+  
+  return (
+    <span className="text-sm">
+      {format(new Date(record[source]), 'MMM dd, yyyy')}
+>>>>>>> origin/main
     </span>
   );
 };
@@ -184,5 +240,9 @@ const ActiveStatus = () => {
   );
 };
 
+<<<<<<< HEAD
 
 export default AcademicYearsList;
+=======
+export default AcademicYearsList;
+>>>>>>> origin/main

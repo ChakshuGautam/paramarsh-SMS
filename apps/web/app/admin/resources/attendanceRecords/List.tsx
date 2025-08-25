@@ -6,16 +6,28 @@ import {
   List,
   ReferenceField,
   TextField,
+<<<<<<< HEAD
   Count,
   TextInput,
   SelectInput,
   DateInput,
+=======
+  TextInput,
+  ReferenceInput,
+  AutocompleteInput,
+  SelectInput,
+  DateInput,
+  Count,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays, startOfWeek, startOfMonth } from "date-fns";
 import { Check, X, Clock, Shield, AlertCircle, Calendar } from "lucide-react";
+<<<<<<< HEAD
 import { formatDate } from "@/lib/utils";
+=======
+>>>>>>> origin/main
 
 // Store keys for different date ranges
 const storeKeyByDateRange = {
@@ -43,6 +55,7 @@ const getDateFilter = (range: string) => {
   }
 };
 
+<<<<<<< HEAD
 // Standardized filters using filter components
 const attendanceFilters = [
   <TextInput source="q" placeholder="Search students..." label="" alwaysOn />,
@@ -56,14 +69,35 @@ const attendanceFilters = [
     source="status" 
     placeholder="Filter by attendance status" 
     label=""
+=======
+// Label-less filters with placeholders
+const attendanceFilters = [
+  <TextInput source="q" placeholder="Search students..." label="" alwaysOn />,
+  <ReferenceInput source="studentId" reference="students">
+    <AutocompleteInput 
+      placeholder="Filter by student" 
+      label="" 
+      optionText={(record) => `${record.firstName} ${record.lastName}`}
+    />
+  </ReferenceInput>,
+  <SelectInput 
+    source="status" 
+    placeholder="Filter by status" 
+    label="" 
+>>>>>>> origin/main
     choices={[
       { id: 'present', name: 'Present' },
       { id: 'absent', name: 'Absent' },
       { id: 'late', name: 'Late' },
+<<<<<<< HEAD
       { id: 'excused', name: 'Excused' },
       { id: 'sick', name: 'Sick' },
       { id: 'partial', name: 'Partial' }
     ]}
+=======
+      { id: 'excused', name: 'Excused' }
+    ]} 
+>>>>>>> origin/main
   />,
   <DateInput source="date" placeholder="Filter by date" label="" />,
 ];
@@ -266,6 +300,7 @@ const StatusBadge = () => {
 
 const DateDisplay = () => {
   const record = useRecordContext();
+<<<<<<< HEAD
   if (!record) return null;
   
   // Safe date comparison with null checks
@@ -283,12 +318,23 @@ const DateDisplay = () => {
       // Date formatting failed, continue with safe display
     }
   }
+=======
+  if (!record || !record.date) return null;
+  
+  const date = new Date(record.date);
+  const isToday = format(date, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+  const isYesterday = format(date, 'yyyy-MM-dd') === format(subDays(new Date(), 1), 'yyyy-MM-dd');
+>>>>>>> origin/main
   
   return (
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-gray-500" />
       <span className={isToday ? 'font-medium text-blue-600' : isYesterday ? 'text-gray-600' : ''}>
+<<<<<<< HEAD
         {formatDate(record.date)}
+=======
+        {format(date, 'MMM dd, yyyy')}
+>>>>>>> origin/main
         {isToday && <span className="ml-2 text-xs text-blue-500">(Today)</span>}
         {isYesterday && <span className="ml-2 text-xs text-gray-500">(Yesterday)</span>}
       </span>

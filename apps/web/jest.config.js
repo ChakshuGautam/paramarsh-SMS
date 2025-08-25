@@ -13,12 +13,15 @@ module.exports = {
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testRegex: '(/test/.*\\.(test|spec)|/__tests__/.*\\.(test|spec))\\.(ts|tsx)$',
+<<<<<<< HEAD
   testPathIgnorePatterns: [
     '<rootDir>/node_modules/',
     '<rootDir>/test/e2e/',
     '<rootDir>/.next/',
     '.*\\.spec\\.(ts|tsx)$', // Exclude Playwright test files
   ],
+=======
+>>>>>>> origin/main
   transformIgnorePatterns: [
     'node_modules/(?!(react-admin|ra-core|ra-ui-materialui|react-hotkeys-hook|inflection|ra-language-english|ra-i18n-polyglot|@radix-ui)/)',
   ],

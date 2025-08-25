@@ -41,7 +41,11 @@ import {
   UserX,
   Save,
 } from "lucide-react";
+<<<<<<< HEAD
 import { formatDate } from "@/lib/utils";
+=======
+import { format } from "date-fns";
+>>>>>>> origin/main
 
 // Component to display session info
 const SessionInfo = () => {
@@ -58,7 +62,11 @@ const SessionInfo = () => {
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <div>
             <p className="text-sm text-muted-foreground">Date</p>
+<<<<<<< HEAD
             <p className="font-medium">{formatDate(record.date)}</p>
+=======
+            <p className="font-medium">{format(new Date(record.date), 'MMM dd, yyyy')}</p>
+>>>>>>> origin/main
           </div>
         </div>
         <div className="flex items-center gap-2">

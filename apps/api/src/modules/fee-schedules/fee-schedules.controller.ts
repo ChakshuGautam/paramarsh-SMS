@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiProperty, ApiPropertyOptional, ApiQuery } from '@nestjs/swagger';
 import { FeeSchedulesService } from './fee-schedules.service';
 import { CreateDocs, DeleteDocs, GetDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
+=======
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiTags, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { FeeSchedulesService } from './fee-schedules.service';
+>>>>>>> origin/main
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min, IsUUID, IsDateString } from 'class-validator';
 
 class CreateFeeScheduleDto {
@@ -90,6 +96,7 @@ export class FeeSchedulesController {
   constructor(private readonly service: FeeSchedulesService) {}
 
   @Get()
+<<<<<<< HEAD
   @ListDocs('List fee schedules')
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
   @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
@@ -161,5 +168,34 @@ export class FeeSchedulesController {
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.service.generateForSchedule(id, branchId);
+=======
+  list(@Query('page') page?: number, @Query('perPage') perPage?: number, @Query('sort') sort?: string) {
+    return this.service.list({ page, perPage, sort });
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
+  }
+
+  @Post()
+  create(@Body() body: CreateFeeScheduleDto) {
+    return this.service.create(body);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() body: Partial<CreateFeeScheduleDto>) {
+    return this.service.update(id, body);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
+  }
+
+  @Post(':id/generate')
+  generate(@Param('id') id: string) {
+    return this.service.generateForSchedule(id);
+>>>>>>> origin/main
   }
 }

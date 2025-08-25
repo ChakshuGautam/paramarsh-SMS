@@ -6,11 +6,19 @@ import {
   List,
   ReferenceField,
   TextField,
+<<<<<<< HEAD
   Count,
   EmptyState,
   TextInput,
   SelectInput,
   NumberInput,
+=======
+  TextInput,
+  ReferenceInput,
+  AutocompleteInput,
+  NumberInput,
+  Count,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +49,7 @@ const getGradeLevelFilter = (level: string) => {
   }
 };
 
+<<<<<<< HEAD
 // Standardized filters using filter components
 const sectionFilters = [
   <TextInput source="q" placeholder="Search sections..." label="" alwaysOn />,
@@ -50,6 +59,14 @@ const sectionFilters = [
     label="" 
     choices={[]} // Would need to be populated with class data
   />,
+=======
+// Label-less filters with placeholders
+const sectionFilters = [
+  <TextInput source="q" placeholder="Search sections..." label="" alwaysOn />,
+  <ReferenceInput source="classId" reference="classes">
+    <AutocompleteInput placeholder="Filter by class" label="" optionText="name" />
+  </ReferenceInput>,
+>>>>>>> origin/main
   <NumberInput source="capacity_gte" placeholder="Min capacity" label="" />,
 ];
 
@@ -167,9 +184,16 @@ const SectionsTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
+<<<<<<< HEAD
     <DataTable.Col label="Actions" responsiveVisibility="md" render={(record) => (
       <ViewTimetableButton record={record} />
     )} />
+=======
+    <DataTable.Col label="Actions" className="hidden md:table-cell" render={(record) => (
+      <ViewTimetableButton record={record} />
+    )} />
+    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+>>>>>>> origin/main
   </DataTable>
 );
 
@@ -191,7 +215,11 @@ const ClassAndSection = () => {
 
 const TeacherName = () => {
   const record = useRecordContext();
+<<<<<<< HEAD
   if (!record) return <EmptyState type="inline" message="No teacher assigned" />;
+=======
+  if (!record) return <span className="text-muted-foreground">No teacher assigned</span>;
+>>>>>>> origin/main
   
   // This assumes the teacher record has been fetched
   // You might need to adjust based on your teacher data structure

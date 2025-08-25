@@ -13,7 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { InputHelperText } from "./input-helper-text";
+<<<<<<< HEAD
 import { cn } from "@/lib/utils";
+=======
+>>>>>>> origin/main
 
 export type TextInputProps = InputProps & {
   multiline?: boolean;
@@ -50,11 +53,15 @@ export const TextInput = (props: TextInputProps) => {
         {multiline ? (
           <Textarea {...rest} {...field} />
         ) : (
+<<<<<<< HEAD
           <Input 
             {...rest} 
             {...field} 
             className={cn("h-10 text-sm", rest.className)}
           />
+=======
+          <Input {...rest} {...field} />
+>>>>>>> origin/main
         )}
       </FormControl>
       <InputHelperText helperText={props.helperText} />

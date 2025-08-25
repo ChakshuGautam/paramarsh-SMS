@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { 
   Create, 
   SimpleForm, 
@@ -74,10 +75,14 @@ const FeeComponentsInput = () => (
     </CardContent>
   </Card>
 );
+=======
+import { Create, SimpleForm, TextInput } from "@/components/admin";
+>>>>>>> origin/main
 
 export const FeeStructuresCreate = () => (
   <Create>
     <SimpleForm>
+<<<<<<< HEAD
       <div className="space-y-6">
         {/* Information Alert */}
         <Alert>
@@ -106,6 +111,10 @@ export const FeeStructuresCreate = () => (
         {/* Fee Components */}
         <FeeComponentsInput />
       </div>
+=======
+      <TextInput source="gradeId" label="Grade" />
+      <TextInput source="components" label="Components" />
+>>>>>>> origin/main
     </SimpleForm>
   </Create>
 );

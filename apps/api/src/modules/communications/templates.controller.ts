@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -29,7 +32,11 @@ export class TemplatesController {
   })
   @CreateDocs('Template created successfully')
   create(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Body() createTemplateDto: CreateTemplateDto,
   ) {
     return this.templatesService.create(createTemplateDto);
@@ -47,7 +54,11 @@ export class TemplatesController {
   @ApiQuery({ name: 'ids', required: false, description: 'Specific IDs to fetch', example: 'id1,id2' })
   @ListDocs('List of message templates')
   async findAll(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
@@ -85,7 +96,11 @@ export class TemplatesController {
   @ApiQuery({ name: 'include', required: false, description: 'Include related data (campaigns)', example: 'campaigns' })
   @ListDocs('Template details')
   findOne(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Query('include') include?: string,
   ) {
@@ -103,7 +118,11 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @UpdateDocs('Template updated successfully')
   update(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Body() updateTemplateDto: UpdateTemplateDto,
   ) {
@@ -118,7 +137,11 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @UpdateDocs('Template updated successfully')
   patch(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Body() updateTemplateDto: UpdateTemplateDto,
   ) {
@@ -133,7 +156,11 @@ export class TemplatesController {
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
   @DeleteDocs('Template deleted successfully')
   remove(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
   ) {
     return this.templatesService.delete(id);

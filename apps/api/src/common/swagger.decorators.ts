@@ -34,6 +34,7 @@ export function UpdateDocs(summary = 'Update resource') {
   );
 }
 
+<<<<<<< HEAD
 export function GetDocs(summary = 'Get resource') {
   return applyDecorators(
     ApiOkResponse({ description: summary }),
@@ -41,6 +42,8 @@ export function GetDocs(summary = 'Get resource') {
   );
 }
 
+=======
+>>>>>>> origin/main
 export function DeleteDocs(summary = 'Delete resource') {
   return applyDecorators(
     ApiNoContentResponse({ description: summary }),

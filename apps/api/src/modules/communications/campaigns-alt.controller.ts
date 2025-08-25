@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -41,7 +44,11 @@ export class CampaignsAltController {
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
@@ -89,7 +96,11 @@ export class CampaignsAltController {
   @ListDocs('Campaign details')
   async findOne(
     @Param('id') id: string,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     return this.campaignsService.getOne(id);
   }
@@ -102,7 +113,11 @@ export class CampaignsAltController {
   @CreateDocs('Campaign created successfully')
   async create(
     @Body() createCampaignDto: CreateCampaignDto,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     return this.campaignsService.create(createCampaignDto);
   }
@@ -117,7 +132,11 @@ export class CampaignsAltController {
   async update(
     @Param('id') id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     return this.campaignsService.update(id, updateCampaignDto);
   }
@@ -131,7 +150,11 @@ export class CampaignsAltController {
   @DeleteDocs('Campaign deleted successfully')
   async remove(
     @Param('id') id: string,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     return this.campaignsService.delete(id);
   }

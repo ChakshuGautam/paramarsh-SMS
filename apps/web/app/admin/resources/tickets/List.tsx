@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
@@ -7,11 +8,27 @@ import {
   Count,
   TextInput,
   SelectInput,
+=======
+import { useListContext } from "ra-core";
+import {
+  DataTable,
+  List,
+  ReferenceField,
+  TextField,
+  TextInput,
+  ReferenceInput,
+  AutocompleteInput,
+  SelectInput,
+  Count,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Ticket, AlertCircle, Clock, CheckCircle, User, Tag } from "lucide-react";
+<<<<<<< HEAD
 import { formatDate } from "@/lib/utils/date-utils";
+=======
+>>>>>>> origin/main
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
@@ -21,56 +38,103 @@ const storeKeyByStatus = {
   closed: "tickets.list.closed",
 };
 
+<<<<<<< HEAD
 const filters = [
   <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
   <SelectInput 
     source="category" 
     placeholder="Filter by category..." 
+=======
+// Label-less filters with placeholders
+const ticketFilters = [
+  <TextInput source="q" placeholder="Search tickets..." label="" alwaysOn />,
+  <SelectInput 
+    source="category" 
+    placeholder="Filter by category" 
+>>>>>>> origin/main
     label="" 
     choices={[
       { id: 'technical', name: 'Technical' },
       { id: 'academic', name: 'Academic' },
       { id: 'administrative', name: 'Administrative' },
       { id: 'billing', name: 'Billing' },
+<<<<<<< HEAD
       { id: 'general', name: 'General' },
+=======
+      { id: 'general', name: 'General' }
+>>>>>>> origin/main
     ]} 
   />,
   <SelectInput 
     source="priority" 
+<<<<<<< HEAD
     placeholder="Filter by priority..." 
+=======
+    placeholder="Filter by priority" 
+>>>>>>> origin/main
     label="" 
     choices={[
       { id: 'low', name: 'Low' },
       { id: 'medium', name: 'Medium' },
       { id: 'high', name: 'High' },
+<<<<<<< HEAD
       { id: 'urgent', name: 'Urgent' },
+=======
+      { id: 'urgent', name: 'Urgent' }
+>>>>>>> origin/main
     ]} 
   />,
   <SelectInput 
     source="ownerType" 
+<<<<<<< HEAD
     placeholder="Filter by owner type..." 
+=======
+    placeholder="Filter by owner type" 
+>>>>>>> origin/main
     label="" 
     choices={[
       { id: 'student', name: 'Student' },
       { id: 'parent', name: 'Parent' },
       { id: 'teacher', name: 'Teacher' },
+<<<<<<< HEAD
       { id: 'staff', name: 'Staff' },
     ]} 
   />,
+=======
+      { id: 'staff', name: 'Staff' }
+    ]} 
+  />,
+  <ReferenceInput source="assigneeId" reference="staff">
+    <AutocompleteInput 
+      placeholder="Filter by assignee" 
+      label="" 
+      optionText={(record) => `${record.firstName} ${record.lastName}`}
+    />
+  </ReferenceInput>,
+>>>>>>> origin/main
 ];
 
 export const TicketsList = () => (
   <List
+<<<<<<< HEAD
     filters={filters}
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "open" }}
+=======
+    sort={{ field: "createdAt", order: "DESC" }}
+    filterDefaultValues={{ status: "open" }}
+    filters={ticketFilters}
+>>>>>>> origin/main
     perPage={10}
   >
     <TabbedDataTable />
   </List>
 );
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 const TabbedDataTable = () => {
   const listContext = useListContext();
   const { filterValues, setFilters, displayedFilters } = listContext;
@@ -163,6 +227,7 @@ const TicketsTable = ({ storeKey }: { storeKey: string }) => (
       <OwnerTypeBadge />
     </DataTable.Col>
     <DataTable.Col label="Assignee" className="hidden lg:table-cell">
+<<<<<<< HEAD
       <AssigneeField />
     </DataTable.Col>
     <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
@@ -173,6 +238,18 @@ const TicketsTable = ({ storeKey }: { storeKey: string }) => (
 
 const SubjectWithIcon = () => {
   const record = useRecordContext();
+=======
+      <ReferenceField reference="staff" source="assigneeId">
+        <TextField source="firstName" />
+      </ReferenceField>
+    </DataTable.Col>
+    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell" />
+    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+  </DataTable>
+);
+
+const SubjectWithIcon = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   return (
@@ -185,8 +262,12 @@ const SubjectWithIcon = () => {
   );
 };
 
+<<<<<<< HEAD
 const PriorityBadge = () => {
   const record = useRecordContext();
+=======
+const PriorityBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   const variants = {
@@ -221,8 +302,12 @@ const PriorityBadge = () => {
   );
 };
 
+<<<<<<< HEAD
 const StatusBadge = () => {
   const record = useRecordContext();
+=======
+const StatusBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   const variants = {
@@ -254,8 +339,12 @@ const StatusBadge = () => {
   );
 };
 
+<<<<<<< HEAD
 const CategoryBadge = () => {
   const record = useRecordContext();
+=======
+const CategoryBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record || !record.category) return null;
   
   const colors = {
@@ -276,6 +365,7 @@ const CategoryBadge = () => {
   );
 };
 
+<<<<<<< HEAD
 const CreatedDateField = () => {
   const record = useRecordContext();
   if (!record || !record.createdAt) return null;
@@ -296,6 +386,9 @@ const AssigneeField = () => {
 
 const OwnerTypeBadge = () => {
   const record = useRecordContext();
+=======
+const OwnerTypeBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record || !record.ownerType) return null;
   
   const colors = {

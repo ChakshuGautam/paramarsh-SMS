@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -29,7 +32,11 @@ export class CampaignsController {
   })
   @CreateDocs('Campaign created successfully')
   async create(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Body() createCampaignDto: CreateCampaignDto,
   ) {
     return this.campaignsService.create(createCampaignDto);
@@ -52,7 +59,11 @@ export class CampaignsController {
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
@@ -73,7 +84,11 @@ export class CampaignsController {
     
     const currentPage = page ? Number(page) : 1;
     const pageSize = perPage ? Number(perPage) : 25;
+<<<<<<< HEAD
     const skip = (currentPage - 1) * pageSize;
+=======
+    const skip = (currentPage - 1) * perPage;
+>>>>>>> origin/main
     
     // Build sort order
     let orderBy = {};
@@ -99,7 +114,11 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @ListDocs('Campaign details')
   async findOne(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Query('include') include?: string,
   ) {
@@ -117,7 +136,11 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @UpdateDocs('Campaign replaced successfully')
   async replace(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
   ) {
@@ -132,7 +155,11 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @UpdateDocs('Campaign updated successfully')
   async update(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
   ) {
@@ -147,7 +174,11 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @DeleteDocs('Campaign deleted successfully')
   async remove(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
   ) {
     return this.campaignsService.delete(id);

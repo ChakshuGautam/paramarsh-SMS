@@ -17,11 +17,14 @@ export class AuditLogInterceptor implements NestInterceptor {
     const response = context.switchToHttp().getResponse();
     const startTime = Date.now();
 
+<<<<<<< HEAD
     // Skip audit logging for GET requests and health checks
     if (request.method === 'GET' || request.url.includes('/health')) {
       return next.handle();
     }
 
+=======
+>>>>>>> origin/main
     // Extract request metadata
     const {
       method,
@@ -60,6 +63,14 @@ export class AuditLogInterceptor implements NestInterceptor {
       tap(async (responseData) => {
         const duration = Date.now() - startTime;
 
+<<<<<<< HEAD
+=======
+        // Don't log GET requests or health checks
+        if (method === 'GET' || url.includes('/health')) {
+          return;
+        }
+
+>>>>>>> origin/main
         // Create audit log entry
         try {
           await this.prisma.auditLog.create({
@@ -183,6 +194,7 @@ export class AuditLogInterceptor implements NestInterceptor {
   }
 
   private mapToModelName(entityType: string): string | null {
+<<<<<<< HEAD
     // Map plural API endpoints to singular model names (matching Prisma schema exactly)
     const mappings: Record<string, string> = {
       'students': 'Student',
@@ -210,6 +222,35 @@ export class AuditLogInterceptor implements NestInterceptor {
       'rooms': 'Room',
       'timetable': 'TimetablePeriod',
       'timeslots': 'TimeSlot',
+=======
+    // Map plural API endpoints to singular model names
+    const mappings: Record<string, string> = {
+      'students': 'student',
+      'guardians': 'guardian',
+      'teachers': 'teacher',
+      'staff': 'staff',
+      'classes': 'class',
+      'sections': 'section',
+      'invoices': 'invoice',
+      'payments': 'payment',
+      'enrollments': 'enrollment',
+      'exams': 'exam',
+      'marks': 'mark',
+      'attendance': 'attendanceRecord',
+      'attendance-sessions': 'attendanceSession',
+      'academic-years': 'academicYear',
+      'fee-schedules': 'feeSchedule',
+      'fee-structures': 'feeStructure',
+      'applications': 'application',
+      'templates': 'template',
+      'campaigns': 'campaign',
+      'tickets': 'ticket',
+      'messages': 'message',
+      'subjects': 'subject',
+      'rooms': 'room',
+      'timetable': 'timetablePeriod',
+      'timeslots': 'timeSlot',
+>>>>>>> origin/main
     };
 
     return mappings[entityType] || entityType;

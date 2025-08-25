@@ -1,9 +1,16 @@
 #!/usr/bin/env bun
 /**
+<<<<<<< HEAD
  * Paramarsh SMS Complete Seed Data Validation Script
  * 
  * This script validates ALL 45 tables from the schema using EXCLUSIVELY PostgreSQL MCP Server tools.
  * NEVER uses psql command-line tool or raw SQL commands.
+=======
+ * Paramarsh SMS Seed Data Validation Script
+ * 
+ * This script validates all seed data using EXCLUSIVELY SQLite MCP Server tools.
+ * NEVER uses sqlite3 command-line tool or raw SQL commands.
+>>>>>>> origin/main
  * 
  * Usage:
  *   bun run scripts/validate-seed-data-mcp.ts
@@ -26,14 +33,21 @@ interface ValidationResult {
   status: 'PASS' | 'FAIL' | 'WARNING';
   message?: string;
   details?: any;
+<<<<<<< HEAD
   branchId?: string;
+=======
+>>>>>>> origin/main
 }
 
 interface ValidationReport {
   timestamp: string;
   database: string;
+<<<<<<< HEAD
   totalBranches: number;
   branchBreakdown: Record<string, any>;
+=======
+  branchId: string;
+>>>>>>> origin/main
   overall: {
     status: 'PASS' | 'FAIL' | 'WARNING';
     healthScore: number;
@@ -41,10 +55,15 @@ interface ValidationReport {
     passed: number;
     failed: number;
     warnings: number;
+<<<<<<< HEAD
     emptyTables: number;
   };
   entityCounts: ValidationResult[];
   branchWiseBreakdown: ValidationResult[];
+=======
+  };
+  entityCounts: ValidationResult[];
+>>>>>>> origin/main
   referentialIntegrity: ValidationResult[];
   indianContext: ValidationResult[];
   multiTenancy: ValidationResult[];
@@ -52,6 +71,7 @@ interface ValidationReport {
   recommendations: string[];
 }
 
+<<<<<<< HEAD
 // All 45 tables from the schema - COMPREHENSIVE LIST
 const ALL_SCHEMA_TABLES = [
   'AcademicYear', 'Application', 'AttendanceRecord', 'AttendanceSession', 'AuditLog',
@@ -139,6 +159,52 @@ const MIN_REQUIREMENTS_TOTAL = {
   Application: 260,   // ~20 per branch
   GradingScale: 26,   // ~2 per branch
   AuditLog: 1300      // System logs
+=======
+// Configuration
+const BRANCH_ID = 'branch1';
+const MIN_REQUIREMENTS = {
+  // Core Academic Entities
+  Student: 500,
+  Teacher: 30,
+  Class: 10,
+  Section: 20,
+  Subject: 10,
+  
+  // Staff & Relationships
+  Staff: 40,
+  Guardian: 800,
+  StudentGuardian: 800,
+  
+  // Academic Management
+  AcademicYear: 1,
+  Enrollment: 500,
+  Exam: 20,
+  ExamSession: 50,
+  MarksEntry: 500,
+  
+  // Fee Management
+  FeeStructure: 10,
+  FeeComponent: 30,
+  Invoice: 100,
+  Payment: 50,
+  
+  // Attendance
+  AttendanceRecord: 1000,
+  AttendanceSession: 100,
+  
+  // Timetable
+  Room: 10,
+  TimeSlot: 30,
+  TimetablePeriod: 200,
+  
+  // Communications
+  Template: 10,
+  Campaign: 5,
+  Ticket: 10,
+  
+  // Other
+  Application: 20
+>>>>>>> origin/main
 };
 
 // Indian context validation data
@@ -157,6 +223,7 @@ const INDIAN_CITIES = [
 ];
 
 /**
+<<<<<<< HEAD
  * Validate ALL 45 tables from schema - COMPREHENSIVE CHECK
  */
 async function validateEntityCounts(): Promise<ValidationResult[]> {
@@ -356,6 +423,62 @@ async function validateEntityCounts(): Promise<ValidationResult[]> {
   console.log(`🎯 Tables with data: ${ALL_SCHEMA_TABLES.length - emptyTableCount}`);
   console.log(`❌ Empty tables: ${emptyTableCount} ${emptyTableCount > 0 ? '(CRITICAL BUGS!)' : ''}`);
   
+=======
+ * Validate entity counts using Prisma
+ */
+async function validateEntityCounts(): Promise<ValidationResult[]> {
+  const results: ValidationResult[] = [];
+  
+  console.log('🔍 Validating entity counts...');
+  
+  // Use Prisma to get counts for each entity
+  const entityCounts: Record<string, number> = {
+    Student: await prisma.student.count({ where: { branchId: BRANCH_ID } }),
+    Teacher: await prisma.teacher.count({ where: { branchId: BRANCH_ID } }),
+    Class: await prisma.class.count({ where: { branchId: BRANCH_ID } }),
+    Section: await prisma.section.count({ where: { branchId: BRANCH_ID } }),
+    Subject: await prisma.subject.count({ where: { branchId: BRANCH_ID } }),
+    Staff: await prisma.staff.count({ where: { branchId: BRANCH_ID } }),
+    Guardian: await prisma.guardian.count({ where: { branchId: BRANCH_ID } }),
+    StudentGuardian: await prisma.studentGuardian.count(),
+    AcademicYear: await prisma.academicYear.count({ where: { branchId: BRANCH_ID } }),
+    Enrollment: await prisma.enrollment.count({ where: { branchId: BRANCH_ID } }),
+    Exam: await prisma.exam.count({ where: { branchId: BRANCH_ID } }),
+    ExamSession: await prisma.examSession.count({ where: { branchId: BRANCH_ID } }),
+    MarksEntry: await prisma.marksEntry.count({ where: { branchId: BRANCH_ID } }),
+    FeeStructure: await prisma.feeStructure.count({ where: { branchId: BRANCH_ID } }),
+    FeeComponent: await prisma.feeComponent.count({ where: { branchId: BRANCH_ID } }),
+    Invoice: await prisma.invoice.count({ where: { branchId: BRANCH_ID } }),
+    Payment: await prisma.payment.count({ where: { branchId: BRANCH_ID } }),
+    AttendanceRecord: await prisma.attendanceRecord.count({ where: { branchId: BRANCH_ID } }),
+    AttendanceSession: await prisma.attendanceSession.count({ where: { branchId: BRANCH_ID } }),
+    Room: await prisma.room.count({ where: { branchId: BRANCH_ID } }),
+    TimeSlot: await prisma.timeSlot.count({ where: { branchId: BRANCH_ID } }),
+    TimetablePeriod: await prisma.timetablePeriod.count({ where: { branchId: BRANCH_ID } }),
+    Template: await prisma.template.count({ where: { branchId: BRANCH_ID } }),
+    Campaign: await prisma.campaign.count({ where: { branchId: BRANCH_ID } }),
+    Ticket: await prisma.ticket.count({ where: { branchId: BRANCH_ID } }),
+    Application: await prisma.application.count({ where: { branchId: BRANCH_ID } })
+  };
+  
+  for (const [entity, currentCount] of Object.entries(entityCounts)) {
+    const minCount = MIN_REQUIREMENTS[entity as keyof typeof MIN_REQUIREMENTS] || 0;
+    const status = currentCount >= minCount ? 'PASS' : 'FAIL';
+    
+    results.push({
+      entity,
+      current: currentCount,
+      required: minCount,
+      status,
+      message: status === 'PASS' 
+        ? `✅ ${entity}: ${currentCount} records (required: ${minCount})`
+        : `❌ ${entity}: ${currentCount} records (required: ${minCount})`
+    });
+    
+    console.log(`  ${status === 'PASS' ? '✅' : '❌'} ${entity}: ${currentCount}/${minCount}`);
+  }
+  
+>>>>>>> origin/main
   return results;
 }
 
@@ -428,6 +551,7 @@ async function validateReferentialIntegrity(): Promise<ValidationResult[]> {
 }
 
 /**
+<<<<<<< HEAD
  * Generate branch-wise breakdown for key entities
  */
 async function generateBranchWiseBreakdown(): Promise<ValidationResult[]> {
@@ -470,6 +594,8 @@ async function generateBranchWiseBreakdown(): Promise<ValidationResult[]> {
 }
 
 /**
+=======
+>>>>>>> origin/main
  * Validate Indian context using Prisma
  */
 async function validateIndianContext(): Promise<ValidationResult[]> {
@@ -481,7 +607,11 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
   const hindiSubject = await prisma.subject.findFirst({
     where: {
       OR: [
+<<<<<<< HEAD
         { name: { contains: 'Hindi', mode: 'insensitive' } },
+=======
+        { name: { contains: 'Hindi' } },
+>>>>>>> origin/main
         { name: { contains: 'हिंदी' } }
       ]
     }
@@ -494,6 +624,7 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
     message: hindiSubject ? '✅ Hindi subject found' : '❌ Hindi subject missing'
   });
   
+<<<<<<< HEAD
   // Check for composite branch IDs (Indian school context)
   const compositeBranches = await prisma.tenant.count({
     where: {
@@ -514,15 +645,28 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
   const sampleStudents = await prisma.student.findMany({
     take: 200,
     select: { firstName: true, lastName: true, branchId: true }
+=======
+  // Check for Indian names in students
+  const sampleStudents = await prisma.student.findMany({
+    where: { branchId: BRANCH_ID },
+    take: 100
+>>>>>>> origin/main
   });
   
   let indianNameCount = 0;
   for (const student of sampleStudents) {
     const hasIndianFirst = INDIAN_FIRST_NAMES.some(name => 
+<<<<<<< HEAD
       student.firstName && student.firstName.toLowerCase().includes(name.toLowerCase())
     );
     const hasIndianLast = INDIAN_LAST_NAMES.some(name => 
       student.lastName && student.lastName.toLowerCase().includes(name.toLowerCase())
+=======
+      student.firstName && student.firstName.includes(name)
+    );
+    const hasIndianLast = INDIAN_LAST_NAMES.some(name => 
+      student.lastName && student.lastName.includes(name)
+>>>>>>> origin/main
     );
     
     if (hasIndianFirst || hasIndianLast) {
@@ -533,13 +677,18 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
   const indianNamePercentage = sampleStudents.length > 0 
     ? (indianNameCount / sampleStudents.length) * 100 
     : 0;
+<<<<<<< HEAD
   const hasGoodIndianNames = indianNamePercentage >= 70; // Lowered threshold for broader matching
+=======
+  const hasGoodIndianNames = indianNamePercentage >= 80;
+>>>>>>> origin/main
   
   results.push({
     entity: 'Student',
     field: 'IndianNames',
     current: Math.round(indianNamePercentage),
     status: hasGoodIndianNames ? 'PASS' : 'WARNING',
+<<<<<<< HEAD
     message: `${hasGoodIndianNames ? '✅' : '⚠️'} ${Math.round(indianNamePercentage)}% Indian names in sample`
   });
   
@@ -551,6 +700,19 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
   
   const indianPhones = sampleGuardians.filter(g => 
     g.phoneNumber && (g.phoneNumber.startsWith('+91') || g.phoneNumber.startsWith('91') || g.phoneNumber.length === 10)
+=======
+    message: `${hasGoodIndianNames ? '✅' : '⚠️'} ${Math.round(indianNamePercentage)}% Indian names`
+  });
+  
+  // Check for Indian phone numbers
+  const sampleGuardians = await prisma.guardian.findMany({
+    where: { branchId: BRANCH_ID },
+    take: 100
+  });
+  
+  const indianPhones = sampleGuardians.filter(g => 
+    g.phoneNumber && g.phoneNumber.startsWith('+91')
+>>>>>>> origin/main
   ).length;
   
   const phonePercentage = sampleGuardians.length > 0 
@@ -561,15 +723,24 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
     entity: 'Guardian',
     field: 'IndianPhones',
     current: Math.round(phonePercentage),
+<<<<<<< HEAD
     status: phonePercentage >= 70 ? 'PASS' : 'WARNING',
     message: `${phonePercentage >= 70 ? '✅' : '⚠️'} ${Math.round(phonePercentage)}% Indian format phones`
+=======
+    status: phonePercentage >= 80 ? 'PASS' : 'WARNING',
+    message: `${phonePercentage >= 80 ? '✅' : '⚠️'} ${Math.round(phonePercentage)}% Indian phone numbers (+91)`
+>>>>>>> origin/main
   });
   
   // Check for Indian cities in addresses
   const indianAddresses = sampleGuardians.filter(g => 
+<<<<<<< HEAD
     g.address && INDIAN_CITIES.some(city => 
       g.address?.toLowerCase().includes(city.toLowerCase())
     )
+=======
+    g.address && INDIAN_CITIES.some(city => g.address?.includes(city))
+>>>>>>> origin/main
   ).length;
   
   const addressPercentage = sampleGuardians.length > 0 
@@ -580,6 +751,7 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
     entity: 'Guardian',
     field: 'IndianAddresses',
     current: Math.round(addressPercentage),
+<<<<<<< HEAD
     status: addressPercentage >= 50 ? 'PASS' : 'WARNING',
     message: `${addressPercentage >= 50 ? '✅' : '⚠️'} ${Math.round(addressPercentage)}% Indian cities in addresses`
   });
@@ -588,16 +760,31 @@ async function validateIndianContext(): Promise<ValidationResult[]> {
   console.log(`  Composite branches: ${compositeBranches}/13`);
   console.log(`  Indian names: ${Math.round(indianNamePercentage)}%`);
   console.log(`  Indian phones: ${Math.round(phonePercentage)}%`);
+=======
+    status: addressPercentage >= 70 ? 'PASS' : 'WARNING',
+    message: `${addressPercentage >= 70 ? '✅' : '⚠️'} ${Math.round(addressPercentage)}% Indian addresses`
+  });
+  
+  console.log(`  ${results[0].status === 'PASS' ? '✅' : '❌'} Hindi subject`);
+  console.log(`  ${results[1].status === 'PASS' ? '✅' : '⚠️'} Indian names: ${Math.round(indianNamePercentage)}%`);
+  console.log(`  ${results[2].status === 'PASS' ? '✅' : '⚠️'} Indian phones: ${Math.round(phonePercentage)}%`);
+  console.log(`  ${results[3].status === 'PASS' ? '✅' : '⚠️'} Indian addresses: ${Math.round(addressPercentage)}%`);
+>>>>>>> origin/main
   
   return results;
 }
 
 /**
+<<<<<<< HEAD
  * Validate composite branch IDs and multi-tenancy
+=======
+ * Validate multi-tenancy using Prisma
+>>>>>>> origin/main
  */
 async function validateMultiTenancy(): Promise<ValidationResult[]> {
   const results: ValidationResult[] = [];
   
+<<<<<<< HEAD
   console.log('🏫 Validating composite branch IDs and multi-tenancy...');
   
   // 1. Check that all expected composite branch IDs exist as Tenants
@@ -680,6 +867,56 @@ async function validateMultiTenancy(): Promise<ValidationResult[]> {
   
   console.log(`  Composite branches: ${existingBranchIds.length}/${EXPECTED_BRANCH_IDS.length}`);
   console.log(`  Legacy format found: ${oldFormatTenants.length}`);
+=======
+  console.log('🏫 Validating multi-tenancy...');
+  
+  // Check for records without branchId
+  const studentsWithoutBranch = await prisma.student.count({
+    where: { OR: [{ branchId: null }, { branchId: '' }] }
+  });
+  
+  const teachersWithoutBranch = await prisma.teacher.count({
+    where: { OR: [{ branchId: null }, { branchId: '' }] }
+  });
+  
+  const classesWithoutBranch = await prisma.class.count({
+    where: { OR: [{ branchId: null }, { branchId: '' }] }
+  });
+  
+  results.push({
+    entity: 'Student',
+    field: 'branchId',
+    current: studentsWithoutBranch,
+    status: studentsWithoutBranch === 0 ? 'PASS' : 'FAIL',
+    message: studentsWithoutBranch === 0
+      ? '✅ All students have branchId'
+      : `❌ ${studentsWithoutBranch} students missing branchId`
+  });
+  
+  results.push({
+    entity: 'Teacher',
+    field: 'branchId',
+    current: teachersWithoutBranch,
+    status: teachersWithoutBranch === 0 ? 'PASS' : 'FAIL',
+    message: teachersWithoutBranch === 0
+      ? '✅ All teachers have branchId'
+      : `❌ ${teachersWithoutBranch} teachers missing branchId`
+  });
+  
+  results.push({
+    entity: 'Class',
+    field: 'branchId',
+    current: classesWithoutBranch,
+    status: classesWithoutBranch === 0 ? 'PASS' : 'FAIL',
+    message: classesWithoutBranch === 0
+      ? '✅ All classes have branchId'
+      : `❌ ${classesWithoutBranch} classes missing branchId`
+  });
+  
+  console.log(`  ${results[0].status === 'PASS' ? '✅' : '❌'} Student multi-tenancy`);
+  console.log(`  ${results[1].status === 'PASS' ? '✅' : '❌'} Teacher multi-tenancy`);
+  console.log(`  ${results[2].status === 'PASS' ? '✅' : '❌'} Class multi-tenancy`);
+>>>>>>> origin/main
   
   return results;
 }
@@ -692,6 +929,7 @@ async function validateDataQuality(): Promise<ValidationResult[]> {
   
   console.log('📊 Validating data quality metrics...');
   
+<<<<<<< HEAD
   // Gender distribution across all branches
   const maleStudents = await prisma.student.count({
     where: { gender: { in: ['male', 'MALE', 'M'] } }
@@ -699,17 +937,31 @@ async function validateDataQuality(): Promise<ValidationResult[]> {
   
   const femaleStudents = await prisma.student.count({
     where: { gender: { in: ['female', 'FEMALE', 'F'] } }
+=======
+  // Gender distribution
+  const maleStudents = await prisma.student.count({
+    where: { branchId: BRANCH_ID, gender: 'male' }
+  });
+  
+  const femaleStudents = await prisma.student.count({
+    where: { branchId: BRANCH_ID, gender: 'female' }
+>>>>>>> origin/main
   });
   
   const totalStudents = maleStudents + femaleStudents;
   const malePercentage = totalStudents > 0 ? (maleStudents / totalStudents) * 100 : 0;
   const femalePercentage = totalStudents > 0 ? (femaleStudents / totalStudents) * 100 : 0;
   
+<<<<<<< HEAD
   const isBalanced = Math.abs(malePercentage - 50) <= 20; // Allow 30-70% range
+=======
+  const isBalanced = Math.abs(malePercentage - 50) <= 15 && Math.abs(femalePercentage - 50) <= 15;
+>>>>>>> origin/main
   
   results.push({
     entity: 'Student',
     field: 'GenderDistribution',
+<<<<<<< HEAD
     current: Math.round(malePercentage),
     status: isBalanced ? 'PASS' : 'WARNING',
     message: `${isBalanced ? '✅' : '⚠️'} Gender: ${Math.round(malePercentage)}%M / ${Math.round(femalePercentage)}%F`,
@@ -722,12 +974,49 @@ async function validateDataQuality(): Promise<ValidationResult[]> {
   const ratio = allTeachers > 0 ? allStudents / allTeachers : 0;
   
   const isGoodRatio = ratio <= 40 && ratio > 0; // 1:40 max for Indian schools
+=======
+    status: isBalanced ? 'PASS' : 'WARNING',
+    message: `${isBalanced ? '✅' : '⚠️'} Gender: ${Math.round(malePercentage)}%M / ${Math.round(femalePercentage)}%F`,
+    details: { male: malePercentage, female: femalePercentage }
+  });
+  
+  // Fee collection rate
+  const totalInvoices = await prisma.invoice.count({
+    where: { branchId: BRANCH_ID }
+  });
+  
+  const paidInvoices = await prisma.payment.count({
+    where: { 
+      branchId: BRANCH_ID,
+      status: 'completed'
+    }
+  });
+  
+  const collectionRate = totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
+  const isGoodCollection = collectionRate >= 10 && collectionRate <= 90; // Adjusted for realistic test data
+  
+  results.push({
+    entity: 'Payment',
+    field: 'CollectionRate',
+    current: Math.round(collectionRate),
+    status: isGoodCollection ? 'PASS' : 'WARNING',
+    message: `${isGoodCollection ? '✅' : '⚠️'} Fee collection: ${Math.round(collectionRate)}%`
+  });
+  
+  // Teacher-student ratio
+  const students = await prisma.student.count({ where: { branchId: BRANCH_ID } });
+  const teachers = await prisma.teacher.count({ where: { branchId: BRANCH_ID } });
+  const ratio = teachers > 0 ? students / teachers : 0;
+  
+  const isGoodRatio = ratio <= 35 && ratio > 0; // 1:35 is reasonable for Indian schools
+>>>>>>> origin/main
   
   results.push({
     entity: 'Teacher',
     field: 'StudentRatio',
     current: Math.round(ratio),
     status: isGoodRatio ? 'PASS' : 'WARNING',
+<<<<<<< HEAD
     message: `${isGoodRatio ? '✅' : '⚠️'} Overall ratio: 1:${Math.round(ratio)} (${allStudents} students, ${allTeachers} teachers)`
   });
   
@@ -807,6 +1096,38 @@ async function validateDataQuality(): Promise<ValidationResult[]> {
   console.log(`  Teacher-student ratio: 1:${Math.round(ratio)}`);
   console.log(`  Payment ratio: ${Math.round(paymentRate)}%`);
   console.log(`  Timetable completeness: ${Math.round(timetableCompleteness)}%`);
+=======
+    message: `${isGoodRatio ? '✅' : '⚠️'} Teacher-student ratio: 1:${Math.round(ratio)}`
+  });
+  
+  // Attendance rate
+  const attendanceRecords = await prisma.attendanceRecord.count({
+    where: { branchId: BRANCH_ID }
+  });
+  
+  const presentRecords = await prisma.attendanceRecord.count({
+    where: { 
+      branchId: BRANCH_ID,
+      status: { in: ['PRESENT', 'present'] }
+    }
+  });
+  
+  const attendanceRate = attendanceRecords > 0 ? (presentRecords / attendanceRecords) * 100 : 0;
+  const isGoodAttendance = attendanceRate >= 70 && attendanceRate <= 95;
+  
+  results.push({
+    entity: 'AttendanceRecord',
+    field: 'AttendanceRate',
+    current: Math.round(attendanceRate),
+    status: isGoodAttendance ? 'PASS' : 'WARNING',
+    message: `${isGoodAttendance ? '✅' : '⚠️'} Attendance rate: ${Math.round(attendanceRate)}%`
+  });
+  
+  console.log(`  ${results[0].status === 'PASS' ? '✅' : '⚠️'} Gender distribution`);
+  console.log(`  ${results[1].status === 'PASS' ? '✅' : '⚠️'} Fee collection rate`);
+  console.log(`  ${results[2].status === 'PASS' ? '✅' : '⚠️'} Teacher-student ratio`);
+  console.log(`  ${results[3].status === 'PASS' ? '✅' : '⚠️'} Attendance rate`);
+>>>>>>> origin/main
   
   return results;
 }
@@ -821,13 +1142,17 @@ function calculateHealthScore(allResults: ValidationResult[]): {
   passed: number;
   failed: number;
   warnings: number;
+<<<<<<< HEAD
   emptyTables: number;
+=======
+>>>>>>> origin/main
 } {
   const totalChecks = allResults.length;
   const passed = allResults.filter(r => r.status === 'PASS').length;
   const failed = allResults.filter(r => r.status === 'FAIL').length;
   const warnings = allResults.filter(r => r.status === 'WARNING').length;
   
+<<<<<<< HEAD
   // Count empty tables (critical bugs)
   const emptyTables = allResults.filter(r => 
     r.entity && ALL_SCHEMA_TABLES.includes(r.entity) && r.current === 0
@@ -841,6 +1166,14 @@ function calculateHealthScore(allResults: ValidationResult[]): {
   if (emptyTables > 0 || failed > 0 || healthScore < 70) {
     status = 'FAIL';
   } else if (warnings > 0 || healthScore < 85) {
+=======
+  const healthScore = Math.round((passed / totalChecks) * 100);
+  
+  let status: 'PASS' | 'FAIL' | 'WARNING' = 'PASS';
+  if (failed > 0 || healthScore < 75) {
+    status = 'FAIL';
+  } else if (warnings > 0 || healthScore < 90) {
+>>>>>>> origin/main
     status = 'WARNING';
   }
   
@@ -850,8 +1183,12 @@ function calculateHealthScore(allResults: ValidationResult[]): {
     totalChecks,
     passed,
     failed,
+<<<<<<< HEAD
     warnings,
     emptyTables
+=======
+    warnings
+>>>>>>> origin/main
   };
 }
 
@@ -860,7 +1197,10 @@ function calculateHealthScore(allResults: ValidationResult[]): {
  */
 function generateValidationReport(results: {
   entityCounts: ValidationResult[];
+<<<<<<< HEAD
   branchWiseBreakdown: ValidationResult[];
+=======
+>>>>>>> origin/main
   referentialIntegrity: ValidationResult[];
   indianContext: ValidationResult[];
   multiTenancy: ValidationResult[];
@@ -868,7 +1208,10 @@ function generateValidationReport(results: {
 }): ValidationReport {
   const allResults = [
     ...results.entityCounts,
+<<<<<<< HEAD
     ...results.branchWiseBreakdown,
+=======
+>>>>>>> origin/main
     ...results.referentialIntegrity,
     ...results.indianContext,
     ...results.multiTenancy,
@@ -879,6 +1222,7 @@ function generateValidationReport(results: {
   
   const recommendations: string[] = [];
   
+<<<<<<< HEAD
   // Count empty tables and generate specific recommendations
   const emptyTables = results.entityCounts.filter(r => r.current === 0).map(r => r.entity);
   
@@ -896,6 +1240,13 @@ function generateValidationReport(results: {
     recommendations.push('🏫 Fix multi-tenancy: Ensure composite branch IDs (dps-main, kvs-central, etc.)');
   }
   
+=======
+  // Add recommendations based on failures
+  if (results.entityCounts.some(r => r.status === 'FAIL')) {
+    recommendations.push('Increase seed data volume for entities below minimum requirements');
+  }
+  
+>>>>>>> origin/main
   if (results.referentialIntegrity.some(r => r.status === 'FAIL')) {
     recommendations.push('Fix referential integrity issues before production use');
   }
@@ -904,6 +1255,7 @@ function generateValidationReport(results: {
     recommendations.push('Enhance Indian cultural context in names, subjects, and addresses');
   }
   
+<<<<<<< HEAD
   if (overall.healthScore < 85) {
     recommendations.push(`📊 Health score ${overall.healthScore}% is below target (85%+)`);
   }
@@ -918,16 +1270,31 @@ function generateValidationReport(results: {
     if (result.branchId && result.details) {
       branchBreakdown[result.branchId] = result.details;
     }
+=======
+  if (results.multiTenancy.some(r => r.status === 'FAIL')) {
+    recommendations.push('Ensure all records have proper branchId for multi-tenancy');
+  }
+  
+  if (overall.healthScore < 90) {
+    recommendations.push('Overall health score below 90% - consider comprehensive data review');
+>>>>>>> origin/main
   }
   
   return {
     timestamp: new Date().toISOString(),
+<<<<<<< HEAD
     database: process.env.DATABASE_URL?.includes('postgresql') ? 'PostgreSQL' : 'SQLite',
     totalBranches: results.branchWiseBreakdown.length,
     branchBreakdown,
     overall,
     entityCounts: results.entityCounts,
     branchWiseBreakdown: results.branchWiseBreakdown,
+=======
+    database: 'dev.db',
+    branchId: BRANCH_ID,
+    overall,
+    entityCounts: results.entityCounts,
+>>>>>>> origin/main
     referentialIntegrity: results.referentialIntegrity,
     indianContext: results.indianContext,
     multiTenancy: results.multiTenancy,
@@ -940,6 +1307,7 @@ function generateValidationReport(results: {
  * Format and display validation report
  */
 function displayValidationReport(report: ValidationReport) {
+<<<<<<< HEAD
   const line = '='.repeat(100);
   const halfLine = '─'.repeat(100);
   
@@ -947,6 +1315,14 @@ function displayValidationReport(report: ValidationReport) {
   console.log('                     PARAMARSH SMS COMPREHENSIVE DATA VALIDATION REPORT');
   console.log(`                                   Generated: ${report.timestamp.split('T')[0]}`);
   console.log(`                                Database: ${report.database} | Branches: ${report.totalBranches}`);
+=======
+  const line = '='.repeat(80);
+  const halfLine = '─'.repeat(80);
+  
+  console.log(`\n${line}`);
+  console.log('                    PARAMARSH SMS DATA VALIDATION REPORT');
+  console.log(`                              Generated: ${report.timestamp.split('T')[0]}`);
+>>>>>>> origin/main
   console.log(`${line}\n`);
   
   // Overall Status
@@ -960,6 +1336,7 @@ function displayValidationReport(report: ValidationReport) {
                report.overall.status === 'WARNING' ? '⚠️ NEEDS ATTENTION' : 
                '❌ REQUIRES FIXES'}`);
   console.log(`Total Checks: ${report.overall.totalChecks}`);
+<<<<<<< HEAD
   console.log(`Passed: ${report.overall.passed} | Failed: ${report.overall.failed} | Warnings: ${report.overall.warnings}`);
   if (report.overall.emptyTables > 0) {
     console.log(`🚨 CRITICAL: ${report.overall.emptyTables} EMPTY TABLES - SEED DATA BUGS!`);
@@ -1005,6 +1382,23 @@ function displayValidationReport(report: ValidationReport) {
         console.log(`${branchId} | ${students} | ${teachers} | ${staff} | ${classes} | ${sections} | ${total}`);
       }
     }
+=======
+  console.log(`Passed: ${report.overall.passed} | Failed: ${report.overall.failed} | Warnings: ${report.overall.warnings}\n`);
+  
+  // Entity Counts
+  console.log('📊 ENTITY COUNT VALIDATION');
+  console.log(halfLine);
+  console.log('Entity                    | Status | Count | Required');
+  console.log(halfLine);
+  
+  for (const result of report.entityCounts) {
+    const status = result.status === 'PASS' ? '✅ PASS' : '❌ FAIL';
+    const entity = (result.entity || '').padEnd(24);
+    const count = String(result.current || 0).padStart(5);
+    const required = String(result.required || 0).padStart(8);
+    
+    console.log(`${entity} | ${status} | ${count} | ${required}`);
+>>>>>>> origin/main
   }
   
   // Referential Integrity
@@ -1108,6 +1502,7 @@ async function saveValidationReport(report: ValidationReport) {
 }
 
 /**
+<<<<<<< HEAD
  * Main validation function - COMPREHENSIVE 45-TABLE CHECK
  */
 async function validateSeedData(): Promise<ValidationReport> {
@@ -1140,6 +1535,26 @@ async function validateSeedData(): Promise<ValidationReport> {
     const report = generateValidationReport({
       entityCounts,
       branchWiseBreakdown,
+=======
+ * Main validation function
+ */
+async function validateSeedData(): Promise<ValidationReport> {
+  console.log('🚀 Starting Paramarsh SMS seed data validation...');
+  console.log(`📍 Target Branch: ${BRANCH_ID}`);
+  console.log(`📅 Timestamp: ${new Date().toISOString()}\n`);
+  
+  try {
+    // Run all validations
+    const entityCounts = await validateEntityCounts();
+    const referentialIntegrity = await validateReferentialIntegrity();
+    const indianContext = await validateIndianContext();
+    const multiTenancy = await validateMultiTenancy();
+    const dataQuality = await validateDataQuality();
+    
+    // Generate comprehensive report
+    const report = generateValidationReport({
+      entityCounts,
+>>>>>>> origin/main
       referentialIntegrity,
       indianContext,
       multiTenancy,
@@ -1150,6 +1565,7 @@ async function validateSeedData(): Promise<ValidationReport> {
     displayValidationReport(report);
     await saveValidationReport(report);
     
+<<<<<<< HEAD
     console.log('\n' + '='.repeat(100));
     if (report.overall.emptyTables > 0) {
       console.log(`🚨 CRITICAL RESULT: ${report.overall.emptyTables} tables are EMPTY - seed data has BUGS!`);
@@ -1161,11 +1577,16 @@ async function validateSeedData(): Promise<ValidationReport> {
     }
     console.log('='.repeat(100));
     
+=======
+>>>>>>> origin/main
     return report;
     
   } catch (error: any) {
     console.error('❌ Validation failed:', error.message);
+<<<<<<< HEAD
     console.error('Stack trace:', error.stack);
+=======
+>>>>>>> origin/main
     process.exit(1);
   } finally {
     await prisma.$disconnect();
@@ -1173,6 +1594,7 @@ async function validateSeedData(): Promise<ValidationReport> {
 }
 
 // Run validation if called directly
+<<<<<<< HEAD
 validateSeedData()
   .then(report => {
     const exitCode = report.overall.status === 'FAIL' ? 1 : 0;
@@ -1188,6 +1610,24 @@ export {
 };
 
 export type {
+=======
+// Check if running as main module (works with Bun)
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
+  validateSeedData()
+    .then(report => {
+      const exitCode = report.overall.status === 'FAIL' ? 1 : 0;
+      process.exit(exitCode);
+    })
+    .catch(error => {
+      console.error('💥 Fatal error:', error);
+      process.exit(1);
+    });
+}
+
+export {
+  validateSeedData,
+>>>>>>> origin/main
   ValidationResult,
   ValidationReport
 };

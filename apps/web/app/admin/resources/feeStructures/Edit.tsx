@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { 
   Edit, 
   SimpleForm, 
@@ -133,10 +134,14 @@ const FeeStructureSummary = () => {
     </Card>
   );
 };
+=======
+import { Edit, SimpleForm, TextInput } from "@/components/admin";
+>>>>>>> origin/main
 
 export const FeeStructuresEdit = () => (
   <Edit>
     <SimpleForm>
+<<<<<<< HEAD
       <div className="space-y-6">
         {/* Basic Information */}
         <Card className="w-full">
@@ -159,6 +164,10 @@ export const FeeStructuresEdit = () => (
         {/* Summary */}
         <FeeStructureSummary />
       </div>
+=======
+      <TextInput source="gradeId" label="Grade" />
+      <TextInput source="components" label="Components" />
+>>>>>>> origin/main
     </SimpleForm>
   </Edit>
 );

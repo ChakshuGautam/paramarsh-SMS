@@ -2,6 +2,7 @@ import {
   Edit,
   SimpleForm,
   TextInput,
+<<<<<<< HEAD
   SelectInput,
   NumberInput,
   DateInput,
@@ -93,6 +94,19 @@ export const FeeSchedulesEdit = () => {
             />
           </CardContent>
         </Card>
+=======
+} from '@/components/admin';
+
+export const FeeSchedulesEdit = () => {
+  return (
+    <Edit>
+      <SimpleForm>
+        <TextInput source="name" required />
+        <TextInput source="frequency" required />
+        <TextInput source="dueDate" required />
+        <TextInput source="amount" required />
+        <TextInput source="feeStructureId" required />
+>>>>>>> origin/main
       </SimpleForm>
     </Edit>
   );

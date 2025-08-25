@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -8,6 +11,7 @@ import {
   Param,
   Query,
   Delete,
+<<<<<<< HEAD
   Headers,
   BadRequestException,
   NotFoundException,
@@ -19,10 +23,20 @@ import { CreateTimeSlotDto } from './dto/create-timeslot.dto';
 import { CreateSubstitutionDto } from './dto/create-substitution.dto';
 import { ListDocs, CreateDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { PrismaService } from '../../prisma/prisma.service';
+=======
+  BadRequestException,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { TimetableService } from './timetable.service';
+import { CreateTimeSlotDto } from './dto/create-timeslot.dto';
+import { CreateSubstitutionDto } from './dto/create-substitution.dto';
+import { ListDocs, CreateDocs, UpdateDocs } from '../../common/swagger.decorators';
+>>>>>>> origin/main
 
 @ApiTags('Timetable')
 @Controller('timetable')
 export class TimetableController {
+<<<<<<< HEAD
   constructor(
     private readonly timetableService: TimetableService,
     private readonly periodsService: PeriodsService,
@@ -91,6 +105,9 @@ export class TimetableController {
       branchId,
     });
   }
+=======
+  constructor(private readonly timetableService: TimetableService) {}
+>>>>>>> origin/main
 
   @Post('time-slots')
   @ApiOperation({ 
@@ -139,17 +156,29 @@ export class TimetableController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: string,
+<<<<<<< HEAD
     @Query('sectionId') sectionId?: string,
     @Query('teacherId') teacherId?: string,
     @Query('academicYearId') academicYearId?: string,
+=======
+    @Query('isActive') isActive?: string,
+    @Query('sectionId') sectionId?: string,
+    @Query('teacherId') teacherId?: string,
+>>>>>>> origin/main
   ) {
     return this.timetableService.getPeriods({
       page: page ? parseInt(page, 10) : 1,
       pageSize: pageSize ? parseInt(pageSize, 10) : 25,
       sort,
+<<<<<<< HEAD
       sectionId,
       teacherId,
       academicYearId,
+=======
+      isActive: isActive !== undefined ? isActive === 'true' : undefined,
+      sectionId,
+      teacherId,
+>>>>>>> origin/main
     });
   }
 
@@ -178,6 +207,7 @@ export class TimetableController {
         subjectId: { type: 'string', description: 'Subject ID', example: 'subject-456' },
         teacherId: { type: 'string', description: 'Teacher ID', example: 'teacher-789' },
         roomId: { type: 'string', description: 'Room ID (optional)', example: 'room-101' },
+<<<<<<< HEAD
         dayOfWeek: { type: 'number', description: 'Day of week (1-6)', example: 1 },
         periodNumber: { type: 'number', description: 'Period number', example: 1 },
         startTime: { type: 'string', description: 'Start time (HH:MM)', example: '09:00' },
@@ -187,12 +217,19 @@ export class TimetableController {
         breakType: { type: 'string', description: 'Type of break (if isBreak=true)', example: 'LUNCH' }
       },
       required: ['sectionId', 'dayOfWeek', 'periodNumber', 'startTime', 'endTime', 'academicYearId']
+=======
+        timeSlotId: { type: 'string', description: 'Time slot ID', example: 'timeslot-abc' },
+        effectiveFrom: { type: 'string', format: 'date', description: 'Effective from date', example: '2024-01-15' }
+      },
+      required: ['sectionId', 'subjectId', 'teacherId', 'timeSlotId']
+>>>>>>> origin/main
     }
   })
   @CreateDocs('Period created successfully')
   createPeriod(
     @Body() createPeriodDto: {
       sectionId: string;
+<<<<<<< HEAD
       subjectId?: string;
       teacherId?: string;
       roomId?: string;
@@ -206,6 +243,21 @@ export class TimetableController {
     },
   ) {
     return this.timetableService.createPeriod(createPeriodDto);
+=======
+      subjectId: string;
+      teacherId: string;
+      roomId?: string;
+      timeSlotId: string;
+      effectiveFrom?: string;
+    },
+  ) {
+    return this.timetableService.createPeriod({
+      ...createPeriodDto,
+      effectiveFrom: createPeriodDto.effectiveFrom
+        ? new Date(createPeriodDto.effectiveFrom)
+        : undefined,
+    });
+>>>>>>> origin/main
   }
 
   @Delete('periods/:id')
@@ -307,6 +359,7 @@ export class TimetableController {
 
   @Get('substitutions')
   @ApiOperation({ 
+<<<<<<< HEAD
     summary: 'Get substitutions',
     description: 'Retrieves all substitutions with optional filtering and pagination for React Admin'
   })
@@ -369,6 +422,18 @@ export class TimetableController {
       branchId,
       date: date ? new Date(date) : undefined,
     });
+=======
+    summary: 'Get substitutions by date',
+    description: 'Retrieves all substitutions scheduled for a specific date'
+  })
+  @ApiQuery({ name: 'date', description: 'Date to check substitutions (ISO format)', example: '2024-01-15' })
+  @ListDocs('List of substitutions for the specified date')
+  getSubstitutions(@Query('date') date: string) {
+    if (!date) {
+      throw new BadRequestException('Date is required');
+    }
+    return this.timetableService.getSubstitutions(new Date(date));
+>>>>>>> origin/main
   }
 
   @Post('generate')
@@ -421,7 +486,10 @@ export class TimetableController {
         periodsPerWeek: number;
         preferredRoomId?: string;
       }>;
+<<<<<<< HEAD
       academicYearId: string;
+=======
+>>>>>>> origin/main
       constraints?: Array<{
         type: string;
         value: any;
@@ -431,6 +499,7 @@ export class TimetableController {
     return this.timetableService.generateTimetable(generateDto);
   }
 
+<<<<<<< HEAD
   // Removed saveTimetable endpoint - method doesn't exist in service
 
   // Removed getTeacherWorkload endpoint - method doesn't exist in service
@@ -459,5 +528,188 @@ export class TimetableController {
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.timetableService.getOne(id, branchId);
+=======
+  @Post('save')
+  @ApiOperation({ 
+    summary: 'Save complete timetable',
+    description: 'Saves a complete timetable with all periods for a section'
+  })
+  @ApiBody({
+    description: 'Array of timetable periods to save',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          sectionId: { type: 'string', description: 'Section ID', example: 'section-123' },
+          subjectId: { type: 'string', description: 'Subject ID', example: 'subject-456' },
+          teacherId: { type: 'string', description: 'Teacher ID', example: 'teacher-789' },
+          roomId: { type: 'string', description: 'Room ID (optional)', example: 'room-101' },
+          timeSlotId: { type: 'string', description: 'Time slot ID', example: 'timeslot-abc' }
+        },
+        required: ['sectionId', 'subjectId', 'teacherId', 'timeSlotId']
+      }
+    }
+  })
+  @CreateDocs('Timetable saved successfully')
+  saveTimetable(
+    @Body() periods: Array<{
+      sectionId: string;
+      subjectId: string;
+      teacherId: string;
+      roomId?: string;
+      timeSlotId: string;
+    }>,
+  ) {
+    return this.timetableService.saveTimetable(periods);
+  }
+
+  @Get('analytics/teacher-workload')
+  @ApiOperation({ 
+    summary: 'Get teacher workload analytics',
+    description: 'Retrieves analytics on teacher workload distribution and utilization'
+  })
+  @ListDocs('Teacher workload statistics and analytics')
+  getTeacherWorkload() {
+    return this.timetableService.getTeacherWorkload();
+  }
+
+  @Get('analytics/room-occupancy')
+  @ApiOperation({ 
+    summary: 'Get room occupancy analytics',
+    description: 'Retrieves analytics on room utilization and occupancy rates'
+  })
+  @ListDocs('Room occupancy statistics and analytics')
+  getRoomOccupancy() {
+    return this.timetableService.getRoomOccupancy();
+  }
+
+  @Post('generate-complete')
+  @ApiOperation({ 
+    summary: 'Generate complete school timetable',
+    description: 'Generates a comprehensive weekly timetable for all sections with teacher assignments'
+  })
+  @ApiBody({
+    description: 'Branch ID for timetable generation',
+    schema: {
+      type: 'object',
+      properties: {
+        branchId: { type: 'string', description: 'Branch ID (optional)', example: 'branch1' }
+      }
+    }
+  })
+  @CreateDocs('Complete timetable generated successfully')
+  async generateCompleteTimetable(
+    @Body('branchId') branchId?: string,
+  ) {
+    return this.timetableService.generateCompleteTimetable(branchId);
+  }
+
+  @Post('save-periods')
+  @ApiOperation({ 
+    summary: 'Save generated timetable periods',
+    description: 'Saves all generated periods to the database as the active timetable'
+  })
+  @ApiBody({
+    description: 'Generated periods and branch ID',
+    schema: {
+      type: 'object',
+      properties: {
+        periods: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              sectionId: { type: 'string' },
+              subjectId: { type: 'string' },
+              teacherId: { type: 'string' },
+              timeSlotId: { type: 'string' },
+              roomId: { type: 'string' }
+            }
+          }
+        },
+        branchId: { type: 'string', description: 'Branch ID (optional)' }
+      },
+      required: ['periods']
+    }
+  })
+  @CreateDocs('Timetable periods saved successfully')
+  async saveTimetablePeriods(
+    @Body() data: { periods: any[]; branchId?: string },
+  ) {
+    return this.timetableService.saveTimetablePeriods(data.periods, data.branchId);
+  }
+
+  @Get('grid/:sectionId')
+  @ApiOperation({ 
+    summary: 'Get timetable grid data for a section',
+    description: 'Returns weekly timetable grid organized by days and time slots'
+  })
+  @ApiParam({ name: 'sectionId', description: 'Section ID' })
+  @ListDocs('Timetable grid data')
+  async getTimetableGrid(
+    @Param('sectionId') sectionId: string,
+  ) {
+    return this.timetableService.getTimetableGrid(sectionId);
+  }
+
+  @Post('check-conflicts')
+  @ApiOperation({ 
+    summary: 'Check for teacher scheduling conflicts',
+    description: 'Validates if changing a period would create teacher conflicts'
+  })
+  @ApiBody({
+    description: 'Period change data for conflict checking',
+    schema: {
+      type: 'object',
+      properties: {
+        periodId: { type: 'string', description: 'Period being changed (optional for new periods)' },
+        teacherId: { type: 'string', description: 'New teacher ID' },
+        timeSlotId: { type: 'string', description: 'Time slot ID' },
+        date: { type: 'string', format: 'date', description: 'Date for conflict checking (optional)' }
+      },
+      required: ['teacherId', 'timeSlotId']
+    }
+  })
+  @CreateDocs('Conflict check results')
+  async checkConflicts(
+    @Body() data: {
+      periodId?: string;
+      teacherId: string;
+      timeSlotId: string;
+      date?: string;
+    },
+  ) {
+    return this.timetableService.checkTeacherConflicts(data);
+  }
+
+  @Patch('periods/:id')
+  @ApiOperation({ 
+    summary: 'Update timetable period',
+    description: 'Updates a specific timetable period with conflict checking'
+  })
+  @ApiParam({ name: 'id', description: 'Period ID' })
+  @ApiBody({
+    description: 'Period update data',
+    schema: {
+      type: 'object',
+      properties: {
+        teacherId: { type: 'string', description: 'Teacher ID' },
+        subjectId: { type: 'string', description: 'Subject ID' },
+        roomId: { type: 'string', description: 'Room ID' }
+      }
+    }
+  })
+  @UpdateDocs('Period updated successfully')
+  async updatePeriod(
+    @Param('id') id: string,
+    @Body() updateData: {
+      teacherId?: string;
+      subjectId?: string;
+      roomId?: string;
+    },
+  ) {
+    return this.timetableService.updatePeriod(id, updateData);
+>>>>>>> origin/main
   }
 }

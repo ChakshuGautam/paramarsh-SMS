@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -17,13 +20,18 @@ import { PeriodsService } from './periods.service';
 import { CreatePeriodDto } from './dto/create-period.dto';
 import { UpdatePeriodDto } from './dto/update-period.dto';
 
+<<<<<<< HEAD
 @Controller('timetable/periods')
+=======
+@Controller('api/v1/timetable/periods')
+>>>>>>> origin/main
 export class PeriodsController {
   constructor(private readonly periodsService: PeriodsService) {}
 
   @Get()
   async findAll(
     @Query() query: any,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const { page = 1, perPage = 10, pageSize = 10, sort, filter } = query;
@@ -32,6 +40,15 @@ export class PeriodsController {
     const result = await this.periodsService.findAll({
       page: +page,
       perPage: +effectivePerPage,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+  ) {
+    const { page = 1, pageSize = 10, sort, filter } = query;
+    
+    const result = await this.periodsService.findAll({
+      page: +page,
+      pageSize: +pageSize,
+>>>>>>> origin/main
       sort,
       filter: filter ? JSON.parse(filter) : {},
       branchId,
@@ -43,7 +60,11 @@ export class PeriodsController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     const result = await this.periodsService.findOne(id, branchId);
     return { data: result };
@@ -52,7 +73,11 @@ export class PeriodsController {
   @Post()
   async create(
     @Body() createPeriodDto: CreatePeriodDto,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     // Validate that if it's not a break period, subjectId and teacherId are required
     if (!createPeriodDto.isBreak) {
@@ -75,16 +100,26 @@ export class PeriodsController {
   async update(
     @Param('id') id: string,
     @Body() updatePeriodDto: UpdatePeriodDto,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const result = await this.periodsService.update(id, { ...updatePeriodDto, branchId });
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+  ) {
+    const result = await this.periodsService.update(id, updatePeriodDto, branchId);
+>>>>>>> origin/main
     return { data: result };
   }
 
   @Delete(':id')
   async remove(
     @Param('id') id: string,
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
   ) {
     const result = await this.periodsService.remove(id, branchId);
     return { data: result };

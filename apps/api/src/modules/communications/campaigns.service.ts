@@ -18,7 +18,11 @@ export class CampaignsService extends BaseCrudService<Campaign> {
   }
 
   protected buildSearchClause(search: string): any[] {
+<<<<<<< HEAD
     // PostgreSQL supports case insensitive search with ilike
+=======
+    // SQLite doesn't support mode: 'insensitive' for contains
+>>>>>>> origin/main
     return [
       { name: { contains: search } },
       { description: { contains: search } },

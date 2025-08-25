@@ -2,6 +2,7 @@ import {
   Create,
   SimpleForm,
   TextInput,
+<<<<<<< HEAD
   SelectInput,
   NumberInput,
   DateInput,
@@ -94,6 +95,19 @@ export const FeeSchedulesCreate = () => {
             />
           </CardContent>
         </Card>
+=======
+} from '@/components/admin';
+
+export const FeeSchedulesCreate = () => {
+  return (
+    <Create>
+      <SimpleForm>
+        <TextInput source="name" required />
+        <TextInput source="frequency" required />
+        <TextInput source="dueDate" required />
+        <TextInput source="amount" required />
+        <TextInput source="feeStructureId" required />
+>>>>>>> origin/main
       </SimpleForm>
     </Create>
   );

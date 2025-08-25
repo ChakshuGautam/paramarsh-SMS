@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Message, Prisma, Template } from '@prisma/client';
@@ -26,6 +27,27 @@ export class MessagesService extends BaseCrudService<Message> {
   }
 
   async create(data: any): Promise<{ data: Message }> {
+=======
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Message, Prisma, Template } from '@prisma/client';
+import { TemplatesService } from './templates.service';
+
+@Injectable()
+export class MessagesService {
+  constructor(
+    private prisma: PrismaService,
+    private templatesService: TemplatesService,
+  ) {}
+
+  async create(data: {
+    channel: string;
+    to: string;
+    templateId?: string;
+    campaignId?: string;
+    payload?: any;
+  }): Promise<Message> {
+>>>>>>> origin/main
     let renderedContent: string | undefined;
 
     if (data.templateId && data.payload) {
@@ -41,7 +63,11 @@ export class MessagesService extends BaseCrudService<Message> {
     }
 
     const { branchId } = PrismaService.getScope();
+<<<<<<< HEAD
     const created = await this.prisma.message.create({
+=======
+    return this.prisma.message.create({
+>>>>>>> origin/main
       data: {
         branchId: branchId ?? undefined,
         channel: data.channel,
@@ -51,6 +77,7 @@ export class MessagesService extends BaseCrudService<Message> {
         payload: data.payload ? JSON.stringify(data.payload) : null,
         status: 'pending',
       },
+<<<<<<< HEAD
       include: {
         template: true,
         campaign: true,
@@ -58,6 +85,9 @@ export class MessagesService extends BaseCrudService<Message> {
     });
     
     return { data: created };
+=======
+    });
+>>>>>>> origin/main
   }
 
   async sendMessage(messageId: string): Promise<Message> {
@@ -131,6 +161,7 @@ export class MessagesService extends BaseCrudService<Message> {
     });
   }
 
+<<<<<<< HEAD
   async getOne(id: string): Promise<{ data: Message }> {
     const { branchId } = PrismaService.getScope();
     const where: any = { id };
@@ -140,11 +171,17 @@ export class MessagesService extends BaseCrudService<Message> {
     
     const data = await this.prisma.message.findUnique({
       where,
+=======
+  async findOne(id: string): Promise<Message | null> {
+    return this.prisma.message.findUnique({
+      where: { id },
+>>>>>>> origin/main
       include: {
         template: true,
         campaign: true,
       },
     });
+<<<<<<< HEAD
     
     if (!data) {
       throw new NotFoundException('Message not found');
@@ -156,6 +193,8 @@ export class MessagesService extends BaseCrudService<Message> {
   async findOne(id: string): Promise<Message | null> {
     const result = await this.getOne(id);
     return result.data;
+=======
+>>>>>>> origin/main
   }
 
   async updateStatus(

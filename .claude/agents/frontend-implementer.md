@@ -53,9 +53,13 @@ import {
   SelectInput,
   EditButton,
   ShowButton,
+<<<<<<< HEAD
   DeleteButton,
   ReferenceField,
   TextField
+=======
+  DeleteButton
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, Mail } from "lucide-react";
@@ -75,6 +79,7 @@ export const [Module]List = () => {
   return (
     <List filters={filters}>
       <DataTable>
+<<<<<<< HEAD
         {/* NEVER show UUID/ID fields - use meaningful fields instead */}
         <DataTable.Col source="name" label="Name" />
         <DataTable.Col source="email" label="Email" />
@@ -87,6 +92,10 @@ export const [Module]List = () => {
           </ReferenceField>
         </DataTable.Col>
         
+=======
+        <DataTable.Col source="id" label="ID" />
+        <DataTable.Col source="name" label="Name" />
+>>>>>>> origin/main
         <DataTable.Col source="status" label="Status">
           {(record) => (
             <Badge variant={record.status === 'active' ? 'default' : 'secondary'}>
@@ -94,7 +103,10 @@ export const [Module]List = () => {
             </Badge>
           )}
         </DataTable.Col>
+<<<<<<< HEAD
         
+=======
+>>>>>>> origin/main
         <DataTable.Col label="Actions" align="right">
           <EditButton />
           <ShowButton />
@@ -156,8 +168,11 @@ import {
   SimpleForm,
   TextInput,
   SelectInput,
+<<<<<<< HEAD
   ReferenceInput,
   AutocompleteInput,
+=======
+>>>>>>> origin/main
   required
 } from "@/components/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -170,6 +185,7 @@ export const [Module]Edit = () => (
           <CardTitle>Edit [Module]</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+<<<<<<< HEAD
           {/* NEVER show ID field - users don't need to see UUIDs */}
           <TextInput source="name" validate={required()} />
           <TextInput source="email" validate={required()} />
@@ -182,6 +198,11 @@ export const [Module]Edit = () => (
             />
           </ReferenceInput>
           
+=======
+          <TextInput source="id" disabled />
+          <TextInput source="name" validate={required()} />
+          <TextInput source="email" validate={required()} />
+>>>>>>> origin/main
           <SelectInput 
             source="status" 
             choices={[
@@ -226,6 +247,7 @@ import * as [module] from "./resources/[module]";
 
 ## Component Patterns to Follow
 
+<<<<<<< HEAD
 ### CRITICAL: Never Display UUIDs to Users
 ```typescript
 // ❌ WRONG - Never show UUIDs in lists or forms
@@ -271,6 +293,8 @@ import * as [module] from "./resources/[module]";
 </ReferenceInput>
 ```
 
+=======
+>>>>>>> origin/main
 ### Use DataTable, NOT Table
 ```typescript
 // ✅ CORRECT
@@ -311,10 +335,13 @@ Before completion, verify:
 4. ✅ SimpleForm used for forms
 5. ✅ Resource registered in AdminApp.tsx
 6. ✅ Icons from lucide-react only
+<<<<<<< HEAD
 7. ✅ NO UUID fields displayed in lists
 8. ✅ NO UUID fields displayed in forms (except disabled ID in Edit)
 9. ✅ Relationships show meaningful data (names, emails, codes)
 10. ✅ AutocompleteInput shows descriptive text for references
+=======
+>>>>>>> origin/main
 
 ## Output
 

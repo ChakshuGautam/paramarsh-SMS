@@ -11,4 +11,8 @@ apps/web/cypress/downloads
 # Testing
 coverage
 .nyc_output
+<<<<<<< HEAD
 test-resultsapps/api/prisma/dev.db
+=======
+test-results
+>>>>>>> origin/main

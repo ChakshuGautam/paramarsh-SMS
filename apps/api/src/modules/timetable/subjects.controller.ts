@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -31,7 +34,11 @@ export class SubjectsController {
   })
   @CreateDocs('Subject created successfully')
   async create(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Body() createSubjectDto: CreateSubjectDto,
   ) {
     try {
@@ -52,16 +59,25 @@ export class SubjectsController {
   })
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
   @ApiQuery({ name: 'perPage', required: false, description: 'Number of items per page', example: 25 })
+<<<<<<< HEAD
   @ApiQuery({ name: 'pageSize', required: false, description: 'Number of items per page (alias for perPage)', example: 25 })
+=======
+>>>>>>> origin/main
   @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'name' })
   @ApiQuery({ name: 'filter', required: false, description: 'Filter JSON string' })
   @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated IDs for getMany' })
   @ListDocs('List of all subjects')
   findAll(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('pageSize') pageSize?: string,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+>>>>>>> origin/main
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
     @Query('ids') idsStr?: string,
@@ -82,10 +98,16 @@ export class SubjectsController {
       return this.subjectsService.findMany(ids);
     }
 
+<<<<<<< HEAD
     const effectivePerPage = perPage || pageSize;
     return this.subjectsService.findAll({
       page: page ? parseInt(page) : 1,
       perPage: effectivePerPage ? parseInt(effectivePerPage) : 25,
+=======
+    return this.subjectsService.findAll({
+      page: page ? parseInt(page) : 1,
+      perPage: perPage ? parseInt(perPage) : 25,
+>>>>>>> origin/main
       sort,
       ...filter,
     });
@@ -102,6 +124,7 @@ export class SubjectsController {
     return this.subjectsService.getSubjectsByClass(classId);
   }
 
+<<<<<<< HEAD
   @Get('appropriate-for-class/:classId')
   @ApiOperation({ 
     summary: 'Get grade-appropriate subjects for class',
@@ -190,6 +213,8 @@ export class SubjectsController {
     return this.subjectsService.getSubjectTeacherClassMapping();
   }
 
+=======
+>>>>>>> origin/main
   @Get(':id')
   @ApiOperation({ 
     summary: 'Get subject by ID',
@@ -198,7 +223,11 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @ListDocs('Subject details')
   async findOne(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
   ) {
     const data = await this.subjectsService.findOne(id);
@@ -227,7 +256,11 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @UpdateDocs('Subject updated successfully')
   async update(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
@@ -250,7 +283,11 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @UpdateDocs('Subject updated successfully')
   async patch(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
     @Body() updateSubjectDto: UpdateSubjectDto,
   ) {
@@ -273,7 +310,11 @@ export class SubjectsController {
   @ApiParam({ name: 'id', description: 'Subject ID', example: 'subject-123' })
   @DeleteDocs('Subject deleted successfully')
   async remove(
+<<<<<<< HEAD
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+=======
+    @Headers('x-branch-id') branchId = 'branch1',
+>>>>>>> origin/main
     @Param('id') id: string,
   ) {
     try {

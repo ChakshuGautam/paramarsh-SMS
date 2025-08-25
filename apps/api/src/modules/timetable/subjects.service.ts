@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -8,6 +9,11 @@ import {
   getGradeLevelFromClassName,
   GRADE_SUBJECT_MAPPING 
 } from './constants/grade-subject-mapping';
+=======
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+>>>>>>> origin/main
 
 @Injectable()
 export class SubjectsService {
@@ -26,7 +32,10 @@ export class SubjectsService {
   async findAll(filters?: {
     page?: number;
     perPage?: number;
+<<<<<<< HEAD
     pageSize?: number;
+=======
+>>>>>>> origin/main
     sort?: string;
     q?: string;
     credits?: number;
@@ -72,7 +81,11 @@ export class SubjectsService {
     
     // Pagination
     const page = filters?.page || 1;
+<<<<<<< HEAD
     const perPage = filters?.perPage || filters?.pageSize || 10;
+=======
+    const perPage = filters?.perPage || 10;
+>>>>>>> origin/main
     const skip = (page - 1) * perPage;
     
     // Sorting - handle React Admin format
@@ -92,9 +105,17 @@ export class SubjectsService {
         include: {
           constraints: true,
           periods: {
+<<<<<<< HEAD
             include: {
               section: true,
               teacher: true,
+=======
+            where: { isActive: true },
+            include: {
+              section: true,
+              teacher: true,
+              timeSlot: true,
+>>>>>>> origin/main
             },
           },
         },
@@ -125,6 +146,10 @@ export class SubjectsService {
             teacher: {
               include: { staff: true },
             },
+<<<<<<< HEAD
+=======
+            timeSlot: true,
+>>>>>>> origin/main
             room: true,
           },
         },
@@ -196,6 +221,10 @@ export class SubjectsService {
             section: {
               classId,
             },
+<<<<<<< HEAD
+=======
+            isActive: true,
+>>>>>>> origin/main
           },
         },
       },
@@ -206,11 +235,19 @@ export class SubjectsService {
     const periods = await this.prisma.timetablePeriod.findMany({
       where: {
         subjectId,
+<<<<<<< HEAD
+=======
+        isActive: true,
+>>>>>>> origin/main
       },
       include: {
         section: {
           include: { class: true },
         },
+<<<<<<< HEAD
+=======
+        timeSlot: true,
+>>>>>>> origin/main
       },
     });
 
@@ -233,6 +270,7 @@ export class SubjectsService {
       sections: Array.from(load.sections),
     }));
   }
+<<<<<<< HEAD
 
   // ========== GRADE-APPROPRIATE FILTERING METHODS ==========
 
@@ -569,4 +607,6 @@ export class SubjectsService {
       inappropriateMappings: inappropriate,
     };
   }
+=======
+>>>>>>> origin/main
 }

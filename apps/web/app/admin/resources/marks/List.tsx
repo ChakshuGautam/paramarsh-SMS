@@ -5,9 +5,17 @@ import {
   List,
   DataTable,
   TextField,
+<<<<<<< HEAD
   BooleanInput,
   TextInput,
   SelectInput,
+=======
+  TextInput,
+  ReferenceInput,
+  AutocompleteInput,
+  SelectInput,
+  BooleanInput,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { ReferenceField } from "@/components/admin/reference-field";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +32,7 @@ import {
 
 const marksFilters = [
   <TextInput source="q" placeholder="Search student or subject..." label="" alwaysOn />,
+<<<<<<< HEAD
   <SelectInput 
     source="examId" 
     placeholder="Filter by exam" 
@@ -42,6 +51,20 @@ const marksFilters = [
     label=""
     choices={[]} // Would need to be populated with student data
   />,
+=======
+  <ReferenceInput source="examId" reference="exams" label="">
+    <AutocompleteInput placeholder="Filter by exam" optionText="name" />
+  </ReferenceInput>,
+  <ReferenceInput source="subjectId" reference="subjects" label="">
+    <AutocompleteInput placeholder="Filter by subject" optionText="name" />
+  </ReferenceInput>,
+  <ReferenceInput source="studentId" reference="students" label="">
+    <AutocompleteInput 
+      placeholder="Filter by student" 
+      optionText={(record: any) => `${record.firstName} ${record.lastName}`} 
+    />
+  </ReferenceInput>,
+>>>>>>> origin/main
   <BooleanInput source="isAbsent" label="Show Absent Only" />,
 ];
 

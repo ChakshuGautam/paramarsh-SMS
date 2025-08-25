@@ -2,17 +2,22 @@ import {
   Show,
   SimpleShowLayout,
   TextField,
+<<<<<<< HEAD
   NumberField,
   ReferenceField
 } from '@/components/admin';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDate } from '@/lib/utils';
+=======
+} from '@/components/admin';
+>>>>>>> origin/main
 
 export const FeeSchedulesShow = () => {
   return (
     <Show>
       <SimpleShowLayout>
+<<<<<<< HEAD
         <Card>
           <CardHeader>
             <CardTitle>Fee Schedule Details</CardTitle>
@@ -86,6 +91,16 @@ export const FeeSchedulesShow = () => {
             />
           </CardContent>
         </Card>
+=======
+        <TextField source="id" />
+        <TextField source="name" />
+        <TextField source="frequency" />
+        <TextField source="dueDate" />
+        <TextField source="amount" />
+        <TextField source="feeStructureId" />
+        <TextField source="createdAt" />
+        <TextField source="updatedAt" />
+>>>>>>> origin/main
       </SimpleShowLayout>
     </Show>
   );

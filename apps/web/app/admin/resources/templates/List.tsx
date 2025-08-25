@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
@@ -12,6 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Mail, Smartphone, Phone, Globe } from "lucide-react";
 import { formatDate } from "@/lib/utils/date-utils";
+=======
+import { useListContext } from "ra-core";
+import {
+  DataTable,
+  List,
+  TextInput,
+  SelectInput,
+  Count,
+} from "@/components/admin";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { MessageSquare, Mail, Smartphone, Phone, Globe } from "lucide-react";
+>>>>>>> origin/main
 
 // Store keys for different channel tabs
 const storeKeyByChannel = {
@@ -24,7 +38,22 @@ const storeKeyByChannel = {
 
 // Label-less filters with placeholders
 const templateFilters = [
+<<<<<<< HEAD
   // Custom filters temporarily removed for demo compatibility
+=======
+  <TextInput source="q" placeholder="Search templates..." label="" alwaysOn />,
+  <SelectInput 
+    source="channel" 
+    placeholder="Filter by channel" 
+    label="" 
+    choices={[
+      { id: 'SMS', name: 'SMS' },
+      { id: 'EMAIL', name: 'Email' },
+      { id: 'PUSH', name: 'Push Notification' },
+      { id: 'WHATSAPP', name: 'WhatsApp' }
+    ]} 
+  />,
+>>>>>>> origin/main
   <SelectInput 
     source="locale" 
     placeholder="Filter by locale" 
@@ -147,6 +176,7 @@ const TemplatesTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
+<<<<<<< HEAD
     <DataTable.Col source="createdAt" label="Created" className="hidden md:table-cell">
       <CreatedDateField />
     </DataTable.Col>
@@ -158,6 +188,15 @@ const TemplatesTable = ({ storeKey }: { storeKey: string }) => (
 
 const ChannelIcon = () => {
   const record = useRecordContext();
+=======
+    <DataTable.Col source="createdAt" label="Created" className="hidden md:table-cell" />
+    <DataTable.Col source="updatedAt" label="Updated" className="hidden lg:table-cell" />
+    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+  </DataTable>
+);
+
+const ChannelIcon = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   const icons = {
@@ -182,6 +221,7 @@ const ChannelIcon = () => {
   );
 };
 
+<<<<<<< HEAD
 const CreatedDateField = () => {
   const record = useRecordContext();
   if (!record || !record.createdAt) return <span className="text-muted-foreground">-</span>;
@@ -196,6 +236,9 @@ const UpdatedDateField = () => {
 
 const LocaleBadge = () => {
   const record = useRecordContext();
+=======
+const LocaleBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record || !record.locale) return null;
   
   const localeNames = {

@@ -42,8 +42,15 @@ coverage
 temp
 tmp
 
+<<<<<<< HEAD
 # Database files (we use PostgreSQL, no local DB files)
 # PostgreSQL connections are external
+=======
+# Database files (we'll use volumes)
+*.db
+*.sqlite
+*.sqlite3
+>>>>>>> origin/main
 
 # Docker files
 Dockerfile

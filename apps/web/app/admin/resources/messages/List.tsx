@@ -1,19 +1,35 @@
 "use client";
 
+<<<<<<< HEAD
 import { useListContext, useRecordContext } from "ra-core";
+=======
+import { useListContext } from "ra-core";
+>>>>>>> origin/main
 import {
   DataTable,
   List,
   ReferenceField,
   TextField,
+<<<<<<< HEAD
   Count,
   TextInput,
   SelectInput,
+=======
+  TextInput,
+  ReferenceInput,
+  AutocompleteInput,
+  SelectInput,
+  DateInput,
+  Count,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Mail, Smartphone, Phone } from "lucide-react";
+<<<<<<< HEAD
 import { formatDateTime } from "@/lib/utils/date-utils";
+=======
+>>>>>>> origin/main
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
@@ -23,35 +39,68 @@ const storeKeyByStatus = {
   failed: "messages.list.failed",
 };
 
+<<<<<<< HEAD
 const filters = [
   <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
   <SelectInput 
     source="channel" 
     placeholder="Filter by channel..." 
+=======
+// Label-less filters with placeholders
+const messageFilters = [
+  <TextInput source="q" placeholder="Search messages..." label="" alwaysOn />,
+  <SelectInput 
+    source="channel" 
+    placeholder="Filter by channel" 
+>>>>>>> origin/main
     label="" 
     choices={[
       { id: 'SMS', name: 'SMS' },
       { id: 'EMAIL', name: 'Email' },
+<<<<<<< HEAD
       { id: 'PUSH', name: 'Push' },
       { id: 'WHATSAPP', name: 'WhatsApp' },
     ]} 
   />,
   <TextInput source="to" placeholder="Filter by recipient..." label="" />,
   <TextInput source="sentAt_gte" placeholder="Sent after (YYYY-MM-DD)..." label="" />,
+=======
+      { id: 'PUSH', name: 'Push Notification' },
+      { id: 'WHATSAPP', name: 'WhatsApp' }
+    ]} 
+  />,
+  <ReferenceInput source="templateId" reference="templates">
+    <AutocompleteInput placeholder="Filter by template" label="" optionText="name" />
+  </ReferenceInput>,
+  <ReferenceInput source="campaignId" reference="campaigns">
+    <AutocompleteInput placeholder="Filter by campaign" label="" optionText="name" />
+  </ReferenceInput>,
+  <TextInput source="to" placeholder="Filter by recipient" label="" />,
+  <DateInput source="sentAt_gte" placeholder="Sent after" label="" />,
+>>>>>>> origin/main
 ];
 
 export const MessagesList = () => (
   <List
+<<<<<<< HEAD
     filters={filters}
     sort={{ field: "sentAt", order: "DESC" }}
     filterDefaultValues={{ status: "sent" }}
+=======
+    sort={{ field: "sentAt", order: "DESC" }}
+    filterDefaultValues={{ status: "sent" }}
+    filters={messageFilters}
+>>>>>>> origin/main
     perPage={10}
   >
     <TabbedDataTable />
   </List>
 );
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 const TabbedDataTable = () => {
   const listContext = useListContext();
   const { filterValues, setFilters, displayedFilters } = listContext;
@@ -137,6 +186,7 @@ const MessagesTable = ({ storeKey }: { storeKey: string }) => (
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
+<<<<<<< HEAD
     <DataTable.Col source="sentAt" label="Sent At" className="hidden lg:table-cell">
       <SentAtField />
     </DataTable.Col>
@@ -145,6 +195,14 @@ const MessagesTable = ({ storeKey }: { storeKey: string }) => (
 
 const StatusBadge = () => {
   const record = useRecordContext();
+=======
+    <DataTable.Col source="sentAt" label="Sent At" className="hidden lg:table-cell" />
+    <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
+  </DataTable>
+);
+
+const StatusBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   const variants = {
@@ -161,6 +219,7 @@ const StatusBadge = () => {
   );
 };
 
+<<<<<<< HEAD
 const SentAtField = () => {
   const record = useRecordContext();
   if (!record) return null;
@@ -169,6 +228,9 @@ const SentAtField = () => {
 
 const ChannelIcon = () => {
   const record = useRecordContext();
+=======
+const ChannelIcon = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   const icons = {

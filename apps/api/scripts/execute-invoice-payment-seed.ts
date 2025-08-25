@@ -2,7 +2,11 @@
 
 /**
  * MCP-based Invoice and Payment Seed Data Executor
+<<<<<<< HEAD
  * Uses ONLY MCP PostgreSQL Server tools for database operations
+=======
+ * Uses ONLY MCP SQLite Server tools for database operations
+>>>>>>> origin/main
  */
 
 import { v4 as uuidv4 } from 'uuid';
@@ -420,7 +424,13 @@ class MCPInvoicePaymentSeeder {
 export { MCPInvoicePaymentSeeder };
 
 // Execute if run directly
+<<<<<<< HEAD
 if (require.main === module) {
   const seeder = new MCPInvoicePaymentSeeder();
   seeder.execute().catch(console.error);
+=======
+if (import.meta.main) {
+  const seeder = new MCPInvoicePaymentSeeder();
+  await seeder.execute();
+>>>>>>> origin/main
 }

@@ -33,6 +33,7 @@ function renderWithResources(roles: string[] | undefined, resources: Record<stri
     >
       <ResourceDefinitionContextProvider
         definitions={{
+<<<<<<< HEAD
           // Core Academic Structure
           students: { name: 'students', hasList: true },
           guardians: { name: 'guardians', hasList: true },
@@ -81,6 +82,18 @@ function renderWithResources(roles: string[] | undefined, resources: Record<stri
           staff: { name: 'staff', hasList: true },
           tenants: { name: 'tenants', hasList: true },
           preferences: { name: 'preferences', hasList: true },
+=======
+          students: { name: 'students', hasList: true },
+          guardians: { name: 'guardians', hasList: true },
+          exams: { name: 'exams', hasList: true },
+          classes: { name: 'classes', hasList: true },
+          sections: { name: 'sections', hasList: true },
+          enrollments: { name: 'enrollments', hasList: true },
+          marks: { name: 'marks', hasList: true },
+          invoices: { name: 'invoices', hasList: true },
+          payments: { name: 'payments', hasList: true },
+          attendanceRecords: { name: 'attendanceRecords', hasList: true },
+>>>>>>> origin/main
         }}
       >
         <SidebarProvider>
@@ -92,6 +105,7 @@ function renderWithResources(roles: string[] | undefined, resources: Record<stri
 }
 
 describe('AppSidebar RBAC filtering', () => {
+<<<<<<< HEAD
   test('admin sees resources from default open groups', async () => {
     renderWithResources(['admin'], {});
     
@@ -140,5 +154,42 @@ describe('AppSidebar RBAC filtering', () => {
     
     // But teachers should see substitutions (they have permission)
     expect(screen.getByTestId('menu-substitutions')).toBeInTheDocument();
+=======
+  test('admin sees all resources', async () => {
+    renderWithResources(['admin'], {
+      students: {}, guardians: {}, exams: {}, classes: {}, sections: {},
+      enrollments: {}, marks: {}, invoices: {}, payments: {}, attendanceRecords: {}
+    });
+    // all labels (query by testids for stability)
+    expect(await screen.findByTestId('menu-students')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-guardians')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-exams')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-classes')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-sections')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-enrollments')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-marks')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-invoices')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-payments')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-attendanceRecords')).toBeInTheDocument();
+  });
+
+  test('teacher sees only allowed resources', async () => {
+    renderWithResources(['teacher'], {
+      students: {}, guardians: {}, exams: {}, classes: {}, sections: {},
+      enrollments: {}, marks: {}, invoices: {}, payments: {}, attendanceRecords: {}
+    });
+    // visible
+    expect(await screen.findByTestId('menu-students')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-exams')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-classes')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-sections')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-enrollments')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-marks')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-attendanceRecords')).toBeInTheDocument();
+    // hidden
+    expect(screen.queryByTestId('menu-invoices')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('menu-payments')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('menu-guardians')).not.toBeInTheDocument();
+>>>>>>> origin/main
   });
 });

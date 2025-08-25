@@ -3,9 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+<<<<<<< HEAD
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Calendar, Clock, User, MapPin, BookOpen, GraduationCap, AlertCircle, Info } from 'lucide-react';
+=======
+import { Loader2, Calendar, Clock, User, MapPin, BookOpen } from 'lucide-react';
+>>>>>>> origin/main
 
 interface TimeSlot {
   id: string;
@@ -37,6 +41,7 @@ interface TimetablePeriod {
   isActive: boolean;
 }
 
+<<<<<<< HEAD
 interface Section {
   id: string;
   name: string;
@@ -54,6 +59,8 @@ interface SubjectTeacherMapping {
   teachers: string[];
 }
 
+=======
+>>>>>>> origin/main
 interface TimetableGridProps {
   sectionId: string;
   sectionName?: string;
@@ -78,9 +85,12 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 }) => {
   const [periods, setPeriods] = useState<TimetablePeriod[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+<<<<<<< HEAD
   const [sectionDetails, setSectionDetails] = useState<Section | null>(null);
   const [subjectTeacherMappings, setSubjectTeacherMappings] = useState<SubjectTeacherMapping[]>([]);
   const [inappropriateAssignments, setInappropriateAssignments] = useState<string[]>([]);
+=======
+>>>>>>> origin/main
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState('current');
 
@@ -100,6 +110,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
       const slotsResponse = await fetch('/api/v1/timetable/time-slots');
       const slotsData = await slotsResponse.json();
       
+<<<<<<< HEAD
       // Fetch section details
       const sectionResponse = await fetch(`/api/admin/sections/${sectionId}`);
       const sectionData = await sectionResponse.json();
@@ -115,12 +126,17 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
           checkInappropriateAssignments(sectionData.data.class.id, periodsData || [])
         ]);
       }
+=======
+      setPeriods(periodsData || []);
+      setTimeSlots(slotsData || []);
+>>>>>>> origin/main
     } catch (error) {
       console.error('Error fetching timetable data:', error);
     } finally {
       setLoading(false);
     }
   };
+<<<<<<< HEAD
   
   const fetchSubjectTeacherMappings = async (classId: string) => {
     try {
@@ -160,6 +176,8 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
       console.error('Error checking inappropriate assignments:', error);
     }
   };
+=======
+>>>>>>> origin/main
 
   // Group time slots by slot order (periods) for x-axis
   const periodSlots = timeSlots
@@ -228,6 +246,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
               <Badge variant="outline" className="text-xs">
                 {period.subject.code}
               </Badge>
+<<<<<<< HEAD
               <div className="flex gap-1">
                 {inappropriateAssignments.includes(`${period.subject.name} - ${period.teacher.name}`) && (
                   <Badge variant="destructive" className="text-xs">
@@ -248,16 +267,31 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                   ? 'text-destructive' 
                   : 'text-foreground'
               }`}>
+=======
+              {!period.isActive && (
+                <Badge variant="destructive" className="text-xs">
+                  Inactive
+                </Badge>
+              )}
+            </div>
+            
+            <div className="space-y-0.5">
+              <div className="font-medium text-sm text-foreground truncate">
+>>>>>>> origin/main
                 {period.subject.name}
               </div>
               
               <div className="flex items-center text-xs text-muted-foreground">
                 <User className="w-3 h-3 mr-1" />
+<<<<<<< HEAD
                 <span className={`truncate ${
                   inappropriateAssignments.includes(`${period.subject.name} - ${period.teacher.name}`) 
                     ? 'text-destructive' 
                     : ''
                 }`}>{period.teacher.name}</span>
+=======
+                <span className="truncate">{period.teacher.name}</span>
+>>>>>>> origin/main
               </div>
               
               {period.room && (
@@ -297,6 +331,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 
   return (
     <div className="space-y-4">
+<<<<<<< HEAD
       {/* Section Information */}
       {sectionDetails && (
         <Card>
@@ -370,6 +405,8 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
         </Alert>
       )}
       
+=======
+>>>>>>> origin/main
       {/* Header with controls */}
       <Card>
         <CardHeader>
@@ -377,7 +414,11 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
+<<<<<<< HEAD
                 Weekly Timetable {sectionName && `- ${sectionName}`}
+=======
+                Timetable {sectionName && `- ${sectionName}`}
+>>>>>>> origin/main
               </CardTitle>
             </div>
             
@@ -451,6 +492,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
         </CardContent>
       </Card>
 
+<<<<<<< HEAD
       {/* Legend & Summary */}
       <Card>
         <CardContent className="p-4">
@@ -494,6 +536,31 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                   </div>
                 </div>
               </>
+=======
+      {/* Legend */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-white border border-gray-200 rounded"></div>
+              <span>Scheduled Period</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-muted/50 border border-gray-200 rounded"></div>
+              <span>Free Period</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-white border border-gray-200 rounded opacity-50"></div>
+              <span>Inactive Period</span>
+            </div>
+            {editable && (
+              <div className="flex items-center gap-2">
+                <div className="text-blue-600">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <span>Click cells to edit periods</span>
+              </div>
+>>>>>>> origin/main
             )}
           </div>
         </CardContent>

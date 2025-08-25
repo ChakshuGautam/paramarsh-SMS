@@ -1,7 +1,10 @@
 export * from "./admin";
 export * from "./app-sidebar";
 export * from "./array-field";
+<<<<<<< HEAD
 export * from "./array-input";
+=======
+>>>>>>> origin/main
 export * from "./autocomplete-input";
 export * from "./autocomplete-array-input";
 export * from "./badge-field";
@@ -47,7 +50,10 @@ export * from "./show-button";
 export * from "./show-guesser";
 export * from "./show";
 export * from "./simple-form";
+<<<<<<< HEAD
 export * from "./simple-form-iterator";
+=======
+>>>>>>> origin/main
 export * from "./simple-show-layout";
 export * from "./single-field-list";
 export * from "./text-field";
@@ -57,6 +63,7 @@ export * from "./top-toolbar";
 export * from "./theme-mode-toggle";
 export * from "./theme-provider";
 export * from "./user-menu";
+<<<<<<< HEAD
 
 // Shared Badge Components
 export * from "./StatusBadge";
@@ -78,3 +85,5 @@ export { ResponsiveColumn, ResponsiveHeader, ResponsiveDiv, ResponsiveSpan } fro
 // Re-export validators from React Admin
 export { required, email, minLength, maxLength, minValue, maxValue } from "react-admin";
 
+=======
+>>>>>>> origin/main

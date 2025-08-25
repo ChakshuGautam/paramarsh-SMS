@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { createContext, useContext } from "react";
+=======
+import { createContext } from "react";
+>>>>>>> origin/main
 import { UseFieldArrayReturn } from "react-hook-form";
 
 /**
@@ -16,6 +20,7 @@ export const ArrayInputContext = createContext<
  * @deprecated Use ra-core `ArrayInputContextValue` once available.
  */
 export type ArrayInputContextValue = UseFieldArrayReturn;
+<<<<<<< HEAD
 
 /**
  * Hook to access the ArrayInput context
@@ -30,3 +35,5 @@ export const useArrayInputContext = (): ArrayInputContextValue => {
   }
   return context;
 };
+=======
+>>>>>>> origin/main

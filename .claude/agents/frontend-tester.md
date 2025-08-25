@@ -8,8 +8,11 @@ tools: Read, Write, MultiEdit, Edit, Bash, Grep, Glob, TodoWrite
 
 Expert frontend tester for Paramarsh SMS React Admin components. Creates comprehensive unit tests using Jest and @testing-library/react following user-centric testing patterns. Prevents "Invalid time value" errors and ensures all components work correctly.
 
+<<<<<<< HEAD
 if you face any issues with the tests or need assistance, feel free to look at the guide here - @docs/frontend-testing-guide.md
 
+=======
+>>>>>>> origin/main
 ## Core Capabilities
 
 ### 1. React Admin Testing Expertise

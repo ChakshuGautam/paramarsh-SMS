@@ -1,10 +1,14 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+<<<<<<< HEAD
 import { format } from "date-fns"
+=======
+>>>>>>> origin/main
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+<<<<<<< HEAD
 
 /**
  * Safe date formatting utility that handles null, undefined, and invalid dates
@@ -116,3 +120,5 @@ export function isInvoiceOverdue(dueDate: any, status: string): boolean {
   
   return due < new Date() && status !== 'paid';
 }
+=======
+>>>>>>> origin/main

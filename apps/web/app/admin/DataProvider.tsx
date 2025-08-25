@@ -115,7 +115,11 @@ function mapListParams(resource: string, params: ListParams) {
   const path = resourceToPath(resource);
   const { pagination = {}, sort = {}, filter = {} } = params || {};
   const page = Number(pagination.page ?? 1);
+<<<<<<< HEAD
   const perPage = Number(pagination.perPage ?? 10);
+=======
+  const pageSize = Number(pagination.perPage ?? pagination.pageSize ?? 10);
+>>>>>>> origin/main
   const field = sort.field as string | undefined;
   const order = ((sort.order as string | undefined)?.toUpperCase() || "ASC") as
     | "ASC"
@@ -128,6 +132,7 @@ function mapListParams(resource: string, params: ListParams) {
     Object.entries(filter).forEach(([k, v]) => (filterQuery[k] = v as unknown));
   }
 
+<<<<<<< HEAD
   // Use page and perPage directly as the backend expects
   const qs = toQuery({ 
     page, 
@@ -135,6 +140,9 @@ function mapListParams(resource: string, params: ListParams) {
     sort: sortExpr, 
     ...filterQuery 
   });
+=======
+  const qs = toQuery({ page, pageSize, sort: sortExpr, ...filterQuery });
+>>>>>>> origin/main
   const url = `${apiUrl}/${path}${qs}`;
   return url;
 }
@@ -303,23 +311,39 @@ function resourceToPath(resource: string): string {
     applications: "admissions/applications",
     
     // Attendance - Fixed to match actual backend paths
+<<<<<<< HEAD
     attendanceRecords: "attendance-records",
     attendanceSessions: "attendance/sessions",
     attendance: "attendance-records",
     teacherAttendance: "teacher-attendance",
+=======
+    attendanceRecords: "attendance",
+    attendanceSessions: "attendance-sessions",
+    attendance: "attendance",
+    teacherAttendance: "teacher-attendance", // Missing backend implementation
+>>>>>>> origin/main
     
     // Exams & Marks
     exams: "exams",
     marks: "marks",
     
     // Fees & Payments
+<<<<<<< HEAD
     feeStructures: "fees/structures",
     feeSchedules: "fees/schedules", 
+=======
+    feeStructures: "fee-structures",
+    feeSchedules: "fee-schedules", 
+>>>>>>> origin/main
     invoices: "invoices",
     payments: "payments",
     
     // HR & Staff
+<<<<<<< HEAD
     staff: "hr/staff",
+=======
+    staff: "staff",
+>>>>>>> origin/main
     teachers: "teachers",
     
     // Timetable
@@ -334,11 +358,19 @@ function resourceToPath(resource: string): string {
     sectionTimetables: "sections",
     timetables: "timetable",
     
+<<<<<<< HEAD
     // Communications - Using alt controllers (non-comms prefix)
     templates: "templates",
     campaigns: "campaigns", 
     messages: "comms/messages",
     preferences: "comms/preferences",
+=======
+    // Communications - Fixed to match actual backend paths
+    templates: "templates",
+    campaigns: "campaigns", 
+    messages: "messages",
+    preferences: "preferences",
+>>>>>>> origin/main
     tickets: "tickets",
     
     // Files & Documents

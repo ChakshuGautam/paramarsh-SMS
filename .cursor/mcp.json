@@ -6,6 +6,7 @@
       "env": {
         "REGISTRY_URL": "https://marmelab.com/shadcn-admin-kit/r/registry.json"
       }
+<<<<<<< HEAD
     },
     "postgres": {
       "command": "npx",
@@ -19,6 +20,8 @@
       "command": "node",
       "args": ["./curl-mcp/index.js"],
       "env": {}
+=======
+>>>>>>> origin/main
     }
   }
 }

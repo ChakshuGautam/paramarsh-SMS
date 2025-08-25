@@ -35,6 +35,7 @@ if [ ! -f "prisma/schema.prisma" ]; then
     exit 1
 fi
 
+<<<<<<< HEAD
 # Check if database connection is available
 if ! command -v psql &> /dev/null; then
     echo -e "${RED}❌ Error: PostgreSQL client (psql) not found. Please install PostgreSQL.${NC}"
@@ -45,6 +46,12 @@ fi
 if ! psql $DATABASE_URL -c "SELECT 1;" &> /dev/null; then
     echo -e "${RED}❌ Error: Cannot connect to PostgreSQL database. Please check DATABASE_URL.${NC}"
     echo -e "${YELLOW}   Ensure PostgreSQL is running and DATABASE_URL is set${NC}"
+=======
+# Check if database exists
+if [ ! -f "prisma/dev.db" ]; then
+    echo -e "${RED}❌ Error: Database not found. Please run seed first:${NC}"
+    echo -e "${YELLOW}   bun run db:seed${NC}"
+>>>>>>> origin/main
     exit 1
 fi
 
@@ -80,6 +87,7 @@ echo
 echo -e "${CYAN}📈 Method 3: Quick Entity Count Check${NC}"
 echo -e "${BLUE}Performing quick database entity counts...${NC}"
 
+<<<<<<< HEAD
 # Method 3: Quick count validation using PostgreSQL
 if command -v psql &> /dev/null; then
     echo -e "${BLUE}🔢 Entity Counts:${NC}"
@@ -93,6 +101,21 @@ if command -v psql &> /dev/null; then
     SECTIONS=$(psql $DATABASE_URL -t -c "SELECT COUNT(*) FROM \"Section\" WHERE \"branchId\" = 'branch1';" | xargs)
     SUBJECTS=$(psql $DATABASE_URL -t -c "SELECT COUNT(*) FROM \"Subject\" WHERE \"branchId\" = 'branch1';" | xargs)
     INVOICES=$(psql $DATABASE_URL -t -c "SELECT COUNT(*) FROM \"Invoice\" WHERE \"branchId\" = 'branch1';" | xargs)
+=======
+# Method 3: Quick count validation using SQLite
+if command -v sqlite3 &> /dev/null; then
+    echo -e "${BLUE}🔢 Entity Counts:${NC}"
+    
+    # Core entities
+    STUDENTS=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Student WHERE branchId = 'branch1';")
+    GUARDIANS=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Guardian WHERE branchId = 'branch1';")
+    TEACHERS=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Teacher WHERE branchId = 'branch1';")
+    STAFF=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Staff WHERE branchId = 'branch1';")
+    CLASSES=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Class WHERE branchId = 'branch1';")
+    SECTIONS=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Section WHERE branchId = 'branch1';")
+    SUBJECTS=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Subject WHERE branchId = 'branch1';")
+    INVOICES=$(sqlite3 prisma/dev.db "SELECT COUNT(*) FROM Invoice WHERE branchId = 'branch1';")
+>>>>>>> origin/main
     
     echo -e "  👥 Students: ${STUDENTS}"
     echo -e "  👨‍👩‍👧‍👦 Guardians: ${GUARDIANS}"
@@ -128,7 +151,11 @@ if command -v psql &> /dev/null; then
         echo -e "${RED}❌ Quick count validation: FAILED${NC}"
     fi
 else
+<<<<<<< HEAD
     echo -e "${YELLOW}⚠️  PostgreSQL (psql) not available, skipping quick count check${NC}"
+=======
+    echo -e "${YELLOW}⚠️  SQLite3 not available, skipping quick count check${NC}"
+>>>>>>> origin/main
     QUICK_STATUS="SKIP"
 fi
 

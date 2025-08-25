@@ -6,17 +6,29 @@ import {
   List,
   ReferenceField,
   TextField,
+<<<<<<< HEAD
   Count,
   TextInput,
   SelectInput,
   DateInput,
+=======
+  DateInput,
+  SelectInput,
+  Count,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+<<<<<<< HEAD
 import { Calendar, Clock, Users, BookOpen, CheckCircle, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+=======
+import { format } from "date-fns";
+import { Calendar, Clock, Users, BookOpen, CheckCircle, Play } from "lucide-react";
+import { useRouter } from "next/navigation";
+>>>>>>> origin/main
 
 // Store keys for different session states
 const storeKeyByStatus = {
@@ -28,18 +40,30 @@ const storeKeyByStatus = {
 
 // Filters
 const sessionFilters = [
+<<<<<<< HEAD
   <TextInput source="q" placeholder="Search sessions..." label="" alwaysOn />,
+=======
+>>>>>>> origin/main
   <DateInput source="date" placeholder="Filter by date" label="" />,
   <SelectInput 
     source="status" 
     placeholder="Filter by status" 
+<<<<<<< HEAD
     label=""
+=======
+    label="" 
+>>>>>>> origin/main
     choices={[
       { id: 'scheduled', name: 'Scheduled' },
       { id: 'in-progress', name: 'In Progress' },
       { id: 'completed', name: 'Completed' },
+<<<<<<< HEAD
       { id: 'cancelled', name: 'Cancelled' }
     ]}
+=======
+      { id: 'cancelled', name: 'Cancelled' },
+    ]} 
+>>>>>>> origin/main
   />,
 ];
 
@@ -47,6 +71,10 @@ export const AttendanceSessionsList = () => (
   <List
     sort={{ field: "date", order: "DESC" }}
     filters={sessionFilters}
+<<<<<<< HEAD
+=======
+    perPage={10}
+>>>>>>> origin/main
   >
     <TabbedDataTable />
   </List>
@@ -165,12 +193,20 @@ const SessionsTable = ({ storeKey }: { storeKey: string }) => {
 
 const DateDisplay = () => {
   const record = useRecordContext();
+<<<<<<< HEAD
   if (!record) return null;
+=======
+  if (!record || !record.date) return null;
+>>>>>>> origin/main
   
   return (
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-gray-500" />
+<<<<<<< HEAD
       <span>{formatDate(record.date)}</span>
+=======
+      <span>{format(new Date(record.date), 'MMM dd, yyyy')}</span>
+>>>>>>> origin/main
     </div>
   );
 };

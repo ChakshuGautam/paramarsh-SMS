@@ -1,10 +1,14 @@
+<<<<<<< HEAD
 "use client";
 
 import React, { useState, useEffect } from 'react';
+=======
+>>>>>>> origin/main
 import {
   Edit,
   SimpleForm,
   TextInput,
+<<<<<<< HEAD
   SelectInput,
   DateInput,
   BooleanInput,
@@ -456,6 +460,22 @@ export const TimetableEdit = () => {
             </CardContent>
           </Card>
         </div>
+=======
+} from '@/components/admin';
+
+export const TimetableEdit = () => {
+  return (
+    <Edit>
+      <SimpleForm>
+        <TextInput source="sectionId" required />
+        <TextInput source="subjectId" required />
+        <TextInput source="teacherId" required />
+        <TextInput source="roomId" />
+        <TextInput source="timeSlotId" required />
+        <TextInput source="isActive" />
+        <TextInput source="effectiveFrom" />
+        <TextInput source="effectiveTo" />
+>>>>>>> origin/main
       </SimpleForm>
     </Edit>
   );

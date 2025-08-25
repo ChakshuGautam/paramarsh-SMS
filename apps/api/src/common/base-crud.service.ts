@@ -309,39 +309,60 @@ export abstract class BaseCrudService<T> {
           } else if (key.endsWith('_gte')) {
             // Greater than or equal filter
             const field = key.replace('_gte', '');
+<<<<<<< HEAD
             // Only convert to number if the field likely contains numeric data
             const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
+=======
+            const numericValue = this.convertToNumber(value);
+>>>>>>> origin/main
             where[field] = { ...where[field], gte: numericValue ?? value };
           } else if (key.endsWith('_lte')) {
             // Less than or equal filter
             const field = key.replace('_lte', '');
+<<<<<<< HEAD
             // Only convert to number if the field likely contains numeric data
             const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
+=======
+            const numericValue = this.convertToNumber(value);
+>>>>>>> origin/main
             where[field] = { ...where[field], lte: numericValue ?? value };
           } else if (key.endsWith('_gt')) {
             // Greater than filter
             const field = key.replace('_gt', '');
+<<<<<<< HEAD
             // Only convert to number if the field likely contains numeric data
             const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
+=======
+            const numericValue = this.convertToNumber(value);
+>>>>>>> origin/main
             where[field] = { ...where[field], gt: numericValue ?? value };
           } else if (key.endsWith('_lt')) {
             // Less than filter
             const field = key.replace('_lt', '');
+<<<<<<< HEAD
             // Only convert to number if the field likely contains numeric data
             const numericValue = this.shouldConvertToNumber(field, value) ? this.convertToNumber(value) : null;
+=======
+            const numericValue = this.convertToNumber(value);
+>>>>>>> origin/main
             where[field] = { ...where[field], lt: numericValue ?? value };
           } else if (key.endsWith('_in')) {
             // In array filter
             const field = key.replace('_in', '');
             where[field] = { in: Array.isArray(value) ? value : [value] };
           } else if (key.endsWith('_contains')) {
+<<<<<<< HEAD
             // Text contains filter (PostgreSQL supports case insensitive search)
+=======
+            // Text contains filter (SQLite doesn't support mode: 'insensitive')
+>>>>>>> origin/main
             const field = key.replace('_contains', '');
             where[field] = { contains: value };
           } else if (Array.isArray(value)) {
             // Array filter (e.g., status in ['ACTIVE', 'PENDING'])
             where[key] = { in: value };
           } else if (typeof value === 'object' && value !== null) {
+<<<<<<< HEAD
             // Check if it's a date string that got parsed incorrectly
             if (this.isDateStringObject(value)) {
               // Reconstruct the date string from the character object
@@ -351,6 +372,10 @@ export abstract class BaseCrudService<T> {
               // Handle complex filter objects like { $contains: "value" }
               this.buildComplexFilter(where, key, value);
             }
+=======
+            // Handle complex filter objects like { $contains: "value" }
+            this.buildComplexFilter(where, key, value);
+>>>>>>> origin/main
           } else {
             // Exact match
             where[key] = value;
@@ -378,6 +403,7 @@ export abstract class BaseCrudService<T> {
   protected buildComplexFilter(where: any, key: string, value: any): void {
     try {
       if (value.$contains !== undefined) {
+<<<<<<< HEAD
         // PostgreSQL supports case insensitive search with ilike
         // Use case-insensitive contains without the mode option
         where[key] = { contains: value.$contains };
@@ -393,6 +419,19 @@ export abstract class BaseCrudService<T> {
       } else if (value.$lt !== undefined) {
         const numericValue = this.shouldConvertToNumber(key, value.$lt) ? this.convertToNumber(value.$lt) : null;
         where[key] = { ...where[key], lt: numericValue ?? value.$lt };
+=======
+        // SQLite doesn't support 'mode: insensitive' for contains
+        // Use case-insensitive contains without the mode option
+        where[key] = { contains: value.$contains };
+      } else if (value.$gte !== undefined) {
+        where[key] = { ...where[key], gte: this.convertToNumber(value.$gte) ?? value.$gte };
+      } else if (value.$lte !== undefined) {
+        where[key] = { ...where[key], lte: this.convertToNumber(value.$lte) ?? value.$lte };
+      } else if (value.$gt !== undefined) {
+        where[key] = { ...where[key], gt: this.convertToNumber(value.$gt) ?? value.$gt };
+      } else if (value.$lt !== undefined) {
+        where[key] = { ...where[key], lt: this.convertToNumber(value.$lt) ?? value.$lt };
+>>>>>>> origin/main
       } else if (value.$in !== undefined) {
         where[key] = { in: Array.isArray(value.$in) ? value.$in : [value.$in] };
       } else if (value.$ne !== undefined) {
@@ -468,6 +507,7 @@ export abstract class BaseCrudService<T> {
     return sortFields.map(field => {
       const isDesc = field.startsWith('-');
       const fieldName = isDesc ? field.slice(1) : field;
+<<<<<<< HEAD
       
       // Handle nested sorting (e.g., "class.gradeLevel" or "section.class.gradeLevel")
       if (fieldName.includes('.')) {
@@ -484,6 +524,8 @@ export abstract class BaseCrudService<T> {
         return orderByObj;
       }
       
+=======
+>>>>>>> origin/main
       return { [fieldName]: isDesc ? 'desc' : 'asc' };
     });
   }
@@ -589,6 +631,7 @@ export abstract class BaseCrudService<T> {
   }
 
   /**
+<<<<<<< HEAD
    * Determine if a field value should be converted to a number
    */
   private shouldConvertToNumber(field: string, value: any): boolean {
@@ -614,6 +657,8 @@ export abstract class BaseCrudService<T> {
   }
 
   /**
+=======
+>>>>>>> origin/main
    * Convert string values to numbers for numeric filters
    */
   private convertToNumber(value: any): number | null {
@@ -624,6 +669,7 @@ export abstract class BaseCrudService<T> {
     }
     return null;
   }
+<<<<<<< HEAD
 
   /**
    * Check if an object looks like a date string that was incorrectly parsed into character indices
@@ -673,4 +719,6 @@ export abstract class BaseCrudService<T> {
       return '';
     }
   }
+=======
+>>>>>>> origin/main
 }

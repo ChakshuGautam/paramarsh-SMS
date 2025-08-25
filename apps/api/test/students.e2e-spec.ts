@@ -479,6 +479,7 @@ describe('Students API (e2e)', () => {
       });
     });
   });
+<<<<<<< HEAD
 
   describe('Query Parameter Issues (TDD Reproduction)', () => {
     it('should handle search query (q) parameter correctly', async () => {
@@ -618,4 +619,6 @@ describe('Students API (e2e)', () => {
       expect(response.body.total).toBe(0);
     });
   });
+=======
+>>>>>>> origin/main
 });

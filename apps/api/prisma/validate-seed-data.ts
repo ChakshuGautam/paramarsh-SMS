@@ -287,6 +287,7 @@ async function validateGuardianRelationships() {
   });
 }
 
+<<<<<<< HEAD
 async function validateTeacherAttendance() {
   console.log('🔍 Validating Teacher Attendance Data...\n');
 
@@ -398,6 +399,8 @@ async function validateExamMarks() {
   }
 }
 
+=======
+>>>>>>> origin/main
 async function validateSpecificQueryData() {
   console.log('🔍 Validating Specific Query Data...\n');
 
@@ -443,15 +446,22 @@ async function validateSpecificQueryData() {
 }
 
 async function main() {
+<<<<<<< HEAD
   console.log('🌱 Starting Comprehensive Seed Data Validation...\n');
+=======
+  console.log('🌱 Starting Seed Data Validation...\n');
+>>>>>>> origin/main
 
   try {
     await validateStudentStatusDistribution();
     await validateEnrollmentConsistency();
     await validateClassStudentCounts();
     await validateGuardianRelationships();
+<<<<<<< HEAD
     await validateTeacherAttendance();
     await validateExamMarks();
+=======
+>>>>>>> origin/main
     await validateSpecificQueryData();
 
     // Print results
@@ -481,6 +491,7 @@ async function main() {
       console.log('2. Check that all relationships are properly created');
       console.log('3. Verify student status distribution matches requirements');
       console.log('4. Ensure each class has students with diverse statuses for testing');
+<<<<<<< HEAD
       console.log('5. Verify teacher attendance records are generated for all teachers');
       console.log('6. Check that completed exams have corresponding marks records');
       console.log('7. Validate realistic grade distributions and attendance patterns');
@@ -493,6 +504,10 @@ async function main() {
       console.log('  ✅ Guardian relationships and family structures');
       console.log('  ✅ Multi-branch data isolation');
       console.log('  ✅ Indian cultural context and authenticity');
+=======
+    } else {
+      console.log('\n🎉 All validations passed! Seed data is ready for demo and testing.');
+>>>>>>> origin/main
     }
 
   } catch (error) {

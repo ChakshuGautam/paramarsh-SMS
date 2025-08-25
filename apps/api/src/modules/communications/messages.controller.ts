@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -40,6 +43,7 @@ export class MessagesController {
   @ApiQuery({ name: 'channel', required: false, description: 'Filter by communication channel', example: 'sms' })
   @ListDocs('List of messages')
   findAll(
+<<<<<<< HEAD
     @Query('page') page?: string,
     @Query('perPage') perPage?: string,
     @Query('sort') sort?: string,
@@ -73,6 +77,20 @@ export class MessagesController {
       perPage: perPage ? parseInt(perPage) : 20,
       sort,
       filter,
+=======
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+    @Query('status') status?: string,
+    @Query('channel') channel?: string,
+  ) {
+    return this.messagesService.findAll({
+      skip: skip ? Number(skip) : undefined,
+      take: take ? Number(take) : undefined,
+      where: {
+        ...(status && { status }),
+        ...(channel && { channel }),
+      },
+>>>>>>> origin/main
     });
   }
 
@@ -84,7 +102,11 @@ export class MessagesController {
   @ApiParam({ name: 'id', description: 'Message ID', example: 'message-123' })
   @ListDocs('Message details')
   findOne(@Param('id') id: string) {
+<<<<<<< HEAD
     return this.messagesService.getOne(id);
+=======
+    return this.messagesService.findOne(id);
+>>>>>>> origin/main
   }
 
   @Patch(':id/status')
