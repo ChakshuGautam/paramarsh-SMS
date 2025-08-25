@@ -5,12 +5,20 @@ import { useListContext, useRecordContext, useDataProvider } from "ra-core";
 import {
   DataTable,
   List,
+<<<<<<< HEAD
+  ReferenceField,
+  Count,
+  TextField,
+  TextInput,
+  SelectInput,
+=======
   SelectInput,
   ReferenceInput,
   ReferenceField,
   AutocompleteInput,
   Count,
   TextField,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +57,21 @@ const getTimeFilter = (period: string) => {
   }
 };
 
+<<<<<<< HEAD
+// Standardized filters using filter components
+const examFilters = [
+  <TextInput source="q" placeholder="Search exams..." label="" alwaysOn />,
+  <SelectInput 
+    source="academicYearId" 
+    placeholder="Filter by academic year" 
+    label=""
+    choices={[]} // Would need to be populated with academic year data
+  />,
+  <SelectInput
+    source="examType"
+    placeholder="Filter by exam type"
+    label=""
+=======
 // Simplified filters - only academic year and exam type as requested
 const examFilters = [
   <ReferenceInput 
@@ -67,6 +90,7 @@ const examFilters = [
     source="examType" 
     label=""
     placeholder="Filter by exam type"
+>>>>>>> origin/main
     choices={[
       { id: 'UNIT_TEST', name: 'Unit Test' },
       { id: 'MONTHLY_TEST', name: 'Monthly Test' },

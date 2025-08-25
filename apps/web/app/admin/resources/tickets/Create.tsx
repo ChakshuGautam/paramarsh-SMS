@@ -1,10 +1,37 @@
 "use client";
 
+<<<<<<< HEAD
+import { 
+  Create, 
+  SimpleForm, 
+  TextInput,
+  SelectInput,
+  ReferenceInput,
+  AutocompleteInput,
+  required 
+} from "@/components/admin";
+=======
 import { Create, SimpleForm, TextInput } from "@/components/admin";
+>>>>>>> origin/main
 
 export const TicketsCreate = () => (
   <Create>
     <SimpleForm>
+<<<<<<< HEAD
+      <SelectInput 
+        source="ownerType" 
+        label="Owner Type" 
+        choices={[
+          { id: 'student', name: 'Student' },
+          { id: 'parent', name: 'Parent' },
+          { id: 'teacher', name: 'Teacher' },
+          { id: 'staff', name: 'Staff' },
+        ]}
+        validate={required()}
+      />
+      <TextInput source="ownerId" label="Owner ID" validate={required()} />
+      <TextInput source="subject" label="Subject" validate={required()} />
+=======
       <TextInput 
         source="ownerType" 
         label="Owner Type" 
@@ -12,11 +39,43 @@ export const TicketsCreate = () => (
       />
       <TextInput source="ownerId" label="Owner ID" />
       <TextInput source="subject" label="Subject" />
+>>>>>>> origin/main
       <TextInput
         source="description"
         label="Description"
         multiline
         rows={5}
+<<<<<<< HEAD
+        validate={required()}
+      />
+      <SelectInput 
+        source="category" 
+        label="Category"
+        choices={[
+          { id: 'technical', name: 'Technical' },
+          { id: 'academic', name: 'Academic' },
+          { id: 'administrative', name: 'Administrative' },
+          { id: 'billing', name: 'Billing' },
+          { id: 'general', name: 'General' },
+        ]}
+        validate={required()}
+      />
+      <SelectInput 
+        source="priority" 
+        label="Priority"
+        choices={[
+          { id: 'low', name: 'Low' },
+          { id: 'medium', name: 'Medium' },
+          { id: 'high', name: 'High' },
+          { id: 'urgent', name: 'Urgent' },
+        ]}
+        defaultValue="medium"
+        validate={required()}
+      />
+      <ReferenceInput source="assigneeId" reference="staff">
+        <AutocompleteInput optionText={(choice) => `${choice.firstName} ${choice.lastName}`} label="Assignee (Staff)" />
+      </ReferenceInput>
+=======
       />
       <TextInput 
         source="category" 
@@ -29,6 +88,7 @@ export const TicketsCreate = () => (
         helperText="low, normal, high, or urgent"
       />
       <TextInput source="assigneeId" label="Assignee ID" />
+>>>>>>> origin/main
     </SimpleForm>
   </Create>
 );

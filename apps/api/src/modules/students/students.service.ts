@@ -19,71 +19,40 @@ export class StudentsService extends BaseCrudService<any> {
    * Override to add branchId filtering and include guardians
    */
   async getList(params: any) {
-    // Try completely bypassing parent and doing it directly
+    // Build proper parameters for BaseCrudService
+    const serviceParams = {
+      page: Math.max(1, Number(params.page ?? 1)),
+      perPage: Math.min(100, Math.max(1, Number(params.perPage ?? 25))),
+      sort: params.sort,
+      filter: { ...params.filter }
+    };
+
+    // Add branchId to filter for multi-tenancy
+    if (params.branchId) {
+      serviceParams.filter.branchId = params.branchId;
+    }
+
+    // Handle search query 'q' by adding to filter
+    if (params.q && typeof params.q === 'string') {
+      serviceParams.filter.q = params.q;
+    }
+
+    // Use the base service method but override with custom includes
     try {
-      const page = Math.max(1, Number(params.page ?? 1));
-      const perPage = Math.min(100, Math.max(1, Number(params.perPage ?? 25)));
+      const page = serviceParams.page;
+      const perPage = serviceParams.perPage;
       const skip = (page - 1) * perPage;
 
-      // Build simple where clause WITH BRANCH FILTERING
-      const where: any = {};
-      
-      // CRITICAL: Add branchId filtering for multi-tenancy
-      if (params.branchId) {
-        where.branchId = params.branchId;
-      }
-      
-      // Add filters correctly
-      if (params.filter && typeof params.filter === 'object') {
-        Object.keys(params.filter).forEach(key => {
-          if (params.filter[key] !== undefined && params.filter[key] !== null) {
-            where[key] = params.filter[key];
-          }
-        });
-      }
-      
-      // Handle search query 'q'
-      if (params.q && typeof params.q === 'string') {
-        where.OR = [
-          { firstName: { contains: params.q, mode: 'insensitive' } },
-          { lastName: { contains: params.q, mode: 'insensitive' } },
-          { admissionNo: { contains: params.q, mode: 'insensitive' } }
-        ];
-      }
-      
-      // Build orderBy for sorting
-      let orderBy: any = undefined;
-      if (params.sort) {
-        // Handle formats like "firstName:asc" or "-firstName" or "firstName"
-        let sortField: string;
-        let sortOrder: 'asc' | 'desc';
-        
-        if (params.sort.includes(':')) {
-          // Format: "firstName:asc" or "firstName:desc"
-          const [field, order] = params.sort.split(':');
-          sortField = field;
-          sortOrder = order === 'desc' ? 'desc' : 'asc';
-        } else if (params.sort.startsWith('-')) {
-          // Format: "-firstName"
-          sortField = params.sort.slice(1);
-          sortOrder = 'desc';
-        } else {
-          // Format: "firstName"
-          sortField = params.sort;
-          sortOrder = 'asc';
-        }
-        
-        orderBy = { [sortField]: sortOrder };
-      }
-
-      console.log('Direct student query - where:', JSON.stringify(where, null, 2));
+      // Build where clause using base service method
+      const where = this.buildWhereClause(serviceParams.filter);
+      const orderBy = this.buildOrderBy(serviceParams.sort);
 
       const [data, total] = await Promise.all([
         this.prisma.student.findMany({ 
           where, 
           skip, 
           take: perPage,
-          ...(orderBy && { orderBy }),
+          orderBy,
           include: {
             guardians: {
               include: {
@@ -95,10 +64,7 @@ export class StudentsService extends BaseCrudService<any> {
         this.prisma.student.count({ where }),
       ]);
 
-      return {
-        data: data,
-        total,
-      };
+      return { data, total };
     } catch (error) {
       console.error('Error in student getList:', error);
       throw error;
@@ -186,14 +152,13 @@ export class StudentsService extends BaseCrudService<any> {
   }
 
   /**
-   * Override to support search
+   * Override to support search - only search fields that exist in Student model
    */
   protected buildSearchClause(search: string): any[] {
     return [
       { firstName: { contains: search, mode: 'insensitive' } },
       { lastName: { contains: search, mode: 'insensitive' } },
       { admissionNo: { contains: search, mode: 'insensitive' } },
-      { email: { contains: search, mode: 'insensitive' } },
     ];
   }
 

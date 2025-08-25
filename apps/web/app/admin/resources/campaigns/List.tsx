@@ -1,5 +1,14 @@
 "use client";
 
+<<<<<<< HEAD
+import { useListContext, useRecordContext } from "ra-core";
+import {
+  DataTable,
+  List,
+  Count,
+  TextInput,
+  SelectInput,
+=======
 import { useListContext } from "ra-core";
 import {
   DataTable,
@@ -12,10 +21,15 @@ import {
   SelectInput,
   DateInput,
   Count,
+>>>>>>> origin/main
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Send, Clock, CheckCircle } from "lucide-react";
+<<<<<<< HEAD
+import { formatDate, formatDateTime } from "@/lib/utils/date-utils";
+=======
+>>>>>>> origin/main
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
@@ -26,6 +40,13 @@ const storeKeyByStatus = {
   paused: "campaigns.list.paused",
 };
 
+<<<<<<< HEAD
+const filters = [
+  <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
+  <SelectInput 
+    source="status" 
+    placeholder="Filter by status..." 
+=======
 // Label-less filters with placeholders
 const campaignFilters = [
   <TextInput source="q" placeholder="Search campaigns..." label="" alwaysOn />,
@@ -35,29 +56,47 @@ const campaignFilters = [
   <SelectInput 
     source="status" 
     placeholder="Filter by status" 
+>>>>>>> origin/main
     label="" 
     choices={[
       { id: 'draft', name: 'Draft' },
       { id: 'scheduled', name: 'Scheduled' },
       { id: 'running', name: 'Running' },
       { id: 'completed', name: 'Completed' },
+<<<<<<< HEAD
+      { id: 'paused', name: 'Paused' },
+    ]} 
+  />,
+  <TextInput source="schedule_gte" placeholder="Scheduled after (YYYY-MM-DD)..." label="" />,
+=======
       { id: 'paused', name: 'Paused' }
     ]} 
   />,
   <DateInput source="schedule_gte" placeholder="Scheduled after" label="" />,
+>>>>>>> origin/main
 ];
 
 export const CampaignsList = () => (
   <List
+<<<<<<< HEAD
+    filters={filters}
+    sort={{ field: "createdAt", order: "DESC" }}
+    filterDefaultValues={{ status: "draft" }}
+=======
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "draft" }}
     filters={campaignFilters}
+>>>>>>> origin/main
     perPage={10}
   >
     <TabbedDataTable />
   </List>
 );
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
 const TabbedDataTable = () => {
   const listContext = useListContext();
   const { filterValues, setFilters, displayedFilters } = listContext;
@@ -144,6 +183,18 @@ const CampaignsTable = ({ storeKey }: { storeKey: string }) => (
     
     {/* Desktop-only columns */}
     <DataTable.Col label="Template" className="hidden md:table-cell">
+<<<<<<< HEAD
+      <TemplateField />
+    </DataTable.Col>
+    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
+      <CreatedDateField />
+    </DataTable.Col>
+  </DataTable>
+);
+
+const StatusBadge = () => {
+  const record = useRecordContext();
+=======
       <ReferenceField reference="templates" source="templateId">
         <TextField source="name" />
       </ReferenceField>
@@ -154,6 +205,7 @@ const CampaignsTable = ({ storeKey }: { storeKey: string }) => (
 );
 
 const StatusBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record) return null;
   
   const variants = {
@@ -191,12 +243,48 @@ const StatusBadge = ({ record }: { record?: any }) => {
   );
 };
 
+<<<<<<< HEAD
+const CreatedDateField = () => {
+  const record = useRecordContext();
+  if (!record || !record.createdAt) return null;
+  return <span>{formatDate(record.createdAt)}</span>;
+};
+
+const TemplateField = () => {
+  const record = useRecordContext();
+  if (!record || !record.templateId) return <span className="text-muted-foreground">-</span>;
+  
+  // Handle case where template data might not be loaded
+  if (record.template) {
+    return <span>{record.template.name}</span>;
+  }
+  
+  return <span className="text-xs text-muted-foreground">ID: {record.templateId}</span>;
+};
+
+const ScheduleBadge = () => {
+  const record = useRecordContext();
+=======
 const ScheduleBadge = ({ record }: { record?: any }) => {
+>>>>>>> origin/main
   if (!record || !record.schedule) return null;
   
   const scheduleDate = new Date(record.schedule);
   const now = new Date();
   
+<<<<<<< HEAD
+  // Handle invalid dates
+  if (isNaN(scheduleDate.getTime())) {
+    return (
+      <div className="flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-gray-600" />
+        <Badge className="text-gray-700 bg-gray-100">Invalid date</Badge>
+      </div>
+    );
+  }
+  
+=======
+>>>>>>> origin/main
   const getScheduleColor = () => {
     if (scheduleDate < now) return 'text-gray-700 bg-gray-100';
     const diffHours = (scheduleDate.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -209,7 +297,11 @@ const ScheduleBadge = ({ record }: { record?: any }) => {
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-blue-600" />
       <Badge className={getScheduleColor()}>
+<<<<<<< HEAD
+        {formatDateTime(record.schedule)}
+=======
         {scheduleDate.toLocaleDateString()} {scheduleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+>>>>>>> origin/main
       </Badge>
     </div>
   );

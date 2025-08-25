@@ -1,3 +1,22 @@
+<<<<<<< HEAD
+import React from 'react';
+import { AdminContext, ResourceContextProvider, testDataProvider, memoryStore } from 'react-admin';
+import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
+
+import { MarksCreate } from '@/app/admin/resources/marks/Create';
+
+const renderMarksCreate = (dataProviderOverrides = {}) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } }
+  });
+
+  const dataProvider = testDataProvider({
+    create: () => Promise.resolve({ data: { id: 1, obtainedMarks: 85 } }),
+    getList: () => Promise.resolve({ data: [], total: 0 }),
+    getMany: () => Promise.resolve({ data: [] }),
+=======
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { AdminContext, ResourceContextProvider, testDataProvider } from "react-admin";
@@ -20,13 +39,18 @@ const renderMarksCreate = (dataProviderOverrides = {}) => {
       return Promise.resolve({ data: newRecord });
     }),
     getList: jest.fn(() => Promise.resolve({ data: [], total: 0 })),
+>>>>>>> origin/main
     ...dataProviderOverrides,
   });
 
   return render(
     <MemoryRouter>
       <QueryClientProvider client={queryClient}>
+<<<<<<< HEAD
+        <AdminContext dataProvider={dataProvider} store={memoryStore()}>
+=======
         <AdminContext dataProvider={dataProvider}>
+>>>>>>> origin/main
           <ResourceContextProvider value="marks">
             <MarksCreate />
           </ResourceContextProvider>
@@ -36,6 +60,14 @@ const renderMarksCreate = (dataProviderOverrides = {}) => {
   );
 };
 
+<<<<<<< HEAD
+describe('<MarksCreate>', () => {
+  test('renders create form', () => {
+    renderMarksCreate();
+    expect(screen.container).toBeInTheDocument();
+  });
+});
+=======
 describe("MarksCreate Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -80,3 +112,4 @@ describe("MarksCreate Component", () => {
     expect(screen.getByRole("button", { name: /save/i })).toBeInTheDocument();
   });
 });
+>>>>>>> origin/main

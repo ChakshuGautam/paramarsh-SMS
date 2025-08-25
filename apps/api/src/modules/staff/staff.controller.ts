@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StaffService } from './staff.service';
@@ -96,28 +97,36 @@ export class StaffController {
 
   @Get()
   @ListDocs('List staff')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page (alias for perPage)' })
+  @ApiQuery({ name: 'sort', required: false, type: String, description: 'Sort field and direction' })
   @ApiQuery({ name: 'department', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'filter', required: false })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query for firstName, lastName, designation, department' })
   @ApiQuery({ name: 'ids', required: false })
   list(
     @Query('page') page?: number,
     @Query('perPage') perPage?: number,
+    @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('filter') filter?: string,
+    @Query('q') q?: string,
     @Query('ids') ids?: string,
     @Query('department') department?: string,
     @Query('status') status?: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    return this.service.list({ page, perPage, sort, filter, ids, department, status, branchId });
+    const effectivePerPage = perPage || pageSize;
+    return this.service.list({ page, perPage: effectivePerPage, sort, filter, q, ids, department, status, branchId });
   }
 
   @Post()
   @CreateDocs('Create staff')
   create(
     @Body() body: UpsertStaffDto,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.create(body, branchId);
   }
@@ -126,7 +135,7 @@ export class StaffController {
   @ApiTags('Staff')
   getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.getOne(id, branchId);
   }
@@ -136,7 +145,7 @@ export class StaffController {
   update(
     @Param('id') id: string, 
     @Body() body: Partial<UpsertStaffDto>,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.update(id, body, branchId);
   }
@@ -146,7 +155,7 @@ export class StaffController {
   partialUpdate(
     @Param('id') id: string, 
     @Body() body: Partial<UpsertStaffDto>,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.update(id, body, branchId);
   }
@@ -155,7 +164,7 @@ export class StaffController {
   @DeleteDocs('Delete staff')
   remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.remove(id, branchId);
   }

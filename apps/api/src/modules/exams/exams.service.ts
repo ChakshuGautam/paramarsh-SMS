@@ -21,11 +21,13 @@ export class ExamsService {
 
   async list(params: { 
     page?: number; 
-    pageSize?: number; 
+    pageSize?: number;
+    perPage?: number; // Support both parameters
     sort?: string; 
     q?: string;
     startDateGte?: string;
     startDateLte?: string;
+    startDateGt?: string;
     endDateGte?: string;
     endDateLte?: string;
     examType?: string;
@@ -34,7 +36,7 @@ export class ExamsService {
     status?: string;
   }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
+    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
     const skip = (page - 1) * pageSize;
 
     const where: any = {};
@@ -45,10 +47,11 @@ export class ExamsService {
     }
     
     // Date filters - dates are stored as strings in the database
-    if (params.startDateGte || params.startDateLte) {
+    if (params.startDateGte || params.startDateLte || params.startDateGt) {
       where.startDate = {};
       if (params.startDateGte) where.startDate.gte = params.startDateGte;
       if (params.startDateLte) where.startDate.lte = params.startDateLte;
+      if (params.startDateGt) where.startDate.gt = params.startDateGt;
     }
     
     if (params.endDateGte || params.endDateLte) {
@@ -90,7 +93,21 @@ export class ExamsService {
       this.prisma.exam.findMany({ where, skip, take: pageSize, orderBy }),
       this.prisma.exam.count({ where }),
     ]);
-    return { data, meta: { page, pageSize, total, hasNext: skip + pageSize < total } };
+    return { data, total };
+  }
+
+  async getOne(id: string) {
+    const { branchId } = PrismaService.getScope();
+    
+    const exam = await this.prisma.exam.findFirst({
+      where: { id, branchId }
+    });
+    
+    if (!exam) {
+      throw new NotFoundException('Exam not found');
+    }
+    
+    return { data: exam };
   }
 
   async create(input: Exam) {

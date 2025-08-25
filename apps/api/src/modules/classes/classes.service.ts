@@ -1,41 +1,50 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { BaseCrudService } from '../../common/base-crud.service';
 
 export type ClassRow = { branchId?: string; name: string; gradeLevel?: number };
 
 @Injectable()
-export class ClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+export class ClassesService extends BaseCrudService<any> {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma, 'class');
+  }
 
+  /**
+   * Class model has branchId field for multi-school support
+   */
+  protected supportsBranchScoping(): boolean {
+    return true;
+  }
+
+  /**
+   * Build search clause for class search
+   */
+  protected buildSearchClause(search: string): any[] {
+    return [
+      { name: { contains: search } }
+    ];
+  }
+
+  // Map the list method to use BaseCrudService's getList
   async list(params: { page?: number; perPage?: number; sort?: string; q?: string; branchId: string; filter?: any; ids?: string }) {
-    const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.perPage ?? 25)));
-    const skip = (page - 1) * pageSize;
-
-    const where: any = {};
-    if (params.q) where.name = { contains: params.q, mode: 'insensitive' };
-    
-    // Handle filter parameter
-    if (params.filter) {
-      Object.assign(where, params.filter);
-    }
-    
-    // Handle ids parameter
+    // Map ids to filter if provided
+    const filter = { ...params.filter };
     if (params.ids) {
-      where.id = { in: params.ids.split(',') };
+      filter.id = { in: params.ids.split(',') };
     }
     
-    // Add branchId filtering
-    where.branchId = params.branchId;
-    const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ id: 'asc' }];
-
-    const [data, total] = await Promise.all([
-      this.prisma.class.findMany({ where: { ...where }, skip, take: pageSize, orderBy }),
-      this.prisma.class.count({ where: { ...where } }),
-    ]);
-    return { data, total };
+    // Use parent's getList method
+    return this.getList({
+      page: params.page,
+      perPage: params.perPage,
+      sort: params.sort,
+      filter: {
+        ...filter,
+        ...(params.q && { q: params.q }),
+        branchId: params.branchId
+      }
+    });
   }
 
   async findOne(id: string, branchId: string) {
@@ -49,17 +58,15 @@ export class ClassesService {
   }
 
   async create(input: { name: string; gradeLevel?: number; branchId: string }) {
-    const created = await this.prisma.class.create({ 
-      data: { 
-        branchId: input.branchId,
-        name: input.name, 
-        gradeLevel: input.gradeLevel ?? null 
-      } 
+    // Use parent's create method which returns { data: T }
+    return super.create({ 
+      branchId: input.branchId,
+      name: input.name, 
+      gradeLevel: input.gradeLevel ?? null 
     });
-    return { data: created };
   }
 
-  async update(id: string, input: { name?: string; gradeLevel?: number }, branchId: string) {
+  async updateWithBranch(id: string, input: { name?: string; gradeLevel?: number }, branchId: string) {
     // First check if the class exists with the given branchId
     const existing = await this.prisma.class.findFirst({
       where: { id, branchId }
@@ -68,14 +75,11 @@ export class ClassesService {
       throw new NotFoundException('Class not found');
     }
     
-    const updated = await this.prisma.class.update({ 
-      where: { id }, 
-      data: { 
-        name: input.name ?? undefined, 
-        gradeLevel: input.gradeLevel ?? undefined 
-      } 
+    // Use parent's update method which returns { data: T }
+    return super.update(id, { 
+      name: input.name ?? undefined, 
+      gradeLevel: input.gradeLevel ?? undefined 
     });
-    return { data: updated };
   }
 
   async remove(id: string, branchId: string) {
@@ -87,7 +91,7 @@ export class ClassesService {
       throw new NotFoundException('Class not found');
     }
     
-    await this.prisma.class.delete({ where: { id } });
-    return { data: { id } };
+    // Use parent's delete method
+    return super.delete(id);
   }
 }

@@ -1,0 +1,185 @@
+/**
+ * Global Filter Styling
+ * Ensures consistent height, width, and appearance for all filter components
+ */
+
+/* React Admin Filter Overrides - Ensure consistent dimensions */
+
+/* All filter inputs should have the same height */
+.RaList-main .MuiToolbar-root .MuiInputBase-root,
+.RaList-main .MuiToolbar-root .MuiOutlinedInput-root,
+.RaList-main .MuiToolbar-root .MuiInput-root,
+.RaList-main .MuiToolbar-root .MuiSelect-root {
+  height: 40px !important;
+  font-size: 14px !important;
+}
+
+/* Consistent input padding */
+.RaList-main .MuiToolbar-root .MuiInputBase-input,
+.RaList-main .MuiToolbar-root .MuiOutlinedInput-input,
+.RaList-main .MuiToolbar-root .MuiSelect-select {
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  line-height: 24px !important;
+}
+
+/* Search filter specific (alwaysOn) */
+.RaList-main .MuiToolbar-root [data-testid*="search"] input,
+.RaList-main .MuiToolbar-root input[name="q"] {
+  min-width: 240px;
+  max-width: 400px;
+}
+
+/* Select filters */
+.RaList-main .MuiToolbar-root .MuiSelect-root {
+  min-width: 180px;
+  max-width: 320px;
+}
+
+/* Date inputs */
+.RaList-main .MuiToolbar-root input[type="date"],
+.RaList-main .MuiToolbar-root .MuiInputBase-root:has(input[type="date"]) {
+  min-width: 180px;
+  max-width: 240px;
+}
+
+/* Number inputs */
+.RaList-main .MuiToolbar-root input[type="number"],
+.RaList-main .MuiToolbar-root .MuiInputBase-root:has(input[type="number"]) {
+  min-width: 120px;
+  max-width: 180px;
+}
+
+/* Autocomplete inputs */
+.RaList-main .MuiToolbar-root .MuiAutocomplete-root {
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.RaList-main .MuiToolbar-root .MuiAutocomplete-root .MuiInputBase-root {
+  height: 40px !important;
+}
+
+/* Filter toolbar container */
+.RaList-main .MuiToolbar-root {
+  min-height: 56px;
+  padding: 8px 12px;
+  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  background-color: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Remove filter labels - we use placeholders */
+.RaList-main .MuiToolbar-root .MuiFormLabel-root:not(.Mui-focused) {
+  display: none;
+}
+
+/* Consistent placeholder styling */
+.RaList-main .MuiToolbar-root .MuiInputBase-input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+  font-size: 14px;
+}
+
+/* Consistent border and focus states */
+.RaList-main .MuiToolbar-root .MuiOutlinedInput-root {
+  border-radius: 6px;
+}
+
+.RaList-main .MuiToolbar-root .MuiOutlinedInput-notchedOutline {
+  border-color: #e5e7eb;
+}
+
+.RaList-main .MuiToolbar-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #d1d5db;
+}
+
+.RaList-main .MuiToolbar-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #3b82f6;
+  border-width: 2px;
+}
+
+/* Date range inputs - special case */
+.RaList-main .MuiToolbar-root .date-range-input {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.RaList-main .MuiToolbar-root .date-range-input .MuiInputBase-root {
+  height: 40px !important;
+  min-width: 160px;
+  max-width: 200px;
+}
+
+/* Boolean inputs */
+.RaList-main .MuiToolbar-root .MuiFormControlLabel-root {
+  height: 40px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .RaList-main .MuiToolbar-root {
+    padding: 6px 8px;
+  }
+  
+  .RaList-main .MuiToolbar-root .MuiInputBase-root,
+  .RaList-main .MuiToolbar-root .MuiSelect-root,
+  .RaList-main .MuiToolbar-root .MuiAutocomplete-root {
+    min-width: calc(50% - 4px);
+    max-width: calc(50% - 4px);
+  }
+  
+  .RaList-main .MuiToolbar-root input[name="q"] {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .RaList-main .MuiToolbar-root .MuiInputBase-root,
+  .RaList-main .MuiToolbar-root .MuiSelect-root,
+  .RaList-main .MuiToolbar-root .MuiAutocomplete-root {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Ensure filter clear button is consistent */
+.RaList-main .MuiToolbar-root .MuiIconButton-root {
+  height: 40px;
+  width: 40px;
+  padding: 8px;
+}
+
+/* Filter dropdown menu styling */
+.MuiPaper-root.MuiMenu-paper {
+  max-height: 300px;
+  font-size: 14px;
+}
+
+.MuiMenuItem-root {
+  font-size: 14px;
+  min-height: 40px;
+}
+
+/* Ensure consistent spacing between filters */
+.RaList-main .MuiToolbar-root > * {
+  margin-right: 8px;
+}
+
+.RaList-main .MuiToolbar-root > *:last-child {
+  margin-right: 0;
+}
+
+/* Loading state for filters */
+.RaList-main .MuiToolbar-root .MuiCircularProgress-root {
+  width: 20px !important;
+  height: 20px !important;
+}

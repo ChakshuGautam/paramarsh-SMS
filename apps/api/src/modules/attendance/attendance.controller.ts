@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Controller, Get, Post, Put, Delete, Param, Query, Body, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
@@ -70,7 +71,7 @@ export class AttendanceController {
     @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: string,
     @Query() query?: Record<string, any>,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     // Handle getMany case (when ids are provided)
     if (ids) {
@@ -108,7 +109,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Get single attendance record by ID' })
   async getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.attendanceService.getOne(id, branchId);
   }
@@ -117,7 +118,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Create new attendance record' })
   async create(
     @Body() data: CreateAttendanceDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.attendanceService.create({ ...data, branchId });
   }
@@ -127,7 +128,7 @@ export class AttendanceController {
   async update(
     @Param('id') id: string,
     @Body() data: UpdateAttendanceDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.attendanceService.update(id, data, branchId);
   }
@@ -136,7 +137,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Delete attendance record' })
   async remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Headers('x-user-id') userId?: string,
   ) {
     return this.attendanceService.delete(id, userId, branchId);
@@ -146,7 +147,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Delete multiple attendance records' })
   async deleteMany(
     @Body() body: { ids: string[] },
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Headers('x-user-id') userId?: string,
   ) {
     // Validate that all records exist in this branch first
@@ -175,7 +176,7 @@ export class AttendanceController {
   })
   generateDummy(
     @Body() body: GenerateDummyAttendanceDto,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.attendanceService.generateDummyAttendance(body);
   }
@@ -191,7 +192,7 @@ export class AttendanceController {
     @Param('studentId') studentId: string,
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.attendanceService.getStudentAttendanceSummary(studentId, startDate, endDate);
   }
@@ -205,7 +206,7 @@ export class AttendanceController {
   getSectionReport(
     @Param('sectionId') sectionId: string,
     @Query('date') date: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.attendanceService.getSectionAttendanceReport(sectionId, date);
   }

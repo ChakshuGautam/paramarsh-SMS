@@ -25,6 +25,29 @@ type ClerkLike = {
 
 async function loadClerk(): Promise<ClerkLike> {
   if (typeof window === "undefined") return null;
+<<<<<<< HEAD
+  
+  // Wait for Clerk to be available
+  let attempts = 0;
+  while (attempts < 10) {
+    const clerk = (window as unknown as { Clerk?: ClerkLike }).Clerk ?? null;
+    if (clerk) {
+      if (typeof clerk.load === "function") {
+        try {
+          await clerk.load();
+        } catch {
+          // ignore load errors; treated as unauthenticated
+        }
+      }
+      return clerk;
+    }
+    // Wait a bit before trying again
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+  
+  return null;
+=======
   const clerk = (window as unknown as { Clerk?: ClerkLike }).Clerk ?? null;
   if (!clerk) return null;
   if (typeof clerk.load === "function") {
@@ -35,6 +58,7 @@ async function loadClerk(): Promise<ClerkLike> {
     }
   }
   return clerk;
+>>>>>>> origin/main
 }
 
 async function isSignedIn(): Promise<boolean> {

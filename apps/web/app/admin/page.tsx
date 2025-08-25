@@ -2,7 +2,10 @@
 "use client";
 
 import React, { Suspense } from "react";
+<<<<<<< HEAD
+=======
 import { ClerkProvider } from "@clerk/nextjs";
+>>>>>>> origin/main
 import AdminApp from "./AdminApp";
 
 function AdminLoader() {
@@ -17,6 +20,13 @@ function AdminLoader() {
 }
 
 export default function Page() {
+<<<<<<< HEAD
+  // ClerkProvider is already in the root layout.tsx, no need to duplicate it here
+  return (
+    <Suspense fallback={<AdminLoader />}>
+      <AdminApp />
+    </Suspense>
+=======
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   if (!publishableKey) {
@@ -36,5 +46,6 @@ export default function Page() {
         <AdminApp />
       </Suspense>
     </ClerkProvider>
+>>>>>>> origin/main
   );
 }

@@ -1,10 +1,32 @@
 "use client";
 
+<<<<<<< HEAD
+import { useRecordContext } from "ra-core";
+=======
 import { useListContext, useRecordContext } from "ra-core";
+>>>>>>> origin/main
 import { Link } from "react-router-dom";
 import {
   DataTable,
   List,
+<<<<<<< HEAD
+  TextField,
+  TabbedResourceList,
+  statusTabs,
+  RelationBadge,
+  TextInput,
+  SelectInput,
+} from "@/components/admin";
+import { Badge } from "@/components/ui/badge";
+import { Phone, Mail, User } from "lucide-react";
+import { getRelationColor } from "@/lib/theme/colors";
+
+const filters = [
+  <TextInput source="q" placeholder="Search..." label="" alwaysOn />,
+  <SelectInput 
+    source="relation" 
+    placeholder="Filter by relation..." 
+=======
   TextInput,
   SelectInput,
   TextField,
@@ -29,11 +51,19 @@ const guardianFilters = [
   <SelectInput 
     source="relation" 
     placeholder="Filter by relation" 
+>>>>>>> origin/main
     label="" 
     choices={[
       { id: 'father', name: 'Father' },
       { id: 'mother', name: 'Mother' },
       { id: 'guardian', name: 'Guardian' },
+<<<<<<< HEAD
+      { id: 'other', name: 'Other' },
+    ]} 
+  />,
+  <TextInput source="phone" placeholder="Filter by phone..." label="" />,
+  <TextInput source="email" placeholder="Filter by email..." label="" />,
+=======
       { id: 'grandfather', name: 'Grandfather' },
       { id: 'grandmother', name: 'Grandmother' },
       { id: 'uncle', name: 'Uncle' },
@@ -43,10 +73,28 @@ const guardianFilters = [
   />,
   <TextInput source="phone" placeholder="Filter by phone" label="" />,
   <TextInput source="email" placeholder="Filter by email" label="" />,
+>>>>>>> origin/main
 ];
 
 export const GuardiansList = () => (
   <List
+<<<<<<< HEAD
+    filters={filters}
+    sort={{ field: "name", order: "ASC" }}
+    perPage={10}
+  >
+    <TabbedResourceList
+      tabs={statusTabs.guardianRelation}
+      defaultTab="all"
+    >
+      {(tab) => <GuardiansTable storeKey={tab.storeKey} />}
+    </TabbedResourceList>
+  </List>
+);
+
+// Component to display wards (students) with links
+
+=======
     sort={{ field: "name", order: "ASC" }}
     filters={guardianFilters}
     perPage={10}
@@ -122,6 +170,7 @@ const TabbedDataTable = () => {
 };
 
 // Component to display wards (students) with links
+>>>>>>> origin/main
 const WardLinks = () => {
   const record = useRecordContext();
   
@@ -187,6 +236,10 @@ const GuardiansTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
     storeKey={storeKey}
     rowClassName={(record) => {
+<<<<<<< HEAD
+      const relationColor = getRelationColor(record.relation);
+      return `border-l-4 ${relationColor.border}`;
+=======
       const relationColors = {
         father: 'border-l-4 border-l-blue-500',
         mother: 'border-l-4 border-l-pink-500',
@@ -198,6 +251,7 @@ const GuardiansTable = ({ storeKey }: { storeKey: string }) => (
         other: 'border-l-4 border-l-muted-foreground',
       };
       return relationColors[record.relation] || 'border-l-4 border-l-muted-foreground';
+>>>>>>> origin/main
     }}
   >
     {/* Always visible columns */}
@@ -205,7 +259,11 @@ const GuardiansTable = ({ storeKey }: { storeKey: string }) => (
       <TextField source="name" />
     </DataTable.Col>
     <DataTable.Col source="relation" label="Relation">
+<<<<<<< HEAD
+      <RelationBadge size="sm" showIcon />
+=======
       <RelationBadge />
+>>>>>>> origin/main
     </DataTable.Col>
     <DataTable.Col source="phone" label="Phone">
       <TextField source="phone" />
@@ -232,6 +290,9 @@ const NameWithIcon = ({ record }: { record?: any }) => {
   );
 };
 
+<<<<<<< HEAD
+// Removed - now using shared RelationBadge component
+=======
 const RelationBadge = () => {
   const record = useRecordContext();
   if (!record || !record.relation) return null;
@@ -253,6 +314,7 @@ const RelationBadge = () => {
     </Badge>
   );
 };
+>>>>>>> origin/main
 
 const PhoneWithIcon = ({ record }: { record?: any }) => {
   if (!record || !record.phone) return null;

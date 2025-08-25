@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MarksService } from './marks.service';
@@ -12,6 +13,9 @@ export class MarksController {
 
   @Get()
   @ListDocs('List marks')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page (alias for perPage)' })
   @ApiQuery({ name: 'q', required: false, description: 'Search by student or subject name' })
   @ApiQuery({ name: 'examId', required: false, description: 'Filter by exam ID' })
   @ApiQuery({ name: 'subjectId', required: false, description: 'Filter by subject ID' })
@@ -19,7 +23,8 @@ export class MarksController {
   @ApiQuery({ name: 'isAbsent', required: false, type: Boolean, description: 'Filter by absence status' })
   list(
     @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('perPage') perPage?: number,
+    @Query('pageSize') pageSize?: number, // Keep for backward compatibility
     @Query('sort') sort?: string,
     @Query('q') q?: string,
     @Query('examId') examId?: string,
@@ -27,7 +32,8 @@ export class MarksController {
     @Query('studentId') studentId?: string,
     @Query('isAbsent') isAbsent?: boolean,
   ) {
-    return this.service.list({ page, pageSize, sort, q, examId, subjectId, studentId, isAbsent });
+    const effectivePerPage = perPage || pageSize;
+    return this.service.list({ page, perPage: effectivePerPage, sort, q, examId, subjectId, studentId, isAbsent });
   }
 
   @Get(':id')

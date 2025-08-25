@@ -1,7 +1,8 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FeeStructuresService } from './fee-structures.service';
-import { CreateDocs, DeleteDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
+import { CreateDocs, DeleteDocs, GetDocs, ListDocs, UpdateDocs } from '../../common/swagger.decorators';
 import { IsNumber, IsOptional, IsString, IsUUID, IsPositive } from 'class-validator';
 
 class CreateStructureDto {
@@ -61,48 +62,75 @@ export class FeeStructuresController {
 
   @Get()
   @ListDocs('List fee structures')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page (alias for perPage)' })
+  @ApiQuery({ name: 'sort', required: false, type: String, description: 'Sort field and direction' })
+  @ApiQuery({ name: 'ids', required: false, type: String, description: 'Comma-separated list of IDs for getMany' })
   list(
     @Query('page') page?: number,
+    @Query('perPage') perPage?: number,
     @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Query('ids') ids?: string,
+    @Query('filter') filterStr?: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    return this.service.list({ page, pageSize, sort, branchId });
+    const filter = filterStr ? JSON.parse(filterStr) : undefined;
+    
+    if (ids) {
+      const idList = ids.split(',');
+      return this.service.list({ branchId }).then(response => ({
+        data: response.data.filter(item => idList.includes(item.id))
+      }));
+    }
+    
+    const effectivePageSize = perPage || pageSize;
+    return this.service.list({ page, pageSize: effectivePageSize, sort, filter, branchId });
+  }
+
+  @Get(':id')
+  @GetDocs('Get fee structure by ID')
+  getOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.service.getOne(id, branchId);
   }
 
   @Post()
   @CreateDocs('Create fee structure')
-  createStructure(@Body() body: CreateStructureDto, @Headers('x-branch-id') branchId = 'branch1') {
+  createStructure(@Body() body: CreateStructureDto, @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID) {
     return this.service.createStructure(body, branchId);
   }
 
   @Patch(':id')
   @UpdateDocs('Update fee structure')
-  updateStructure(@Param('id') id: string, @Body() body: CreateStructureDto, @Headers('x-branch-id') branchId = 'branch1') {
+  updateStructure(@Param('id') id: string, @Body() body: CreateStructureDto, @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID) {
     return this.service.updateStructure(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete fee structure')
-  removeStructure(@Param('id') id: string, @Headers('x-branch-id') branchId = 'branch1') {
+  removeStructure(@Param('id') id: string, @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID) {
     return this.service.removeStructure(id, branchId);
   }
 
   @Post('components')
   @CreateDocs('Create fee component')
-  createComponent(@Body() body: CreateComponentDto, @Headers('x-branch-id') branchId = 'branch1') {
+  createComponent(@Body() body: CreateComponentDto, @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID) {
     return this.service.createComponent(body, branchId);
   }
 
   @Patch('components/:id')
   @UpdateDocs('Update fee component')
-  updateComponent(@Param('id') id: string, @Body() body: Partial<CreateComponentDto>, @Headers('x-branch-id') branchId = 'branch1') {
+  updateComponent(@Param('id') id: string, @Body() body: Partial<CreateComponentDto>, @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID) {
     return this.service.updateComponent(id, body, branchId);
   }
 
   @Delete('components/:id')
   @DeleteDocs('Delete fee component')
-  removeComponent(@Param('id') id: string, @Headers('x-branch-id') branchId = 'branch1') {
+  removeComponent(@Param('id') id: string, @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID) {
     return this.service.removeComponent(id, branchId);
   }
 }

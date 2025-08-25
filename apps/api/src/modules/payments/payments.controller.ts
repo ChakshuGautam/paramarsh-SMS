@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
@@ -68,19 +69,26 @@ export class PaymentsController {
 
   @Get()
   @ListDocs('List payments')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page (alias for perPage)' })
+  @ApiQuery({ name: 'sort', required: false, type: String, description: 'Sort field and direction' })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'method', required: false })
   @ApiQuery({ name: 'invoiceId', required: false })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query for reference, gateway, method' })
   list(
     @Query('page') page?: number,
     @Query('perPage') perPage?: number,
+    @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('status') status?: string,
     @Query('method') method?: string,
     @Query('invoiceId') invoiceId?: string,
+    @Query('q') q?: string,
     @Query('filter') filterStr?: string,
     @Query('ids') ids?: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     const filter = filterStr ? JSON.parse(filterStr) : undefined;
     
@@ -90,14 +98,16 @@ export class PaymentsController {
         data: response.data.filter(item => idList.includes(item.id))
       }));
     }
-    return this.service.list({ page, perPage, sort, status, method, invoiceId, filter, branchId });
+    
+    const effectivePerPage = perPage || pageSize;
+    return this.service.list({ page, perPage: effectivePerPage, sort, status, method, invoiceId, q, filter, branchId });
   }
 
   @Get(':id')
   @ApiTags('Payments')
   getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.getOne(id, branchId);
   }
@@ -106,7 +116,7 @@ export class PaymentsController {
   @CreateDocs('Create payment')
   create(
     @Body() body: UpsertPaymentDto,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.create({ ...body, branchId });
   }
@@ -116,7 +126,7 @@ export class PaymentsController {
   update(
     @Param('id') id: string,
     @Body() body: Partial<UpsertPaymentDto>,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.update(id, body, branchId);
   }
@@ -126,7 +136,7 @@ export class PaymentsController {
   updateFull(
     @Param('id') id: string,
     @Body() body: Partial<UpsertPaymentDto>,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.update(id, body, branchId);
   }
@@ -135,7 +145,7 @@ export class PaymentsController {
   @DeleteDocs('Delete payment')
   remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.remove(id, branchId);
   }

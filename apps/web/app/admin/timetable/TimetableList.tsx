@@ -1,10 +1,17 @@
 "use client";
 
+<<<<<<< HEAD
+import { useListContext, useRecordContext } from "ra-core";
+import {
+  DataTable,
+  List,
+=======
 import { useListContext } from "ra-core";
 import {
   DataTable,
   List,
   ReferenceField,
+>>>>>>> origin/main
   TextField,
   TextInput,
   ReferenceInput,
@@ -156,16 +163,36 @@ const TimetableTable = ({ storeKey }: { storeKey: string }) => (
       return 'border-l-4 border-l-blue-500';
     }}
   >
+<<<<<<< HEAD
+    {/* All columns always visible - no responsive hiding */}
+    <DataTable.Col label="Section">
+      <SectionDisplay />
+=======
     {/* Always visible columns */}
     <DataTable.Col label="Section">
       <ReferenceField reference="sections" source="sectionId">
         <TextField source="name" />
       </ReferenceField>
+>>>>>>> origin/main
     </DataTable.Col>
     <DataTable.Col label="Subject">
       <SubjectWithIcon />
     </DataTable.Col>
     <DataTable.Col label="Time Slot">
+<<<<<<< HEAD
+      <TimeSlotDisplay />
+    </DataTable.Col>
+    <DataTable.Col label="Teacher">
+      <TeacherWithIcon />
+    </DataTable.Col>
+    <DataTable.Col label="Room">
+      <RoomWithIcon />
+    </DataTable.Col>
+    <DataTable.Col label="Status">
+      <StatusBadge />
+    </DataTable.Col>
+    <DataTable.Col label="Effective From">
+=======
       <TimeSlotWithIcon />
     </DataTable.Col>
     
@@ -180,24 +207,67 @@ const TimetableTable = ({ storeKey }: { storeKey: string }) => (
       <StatusBadge />
     </DataTable.Col>
     <DataTable.Col source="effectiveFrom" label="Effective From" className="hidden lg:table-cell">
+>>>>>>> origin/main
       <EffectiveDateBadge />
     </DataTable.Col>
   </DataTable>
 );
 
-const SubjectWithIcon = ({ record }: { record?: any }) => {
-  if (!record) return null;
+<<<<<<< HEAD
+const SectionDisplay = () => {
+  const record = useRecordContext();
+  if (!record || !record.section) return <span>-</span>;
   
   return (
-    <div className="flex items-center gap-2">
-      <BookOpen className="w-4 h-4 text-blue-600" />
-      <ReferenceField reference="subjects" source="subjectId">
-        <TextField source="name" />
-      </ReferenceField>
+    <div className="font-medium">
+      {record.section.class?.name} - {record.section.name}
     </div>
   );
 };
 
+const SubjectWithIcon = () => {
+  const record = useRecordContext();
+  if (!record || !record.subject) return (
+    <div className="flex items-center gap-2 text-gray-500">
+      <BookOpen className="w-4 h-4" />
+      <span>No Subject</span>
+    </div>
+  );
+=======
+const SubjectWithIcon = ({ record }: { record?: any }) => {
+  if (!record) return null;
+>>>>>>> origin/main
+  
+  return (
+    <div className="flex items-center gap-2">
+      <BookOpen className="w-4 h-4 text-blue-600" />
+<<<<<<< HEAD
+      <span>{record.subject.name}</span>
+=======
+      <ReferenceField reference="subjects" source="subjectId">
+        <TextField source="name" />
+      </ReferenceField>
+>>>>>>> origin/main
+    </div>
+  );
+};
+
+<<<<<<< HEAD
+const TeacherWithIcon = () => {
+  const record = useRecordContext();
+  if (!record || !record.teacher?.staff) return (
+    <div className="flex items-center gap-2 text-gray-500">
+      <User className="w-4 h-4" />
+      <span>No Teacher</span>
+    </div>
+  );
+  
+  const { firstName, lastName } = record.teacher.staff;
+  return (
+    <div className="flex items-center gap-2">
+      <User className="w-4 h-4 text-green-600" />
+      <span>{firstName} {lastName}</span>
+=======
 const TeacherWithIcon = ({ record }: { record?: any }) => {
   if (!record) return null;
   
@@ -207,23 +277,73 @@ const TeacherWithIcon = ({ record }: { record?: any }) => {
       <ReferenceField reference="teachers" source="teacherId">
         <TextField source="firstName" />
       </ReferenceField>
+>>>>>>> origin/main
     </div>
   );
 };
 
+<<<<<<< HEAD
+const RoomWithIcon = () => {
+  const record = useRecordContext();
+  if (!record || !record.room) return (
+    <div className="flex items-center gap-2 text-gray-500">
+      <MapPin className="w-4 h-4" />
+      <span>No Room</span>
+    </div>
+  );
+=======
 const RoomWithIcon = ({ record }: { record?: any }) => {
   if (!record) return null;
+>>>>>>> origin/main
   
   return (
     <div className="flex items-center gap-2">
       <MapPin className="w-4 h-4 text-orange-600" />
+<<<<<<< HEAD
+      <span>{record.room.name}</span>
+=======
       <ReferenceField reference="rooms" source="roomId">
         <TextField source="name" />
       </ReferenceField>
+>>>>>>> origin/main
     </div>
   );
 };
 
+<<<<<<< HEAD
+const TimeSlotDisplay = () => {
+  const record = useRecordContext();
+  if (!record) return <span>-</span>;
+  
+  const formatTime = (time: string) => {
+    if (!time) return '';
+    // Handle time format - assume it's in HH:mm format
+    try {
+      const [hours, minutes] = time.split(':');
+      const date = new Date();
+      date.setHours(parseInt(hours), parseInt(minutes));
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch {
+      return time;
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Clock className="w-4 h-4 text-purple-600" />
+      <div className="text-sm">
+        <div className="font-medium">
+          {formatTime(record.startTime)} - {formatTime(record.endTime)}
+        </div>
+        <div className="text-gray-500">
+          {record.dayOfWeek} P{record.periodNumber}
+        </div>
+      </div>
+=======
 const TimeSlotWithIcon = ({ record }: { record?: any }) => {
   if (!record) return null;
   
@@ -233,12 +353,19 @@ const TimeSlotWithIcon = ({ record }: { record?: any }) => {
       <ReferenceField reference="timeSlots" source="timeSlotId">
         <TextField source="name" />
       </ReferenceField>
+>>>>>>> origin/main
     </div>
   );
 };
 
+<<<<<<< HEAD
+const StatusBadge = () => {
+  const record = useRecordContext();
+  if (!record) return <span>-</span>;
+=======
 const StatusBadge = ({ record }: { record?: any }) => {
   if (!record) return null;
+>>>>>>> origin/main
   
   return (
     <Badge variant={record.isActive ? 'default' : 'secondary'}>
@@ -247,6 +374,31 @@ const StatusBadge = ({ record }: { record?: any }) => {
   );
 };
 
+<<<<<<< HEAD
+const EffectiveDateBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.createdAt) return <span>-</span>;
+  
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const date = new Date(record.createdAt);
+  const today = new Date();
+  
+  const getDateColor = () => {
+    if (date <= today) return 'text-green-700 bg-green-100';
+=======
 const EffectiveDateBadge = ({ record }: { record?: any }) => {
   if (!record || !record.effectiveFrom) return null;
   
@@ -255,12 +407,17 @@ const EffectiveDateBadge = ({ record }: { record?: any }) => {
   
   const getDateColor = () => {
     if (effectiveDate <= today) return 'text-green-700 bg-green-100';
+>>>>>>> origin/main
     return 'text-blue-700 bg-blue-100';
   };
   
   return (
     <Badge className={getDateColor()}>
+<<<<<<< HEAD
+      {formatDate(record.createdAt)}
+=======
       {effectiveDate.toLocaleDateString()}
+>>>>>>> origin/main
     </Badge>
   );
 };

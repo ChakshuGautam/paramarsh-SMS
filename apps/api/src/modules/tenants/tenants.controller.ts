@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Controller, Get, Query } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 

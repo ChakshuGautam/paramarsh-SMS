@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Headers } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { EnrollmentsService } from './enrollments.service';
@@ -62,6 +63,7 @@ export class EnrollmentsController {
   @ListDocs('List enrollments')
   @ApiQuery({ name: 'page', required: false, description: 'Page number for pagination', example: 1 })
   @ApiQuery({ name: 'perPage', required: false, description: 'Number of items per page', example: 10 })
+  @ApiQuery({ name: 'pageSize', required: false, description: 'Number of items per page (alias for perPage)', example: 10 })
   @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'startDate:desc' })
   @ApiQuery({ name: 'filter', required: false, description: 'JSON filter object' })
   @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated list of IDs' })
@@ -74,6 +76,7 @@ export class EnrollmentsController {
   list(
     @Query('page') page?: number,
     @Query('perPage') perPage?: number,
+    @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('filter') filter?: string,
     @Query('ids') ids?: string,
@@ -83,7 +86,7 @@ export class EnrollmentsController {
     @Query('status') status?: string,
     @Query('startDate_gte') startDateGte?: string,
     @Query('endDate_lte') endDateLte?: string,
-    @Headers('x-branch-id') branchId = 'branch1',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     const parsedFilter = filter ? JSON.parse(filter) : {};
     const idsArray = ids ? ids.split(',') : undefined;
@@ -92,9 +95,10 @@ export class EnrollmentsController {
       return this.service.getMany(idsArray, branchId);
     }
     
+    const effectivePerPage = perPage || pageSize;
     return this.service.list({ 
       page, 
-      perPage, 
+      perPage: effectivePerPage, 
       sort, 
       filter: parsedFilter,
       q,
@@ -110,7 +114,7 @@ export class EnrollmentsController {
   @Get(':id')
   getOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.getOne(id, branchId);
   }
@@ -119,7 +123,7 @@ export class EnrollmentsController {
   @CreateDocs('Create enrollment')
   create(
     @Body() body: UpsertEnrollmentDto,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.create({ ...body, branchId });
   }
@@ -129,7 +133,7 @@ export class EnrollmentsController {
   update(
     @Param('id') id: string, 
     @Body() body: Partial<UpsertEnrollmentDto>,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.update(id, { ...body, branchId });
   }
@@ -139,7 +143,7 @@ export class EnrollmentsController {
   partialUpdate(
     @Param('id') id: string, 
     @Body() body: Partial<UpsertEnrollmentDto>,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.update(id, { ...body, branchId });
   }
@@ -148,7 +152,7 @@ export class EnrollmentsController {
   @DeleteDocs('Delete enrollment')
   remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId = 'branch1'
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
   ) {
     return this.service.remove(id, branchId);
   }

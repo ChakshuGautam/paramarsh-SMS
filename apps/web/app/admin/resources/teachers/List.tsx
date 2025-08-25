@@ -1,11 +1,152 @@
 "use client";
 
+<<<<<<< HEAD
+import type { ReactNode } from "react";
+import {
+  useRecordContext,
+  Translate,
+  useTranslate,
+  FilterLiveForm,
+} from "ra-core";
+=======
 import { useListContext, useRecordContext } from "ra-core";
+>>>>>>> origin/main
 import {
   DataTable,
   List,
   ReferenceField,
   TextField,
+<<<<<<< HEAD
+  ToggleFilterButton,
+  TextInput,
+  ListPagination,
+} from "@/components/admin";
+import { Badge } from "@/components/ui/badge";
+import { User, BookOpen, GraduationCap, Calendar, Award } from "lucide-react";
+import { getExperienceColor } from "@/lib/theme/colors";
+import { parseFlexibleArray } from "@/lib/utils/parse-utils";
+
+export const TeachersList = () => {
+  return (
+    <List
+      perPage={25}
+      sort={{ field: "experienceYears", order: "DESC" }}
+      pagination={false}
+    >
+      <div className="flex flex-row gap-4 mb-4">
+        <SidebarFilters />
+        <div className="flex-1">
+          <DataTable>
+            <DataTable.Col label="Staff Member">
+              <StaffMemberDisplay />
+            </DataTable.Col>
+            <DataTable.Col source="subjects" label="Subjects">
+              <SubjectsBadge />
+            </DataTable.Col>
+            <DataTable.Col source="experienceYears" label="Experience">
+              <ExperienceBadge />
+            </DataTable.Col>
+            <DataTable.Col 
+              source="qualifications" 
+              label="Qualifications" 
+              className="hidden md:table-cell"
+            >
+              <QualificationsBadge />
+            </DataTable.Col>
+            <DataTable.Col 
+              source="id" 
+              label="ID" 
+              className="hidden lg:table-cell" 
+            />
+          </DataTable>
+          <ListPagination className="justify-start mt-2" />
+        </div>
+      </div>
+    </List>
+  );
+};
+
+
+const SidebarFilters = () => {
+  const translate = useTranslate();
+  return (
+    <div className="min-w-48 hidden md:block">
+      <FilterLiveForm>
+        <TextInput
+          source="q"
+          placeholder={translate("ra.action.search")}
+          label=""
+          className="mb-6"
+        />
+      </FilterLiveForm>
+      <FilterCategory
+        icon={<Calendar size={16} />}
+        label="Experience Level"
+      >
+        <ToggleFilterButton
+          label="Novice (0-3 years)"
+          value={{
+            experienceYears_gte: 0,
+            experienceYears_lte: 3,
+          }}
+        />
+        <ToggleFilterButton
+          label="Experienced (4-10 years)"
+          value={{
+            experienceYears_gte: 4,
+            experienceYears_lte: 10,
+          }}
+        />
+        <ToggleFilterButton
+          label="Senior (11+ years)"
+          value={{
+            experienceYears_gte: 11,
+            experienceYears_lte: undefined,
+          }}
+        />
+      </FilterCategory>
+      <FilterCategory
+        icon={<BookOpen size={16} />}
+        label="Common Subjects"
+      >
+        <ToggleFilterButton
+          label="Mathematics"
+          value={{ subjects: "Mathematics" }}
+        />
+        <ToggleFilterButton
+          label="English"
+          value={{ subjects: "English" }}
+        />
+        <ToggleFilterButton
+          label="Science"
+          value={{ subjects: "Science" }}
+        />
+        <ToggleFilterButton
+          label="Social Studies"
+          value={{ subjects: "Social Studies" }}
+        />
+      </FilterCategory>
+    </div>
+  );
+};
+
+const FilterCategory = ({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  children?: ReactNode;
+}) => (
+  <>
+    <h3 className="flex flex-row items-center gap-2 mb-1 font-bold text-sm">
+      {icon}
+      <Translate i18nKey={label} />
+    </h3>
+    <div className="flex flex-col items-start ml-3 mb-4">{children}</div>
+  </>
+=======
   TextInput,
   ReferenceInput,
   AutocompleteInput,
@@ -159,6 +300,7 @@ const TeachersTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     <DataTable.Col source="id" label="ID" className="hidden lg:table-cell" />
   </DataTable>
+>>>>>>> origin/main
 );
 
 const StaffMemberDisplay = () => {
@@ -190,6 +332,12 @@ const StaffMemberDisplay = () => {
 const ExperienceBadge = () => {
   const record = useRecordContext();
   if (!record || record.experienceYears === null || record.experienceYears === undefined) {
+<<<<<<< HEAD
+    return <span className="text-muted-foreground">No experience data</span>;
+  }
+  
+  const experienceColorConfig = getExperienceColor(record.experienceYears);
+=======
     return <span className="text-muted-foreground text-sm">No data</span>;
   }
   
@@ -198,6 +346,7 @@ const ExperienceBadge = () => {
     if (years <= 10) return 'text-green-700 bg-green-100';
     return 'text-purple-700 bg-purple-100';
   };
+>>>>>>> origin/main
   
   const getExperienceLevel = (years: number) => {
     if (years <= 3) return 'Novice';
@@ -208,7 +357,11 @@ const ExperienceBadge = () => {
   return (
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-muted-foreground" />
+<<<<<<< HEAD
+      <Badge className={`${experienceColorConfig.background} ${experienceColorConfig.text}`}>
+=======
       <Badge className={getExperienceColor(record.experienceYears)}>
+>>>>>>> origin/main
         {record.experienceYears} year{record.experienceYears !== 1 ? 's' : ''}
       </Badge>
       <span className="text-xs text-muted-foreground">
@@ -221,6 +374,16 @@ const ExperienceBadge = () => {
 const SubjectsBadge = () => {
   const record = useRecordContext();
   if (!record || !record.subjects) {
+<<<<<<< HEAD
+    return <span className="text-muted-foreground">No subjects</span>;
+  }
+  
+  // Use parseFlexibleArray utility instead of duplicate logic
+  const subjects = parseFlexibleArray(record.subjects);
+  
+  if (subjects.length === 0) {
+    return <span className="text-muted-foreground">No subjects</span>;
+=======
     return <span className="text-muted-foreground text-sm">No subjects assigned</span>;
   }
   
@@ -242,6 +405,7 @@ const SubjectsBadge = () => {
   
   if (subjects.length === 0) {
     return <span className="text-muted-foreground text-sm">No subjects assigned</span>;
+>>>>>>> origin/main
   }
   
   return (
@@ -266,6 +430,16 @@ const SubjectsBadge = () => {
 const QualificationsBadge = () => {
   const record = useRecordContext();
   if (!record || !record.qualifications) {
+<<<<<<< HEAD
+    return <span className="text-muted-foreground">No qualifications</span>;
+  }
+  
+  // Use parseFlexibleArray utility instead of manual parsing
+  const qualifications = parseFlexibleArray(record.qualifications);
+  
+  if (qualifications.length === 0) {
+    return <span className="text-muted-foreground">No qualifications</span>;
+=======
     return <span className="text-muted-foreground text-sm">No qualifications</span>;
   }
   
@@ -287,6 +461,7 @@ const QualificationsBadge = () => {
   
   if (qualifications.length === 0) {
     return <span className="text-muted-foreground text-sm">No qualifications</span>;
+>>>>>>> origin/main
   }
   
   return (
@@ -303,4 +478,8 @@ const QualificationsBadge = () => {
   );
 };
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> origin/main
 export default TeachersList;

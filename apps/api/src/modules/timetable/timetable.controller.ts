@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
+=======
+>>>>>>> origin/main
 import {
   Controller,
   Get,
@@ -7,6 +11,19 @@ import {
   Param,
   Query,
   Delete,
+<<<<<<< HEAD
+  Headers,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { TimetableService } from './timetable.service';
+import { PeriodsService } from './periods.service';
+import { CreateTimeSlotDto } from './dto/create-timeslot.dto';
+import { CreateSubstitutionDto } from './dto/create-substitution.dto';
+import { ListDocs, CreateDocs, UpdateDocs } from '../../common/swagger.decorators';
+import { PrismaService } from '../../prisma/prisma.service';
+=======
   BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
@@ -14,11 +31,83 @@ import { TimetableService } from './timetable.service';
 import { CreateTimeSlotDto } from './dto/create-timeslot.dto';
 import { CreateSubstitutionDto } from './dto/create-substitution.dto';
 import { ListDocs, CreateDocs, UpdateDocs } from '../../common/swagger.decorators';
+>>>>>>> origin/main
 
 @ApiTags('Timetable')
 @Controller('timetable')
 export class TimetableController {
+<<<<<<< HEAD
+  constructor(
+    private readonly timetableService: TimetableService,
+    private readonly periodsService: PeriodsService,
+    private readonly prisma: PrismaService
+  ) {}
+
+  @Get()
+  @ApiOperation({ 
+    summary: 'Get all timetable periods',
+    description: 'Retrieves all timetable periods with optional filtering and pagination for React Admin'
+  })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Items per page', example: 25 })
+  @ApiQuery({ name: 'pageSize', required: false, description: 'Page size (alias for perPage)', example: 25 })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'class.gradeLevel' })
+  @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated list of IDs for getMany operation' })
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter object as JSON string' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query' })
+  @ListDocs('List of timetable periods')
+  async getList(
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: string,
+    @Query('ids') ids?: string | string[],
+    @Query() query?: Record<string, any>,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    // Handle getMany case (when ids are provided)
+    if (ids) {
+      const idArray = Array.isArray(ids) ? ids : (typeof ids === 'string' ? ids.split(',') : [ids]);
+      return this.periodsService.getMany(idArray);
+    }
+    
+    // Extract known params from query to get filters
+    const { 
+      page: _p, 
+      perPage: _pp, 
+      pageSize: _ps, 
+      sort: _s, 
+      filter: filterStr, 
+      q, // Extract search query
+      ids: _ids, 
+      ...restQuery 
+    } = query || {};
+    
+    // Parse filter if it's a JSON string
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = typeof filterStr === 'string' ? JSON.parse(filterStr) : filterStr;
+      } catch (e) {
+        filter = {};
+      }
+    }
+    
+    // Merge any remaining query params as filters
+    filter = { ...filter, ...restQuery };
+    
+    return this.periodsService.getList({
+      page: page ? Number(page) : 1,
+      perPage: perPage ? Number(perPage) : (pageSize ? Number(pageSize) : 25),
+      sort,
+      filter,
+      q, // Pass search query separately
+      branchId,
+    });
+  }
+=======
   constructor(private readonly timetableService: TimetableService) {}
+>>>>>>> origin/main
 
   @Post('time-slots')
   @ApiOperation({ 
@@ -67,17 +156,29 @@ export class TimetableController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('sort') sort?: string,
+<<<<<<< HEAD
+    @Query('sectionId') sectionId?: string,
+    @Query('teacherId') teacherId?: string,
+    @Query('academicYearId') academicYearId?: string,
+=======
     @Query('isActive') isActive?: string,
     @Query('sectionId') sectionId?: string,
     @Query('teacherId') teacherId?: string,
+>>>>>>> origin/main
   ) {
     return this.timetableService.getPeriods({
       page: page ? parseInt(page, 10) : 1,
       pageSize: pageSize ? parseInt(pageSize, 10) : 25,
       sort,
+<<<<<<< HEAD
+      sectionId,
+      teacherId,
+      academicYearId,
+=======
       isActive: isActive !== undefined ? isActive === 'true' : undefined,
       sectionId,
       teacherId,
+>>>>>>> origin/main
     });
   }
 
@@ -106,16 +207,43 @@ export class TimetableController {
         subjectId: { type: 'string', description: 'Subject ID', example: 'subject-456' },
         teacherId: { type: 'string', description: 'Teacher ID', example: 'teacher-789' },
         roomId: { type: 'string', description: 'Room ID (optional)', example: 'room-101' },
+<<<<<<< HEAD
+        dayOfWeek: { type: 'number', description: 'Day of week (1-6)', example: 1 },
+        periodNumber: { type: 'number', description: 'Period number', example: 1 },
+        startTime: { type: 'string', description: 'Start time (HH:MM)', example: '09:00' },
+        endTime: { type: 'string', description: 'End time (HH:MM)', example: '09:45' },
+        academicYearId: { type: 'string', description: 'Academic year ID', example: 'year-123' },
+        isBreak: { type: 'boolean', description: 'Is this a break period', example: false },
+        breakType: { type: 'string', description: 'Type of break (if isBreak=true)', example: 'LUNCH' }
+      },
+      required: ['sectionId', 'dayOfWeek', 'periodNumber', 'startTime', 'endTime', 'academicYearId']
+=======
         timeSlotId: { type: 'string', description: 'Time slot ID', example: 'timeslot-abc' },
         effectiveFrom: { type: 'string', format: 'date', description: 'Effective from date', example: '2024-01-15' }
       },
       required: ['sectionId', 'subjectId', 'teacherId', 'timeSlotId']
+>>>>>>> origin/main
     }
   })
   @CreateDocs('Period created successfully')
   createPeriod(
     @Body() createPeriodDto: {
       sectionId: string;
+<<<<<<< HEAD
+      subjectId?: string;
+      teacherId?: string;
+      roomId?: string;
+      dayOfWeek: number;
+      periodNumber: number;
+      startTime: string;
+      endTime: string;
+      academicYearId: string;
+      isBreak?: boolean;
+      breakType?: string;
+    },
+  ) {
+    return this.timetableService.createPeriod(createPeriodDto);
+=======
       subjectId: string;
       teacherId: string;
       roomId?: string;
@@ -129,6 +257,7 @@ export class TimetableController {
         ? new Date(createPeriodDto.effectiveFrom)
         : undefined,
     });
+>>>>>>> origin/main
   }
 
   @Delete('periods/:id')
@@ -230,6 +359,70 @@ export class TimetableController {
 
   @Get('substitutions')
   @ApiOperation({ 
+<<<<<<< HEAD
+    summary: 'Get substitutions',
+    description: 'Retrieves all substitutions with optional filtering and pagination for React Admin'
+  })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'perPage', required: false, description: 'Items per page', example: 25 })
+  @ApiQuery({ name: 'pageSize', required: false, description: 'Page size (alias for perPage)', example: 25 })
+  @ApiQuery({ name: 'sort', required: false, description: 'Sort field and direction', example: 'id' })
+  @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated list of IDs for getMany operation' })
+  @ApiQuery({ name: 'filter', required: false, description: 'Filter object as JSON string' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query' })
+  @ApiQuery({ name: 'date', required: false, description: 'Date to check substitutions (ISO format)', example: '2024-01-15' })
+  @ListDocs('List of substitutions')
+  async getSubstitutions(
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: string,
+    @Query('ids') ids?: string | string[],
+    @Query() query?: Record<string, any>,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    // Handle getMany case (when ids are provided)
+    if (ids) {
+      const idArray = Array.isArray(ids) ? ids : (typeof ids === 'string' ? ids.split(',') : [ids]);
+      return this.timetableService.getManySubstitutions(idArray, branchId);
+    }
+    
+    // Extract known params from query to get filters
+    const { 
+      page: _p, 
+      perPage: _pp, 
+      pageSize: _ps, 
+      sort: _s, 
+      filter: filterStr, 
+      q, // Extract search query
+      ids: _ids, 
+      date,
+      ...restQuery 
+    } = query || {};
+    
+    // Parse filter if it's a JSON string
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = typeof filterStr === 'string' ? JSON.parse(filterStr) : filterStr;
+      } catch (e) {
+        filter = {};
+      }
+    }
+    
+    // Merge any remaining query params as filters
+    filter = { ...filter, ...restQuery };
+    
+    return this.timetableService.getSubstitutionsList({
+      page: page ? Number(page) : 1,
+      perPage: perPage ? Number(perPage) : (pageSize ? Number(pageSize) : 25),
+      sort,
+      filter,
+      q, // Pass search query separately
+      branchId,
+      date: date ? new Date(date) : undefined,
+    });
+=======
     summary: 'Get substitutions by date',
     description: 'Retrieves all substitutions scheduled for a specific date'
   })
@@ -240,6 +433,7 @@ export class TimetableController {
       throw new BadRequestException('Date is required');
     }
     return this.timetableService.getSubstitutions(new Date(date));
+>>>>>>> origin/main
   }
 
   @Post('generate')
@@ -292,6 +486,10 @@ export class TimetableController {
         periodsPerWeek: number;
         preferredRoomId?: string;
       }>;
+<<<<<<< HEAD
+      academicYearId: string;
+=======
+>>>>>>> origin/main
       constraints?: Array<{
         type: string;
         value: any;
@@ -301,6 +499,36 @@ export class TimetableController {
     return this.timetableService.generateTimetable(generateDto);
   }
 
+<<<<<<< HEAD
+  // Removed saveTimetable endpoint - method doesn't exist in service
+
+  // Removed getTeacherWorkload endpoint - method doesn't exist in service
+
+  // Removed getRoomOccupancy endpoint - method doesn't exist in service
+
+  // Removed generateCompleteTimetable endpoint - method doesn't exist in service
+
+  // Removed saveTimetablePeriods endpoint - method doesn't exist in service
+
+  // Removed getTimetableGrid endpoint - method doesn't exist in service
+
+  // Removed checkConflicts endpoint - checkTeacherConflicts method doesn't exist in service
+
+  // Removed updatePeriod endpoint - method doesn't exist in service
+
+  // Generic :id route must be last to avoid matching specific routes
+  @Get(':id')
+  @ApiOperation({ 
+    summary: 'Get timetable period by ID',
+    description: 'Retrieves a specific timetable period with all related data for React Admin'
+  })
+  @ApiParam({ name: 'id', description: 'Timetable period ID', example: '9493ed5a-38ef-4a29-99c0-1bb849828ef1' })
+  async getOne(
+    @Param('id') id: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.timetableService.getOne(id, branchId);
+=======
   @Post('save')
   @ApiOperation({ 
     summary: 'Save complete timetable',
@@ -482,5 +710,6 @@ export class TimetableController {
     },
   ) {
     return this.timetableService.updatePeriod(id, updateData);
+>>>>>>> origin/main
   }
 }

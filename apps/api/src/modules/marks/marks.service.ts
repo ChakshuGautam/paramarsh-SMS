@@ -9,7 +9,8 @@ export class MarksService {
 
   async list(params: { 
     page?: number; 
-    pageSize?: number; 
+    perPage?: number;
+    pageSize?: number; // Keep for backward compatibility
     sort?: string; 
     q?: string;
     examId?: string;
@@ -18,8 +19,8 @@ export class MarksService {
     isAbsent?: boolean;
   }) {
     const page = Math.max(1, Number(params.page ?? 1));
-    const pageSize = Math.min(200, Math.max(1, Number(params.pageSize ?? 25)));
-    const skip = (page - 1) * pageSize;
+    const perPage = Math.min(200, Math.max(1, Number(params.perPage ?? params.pageSize ?? 25)));
+    const skip = (page - 1) * perPage;
 
     const where: any = {};
     
@@ -68,7 +69,7 @@ export class MarksService {
       this.prisma.mark.findMany({ 
         where, 
         skip, 
-        take: pageSize, 
+        take: perPage, 
         orderBy,
         include: {
           exam: {

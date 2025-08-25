@@ -1,3 +1,4 @@
+import { DEFAULT_BRANCH_ID } from '../../common/constants';
 import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ClassesService } from './classes.service';
@@ -34,17 +35,23 @@ export class ClassesController {
 
   @Get()
   @ListDocs('List classes')
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (starts from 1)' })
+  @ApiQuery({ name: 'perPage', required: false, type: Number, description: 'Number of items per page' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Number of items per page (alias for perPage)' })
+  @ApiQuery({ name: 'sort', required: false, type: String, description: 'Sort field and direction' })
   @ApiQuery({ name: 'q', required: false })
   list(
     @Query('page') page?: number,
     @Query('perPage') perPage?: number,
+    @Query('pageSize') pageSize?: number,
     @Query('sort') sort?: string,
     @Query('q') q?: string,
     @Query('filter') filterStr?: string,
     @Query('ids') ids?: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     const filter = filterStr ? JSON.parse(filterStr) : undefined;
+    const effectivePerPage = perPage || pageSize;
     
     if (ids) {
       const idList = ids.split(',');
@@ -53,13 +60,13 @@ export class ClassesController {
       }));
     }
     
-    return this.service.list({ page, perPage, sort, q, filter, branchId });
+    return this.service.list({ page, perPage: effectivePerPage, sort, q, filter, branchId });
   }
 
   @Get(':id')
   findOne(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.findOne(id, branchId);
   }
@@ -68,7 +75,7 @@ export class ClassesController {
   @CreateDocs('Create class')
   create(
     @Body() body: UpsertClassDto,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.create({ ...body, branchId });
   }
@@ -78,16 +85,16 @@ export class ClassesController {
   update(
     @Param('id') id: string,
     @Body() body: Partial<UpsertClassDto>,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
-    return this.service.update(id, body, branchId);
+    return this.service.updateWithBranch(id, body, branchId);
   }
 
   @Delete(':id')
   @DeleteDocs('Delete class')
   remove(
     @Param('id') id: string,
-    @Headers('x-branch-id') branchId: string = 'branch1',
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
   ) {
     return this.service.remove(id, branchId);
   }

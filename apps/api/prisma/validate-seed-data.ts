@@ -287,6 +287,120 @@ async function validateGuardianRelationships() {
   });
 }
 
+<<<<<<< HEAD
+async function validateTeacherAttendance() {
+  console.log('🔍 Validating Teacher Attendance Data...\n');
+
+  // Test 1: Check if teacher attendance records exist
+  const teacherAttendanceCount = await prisma.teacherAttendance.count();
+  const teacherCount = await prisma.teacher.count();
+
+  results.push({
+    test: 'Teacher Attendance Records Exist',
+    passed: teacherAttendanceCount > 0,
+    message: `${teacherAttendanceCount} teacher attendance records found for ${teacherCount} teachers`,
+    data: { attendanceRecords: teacherAttendanceCount, teachers: teacherCount }
+  });
+
+  if (teacherAttendanceCount > 0) {
+    // Test 2: Check attendance coverage per teacher
+    const teachersWithAttendance = await prisma.teacherAttendance.groupBy({
+      by: ['teacherId'],
+      _count: { id: true }
+    });
+
+    const averageAttendanceRecordsPerTeacher = teachersWithAttendance.length > 0 
+      ? teachersWithAttendance.reduce((sum, t) => sum + t._count.id, 0) / teachersWithAttendance.length 
+      : 0;
+
+    results.push({
+      test: 'Teacher Attendance Coverage',
+      passed: averageAttendanceRecordsPerTeacher >= 20, // At least 20 days per teacher
+      message: `Average ${averageAttendanceRecordsPerTeacher.toFixed(1)} attendance records per teacher (Expected: 20+)`,
+      data: { averagePerTeacher: averageAttendanceRecordsPerTeacher, teachersWithRecords: teachersWithAttendance.length }
+    });
+
+    // Test 3: Check for realistic attendance patterns
+    const attendanceStatuses = await prisma.teacherAttendance.groupBy({
+      by: ['status'],
+      _count: { status: true }
+    });
+
+    const presentCount = attendanceStatuses.find(s => s.status === 'PRESENT')?._count?.status || 0;
+    const totalAttendance = attendanceStatuses.reduce((sum, s) => sum + s._count.status, 0);
+    const presentPercentage = totalAttendance > 0 ? (presentCount / totalAttendance) * 100 : 0;
+
+    results.push({
+      test: 'Realistic Teacher Attendance Patterns',
+      passed: presentPercentage >= 85 && presentPercentage <= 98, // 85-98% present is realistic
+      message: `${presentPercentage.toFixed(1)}% of teacher attendance records are PRESENT (Expected: 85-98%)`,
+      data: { presentPercentage, statusBreakdown: attendanceStatuses }
+    });
+  }
+}
+
+async function validateExamMarks() {
+  console.log('🔍 Validating Exam Marks Data...\n');
+
+  // Test 1: Check if exam marks exist
+  const marksCount = await prisma.mark.count();
+  const examCount = await prisma.exam.count();
+  const completedExamCount = await prisma.exam.count({
+    where: { status: 'COMPLETED' }
+  });
+
+  results.push({
+    test: 'Exam Marks Records Exist',
+    passed: marksCount > 0,
+    message: `${marksCount} marks records found for ${examCount} exams (${completedExamCount} completed)`,
+    data: { marksRecords: marksCount, totalExams: examCount, completedExams: completedExamCount }
+  });
+
+  if (marksCount > 0) {
+    // Test 2: Check marks for completed exams
+    const completedExams = await prisma.exam.findMany({
+      where: { status: 'COMPLETED' }
+    });
+
+    let examsWithMarks = 0;
+    for (const exam of completedExams) {
+      const marksForExam = await prisma.mark.count({
+        where: { examId: exam.id }
+      });
+      if (marksForExam > 0) {
+        examsWithMarks++;
+      }
+    }
+
+    results.push({
+      test: 'Completed Exams Have Marks',
+      passed: completedExams.length === 0 || examsWithMarks >= completedExams.length * 0.8, // 80% of completed exams should have marks
+      message: `${examsWithMarks}/${completedExams.length} completed exams have marks`,
+      data: { examsWithMarks, completedExams: completedExams.length }
+    });
+
+    // Test 3: Check grade distribution
+    const gradeDistribution = await prisma.mark.groupBy({
+      by: ['grade'],
+      _count: { grade: true },
+      where: { grade: { not: null } }
+    });
+
+    const totalGradedMarks = gradeDistribution.reduce((sum, g) => sum + g._count.grade, 0);
+    const excellentGrades = gradeDistribution.filter(g => g.grade?.startsWith('A')).reduce((sum, g) => sum + g._count.grade, 0);
+    const excellentPercentage = totalGradedMarks > 0 ? (excellentGrades / totalGradedMarks) * 100 : 0;
+
+    results.push({
+      test: 'Realistic Grade Distribution',
+      passed: excellentPercentage >= 10 && excellentPercentage <= 30, // 10-30% excellent grades is realistic
+      message: `${excellentPercentage.toFixed(1)}% of grades are excellent (A1/A2) (Expected: 10-30%)`,
+      data: { excellentPercentage, gradeDistribution, totalGraded: totalGradedMarks }
+    });
+  }
+}
+
+=======
+>>>>>>> origin/main
 async function validateSpecificQueryData() {
   console.log('🔍 Validating Specific Query Data...\n');
 
@@ -332,13 +446,22 @@ async function validateSpecificQueryData() {
 }
 
 async function main() {
+<<<<<<< HEAD
+  console.log('🌱 Starting Comprehensive Seed Data Validation...\n');
+=======
   console.log('🌱 Starting Seed Data Validation...\n');
+>>>>>>> origin/main
 
   try {
     await validateStudentStatusDistribution();
     await validateEnrollmentConsistency();
     await validateClassStudentCounts();
     await validateGuardianRelationships();
+<<<<<<< HEAD
+    await validateTeacherAttendance();
+    await validateExamMarks();
+=======
+>>>>>>> origin/main
     await validateSpecificQueryData();
 
     // Print results
@@ -368,8 +491,23 @@ async function main() {
       console.log('2. Check that all relationships are properly created');
       console.log('3. Verify student status distribution matches requirements');
       console.log('4. Ensure each class has students with diverse statuses for testing');
+<<<<<<< HEAD
+      console.log('5. Verify teacher attendance records are generated for all teachers');
+      console.log('6. Check that completed exams have corresponding marks records');
+      console.log('7. Validate realistic grade distributions and attendance patterns');
+    } else {
+      console.log('\n🎉 All validations passed! Comprehensive seed data is ready for production demos and load testing.');
+      console.log('\n📈 Data Quality Summary:');
+      console.log('  ✅ Student data with proper status distribution');
+      console.log('  ✅ Teacher attendance with realistic patterns');
+      console.log('  ✅ Exam marks with grade distributions');
+      console.log('  ✅ Guardian relationships and family structures');
+      console.log('  ✅ Multi-branch data isolation');
+      console.log('  ✅ Indian cultural context and authenticity');
+=======
     } else {
       console.log('\n🎉 All validations passed! Seed data is ready for demo and testing.');
+>>>>>>> origin/main
     }
 
   } catch (error) {

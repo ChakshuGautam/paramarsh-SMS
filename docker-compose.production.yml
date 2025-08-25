@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: paramarsh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paramarsh_sms
+      POSTGRES_USER: paramarsh
+      POSTGRES_PASSWORD: paramarsh123
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - paramarsh-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paramarsh -d paramarsh_sms"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: API service
+  api:
+    build: 
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: paramarsh-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://paramarsh:paramarsh123@postgres:5432/paramarsh_sms"
+      PORT: 8080
+      NODE_ENV: production
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - paramarsh-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  paramarsh-network:
+    driver: bridge

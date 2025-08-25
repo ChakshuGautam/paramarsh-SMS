@@ -34,6 +34,16 @@ export function UpdateDocs(summary = 'Update resource') {
   );
 }
 
+<<<<<<< HEAD
+export function GetDocs(summary = 'Get resource') {
+  return applyDecorators(
+    ApiOkResponse({ description: summary }),
+    ApiBadRequestResponse({ description: 'Invalid request', type: ProblemDto }),
+  );
+}
+
+=======
+>>>>>>> origin/main
 export function DeleteDocs(summary = 'Delete resource') {
   return applyDecorators(
     ApiNoContentResponse({ description: summary }),

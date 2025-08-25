@@ -1,6 +1,10 @@
 "use client"
 
+<<<<<<< HEAD
+import { useSignIn, useUser } from "@clerk/nextjs"
+=======
 import { useSignIn } from "@clerk/nextjs"
+>>>>>>> origin/main
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -54,6 +58,10 @@ const schools = [
 
 export default function SignInPage() {
   const { isLoaded, signIn, setActive } = useSignIn()
+<<<<<<< HEAD
+  const { user } = useUser()
+=======
+>>>>>>> origin/main
   const router = useRouter()
   
   const [selectedSchool, setSelectedSchool] = useState('')
@@ -64,6 +72,16 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+<<<<<<< HEAD
+  // If user is already signed in, redirect to admin
+  useEffect(() => {
+    if (user) {
+      router.push('/admin')
+    }
+  }, [user, router])
+
+=======
+>>>>>>> origin/main
   // Update available branches when school changes
   useEffect(() => {
     const school = schools.find(s => s.id === selectedSchool)
@@ -242,6 +260,28 @@ export default function SignInPage() {
         <Card className="bg-blue-50 border-blue-200">
           <CardContent className="pt-6">
             <p className="text-sm font-medium text-blue-900 mb-2">Test Credentials:</p>
+<<<<<<< HEAD
+            <div className="space-y-2 text-xs">
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Admin:</strong>
+                <div className="ml-4">Username: admin</div>
+                <div className="ml-4">Password: Admin@123</div>
+              </div>
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Teacher:</strong>
+                <div className="ml-4">Username: teacher</div>
+                <div className="ml-4">Password: Teacher@123</div>
+              </div>
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Student:</strong>
+                <div className="ml-4">Username: student</div>
+                <div className="ml-4">Password: Student@123</div>
+              </div>
+              <div className="text-blue-800">
+                <strong className="text-blue-900">Parent:</strong>
+                <div className="ml-4">Username: parent</div>
+                <div className="ml-4">Password: Parent@123</div>
+=======
             <div className="grid grid-cols-2 gap-2 text-xs text-blue-800">
               <div>
                 <strong>Admin:</strong> admin / Admin@123
@@ -254,6 +294,7 @@ export default function SignInPage() {
               </div>
               <div>
                 <strong>Parent:</strong> parent / Parent@123
+>>>>>>> origin/main
               </div>
             </div>
           </CardContent>
