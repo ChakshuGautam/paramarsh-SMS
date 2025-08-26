@@ -6,7 +6,6 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/health',
-  '/api/admin(.*)', // API proxy routes should be public, auth handled separately
 ])
 
 const isProtectedRoute = createRouteMatcher([

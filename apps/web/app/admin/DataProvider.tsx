@@ -3,8 +3,10 @@
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-// Use Next.js API proxy to avoid CORS issues
-const apiUrl = "/api/admin";
+import { getBackendUrl } from '@/lib/api-config';
+
+// Direct backend API URL (CORS is enabled on backend)
+const apiUrl = getBackendUrl();
 
 async function getAuthHeader(): Promise<Record<string, string>> {
   try {

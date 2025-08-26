@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, Calendar, Clock, User, MapPin, BookOpen, GraduationCap, AlertCircle, Info } from 'lucide-react';
+import { getApiUrl } from '@/lib/api-config';
 
 interface TimeSlot {
   id: string;
@@ -93,15 +94,15 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
       setLoading(true);
       
       // Fetch timetable periods for the section
-      const periodsResponse = await fetch(`/api/v1/timetable/sections/${sectionId}`);
+      const periodsResponse = await fetch(getApiUrl(`timetable/sections/${sectionId}`));
       const periodsData = await periodsResponse.json();
       
       // Fetch all time slots
-      const slotsResponse = await fetch('/api/v1/timetable/time-slots');
+      const slotsResponse = await fetch(getApiUrl('timetable/time-slots'));
       const slotsData = await slotsResponse.json();
       
       // Fetch section details
-      const sectionResponse = await fetch(`/api/admin/sections/${sectionId}`);
+      const sectionResponse = await fetch(getApiUrl(`sections/${sectionId}`));
       const sectionData = await sectionResponse.json();
       
       setPeriods(periodsData || []);
@@ -124,7 +125,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
   
   const fetchSubjectTeacherMappings = async (classId: string) => {
     try {
-      const response = await fetch(`/api/admin/subjects/subject-teacher-class-mapping?classId=${classId}`);
+      const response = await fetch(getApiUrl(`subjects/subject-teacher-class-mapping?classId=${classId}`));
       const data = await response.json();
       setSubjectTeacherMappings(data.data || []);
     } catch (error) {
@@ -138,7 +139,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
       
       for (const period of periods) {
         if (period.subject && period.teacher) {
-          const response = await fetch('/api/admin/subjects/validate-assignment', {
+          const response = await fetch(getApiUrl('subjects/validate-assignment'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

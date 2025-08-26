@@ -70,7 +70,7 @@ const TimetableShow: React.FC = () => {
         filter: { sectionId: id, isActive: true },
       });
 
-      const timeSlotsResponse = await fetch('/api/admin/timetable/time-slots', {
+      const timeSlotsResponse = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/timetable/time-slots', {
         headers: {
           'Content-Type': 'application/json',
           'X-Branch-Id': 'branch1',

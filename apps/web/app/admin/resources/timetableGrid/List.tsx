@@ -20,6 +20,7 @@ import {
   X
 } from "lucide-react";
 import { useNotify, useDataProvider } from 'ra-core';
+import { getApiUrl } from '@/lib/api-config';
 
 interface TimeSlot {
   id: string;
@@ -180,7 +181,7 @@ const TimetableGridList: React.FC = () => {
   const loadGridData = async (sectionId: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/timetable/grid/${sectionId}`, {
+      const response = await fetch(getApiUrl(`timetable/grid/${sectionId}`), {
         headers: {
           'Content-Type': 'application/json',
           'X-Branch-Id': 'branch1',
@@ -203,7 +204,7 @@ const TimetableGridList: React.FC = () => {
 
   const checkConflicts = async (teacherId: string, timeSlotId: string, periodId?: string) => {
     try {
-      const response = await fetch('/api/admin/timetable/check-conflicts', {
+      const response = await fetch(getApiUrl('timetable/check-conflicts'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -235,7 +236,7 @@ const TimetableGridList: React.FC = () => {
     timeSlotId: string;
   }) => {
     try {
-      const response = await fetch('/api/admin/timetable/periods', {
+      const response = await fetch(getApiUrl('timetable/periods'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +267,7 @@ const TimetableGridList: React.FC = () => {
 
   const updatePeriod = async (periodId: string, updates: any) => {
     try {
-      const response = await fetch(`/api/admin/timetable/periods/${periodId}`, {
+      const response = await fetch(getApiUrl(`timetable/periods/${periodId}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

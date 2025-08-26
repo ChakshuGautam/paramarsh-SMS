@@ -95,7 +95,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
       setLoading(true);
       
       // Load time slots
-      const timeSlotsResponse = await fetch('/api/admin/timeSlots?pagination={"page":1,"perPage":1000}', {
+      const timeSlotsResponse = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/timeSlots?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -105,7 +105,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
       console.log('Loaded time slots:', (timeSlotsData.data || []).length, 'slots');
 
       // Load periods for this section
-      const periodsResponse = await fetch(`/api/admin/timetable?filter={"sectionId":"${sectionId}"}&pagination={"page":1,"perPage":1000}`, {
+      const periodsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/timetable?filter={"sectionId":"${sectionId}"}&pagination={"page":1,"perPage":1000}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -123,7 +123,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
   const loadTeachers = async () => {
     try {
-      const response = await fetch('/api/admin/teachers?pagination={"page":1,"perPage":1000}', {
+      const response = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/teachers?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -144,7 +144,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
   const loadSubjects = async () => {
     try {
-      const response = await fetch('/api/admin/subjects?pagination={"page":1,"perPage":1000}', {
+      const response = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/subjects?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -159,7 +159,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
 
   const loadRooms = async () => {
     try {
-      const response = await fetch('/api/admin/rooms?pagination={"page":1,"perPage":1000}', {
+      const response = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/rooms?pagination={"page":1,"perPage":1000}', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -246,7 +246,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
       
       if (editingData.periodId) {
         // Update existing period
-        response = await fetch(`/api/admin/timetable/${editingData.periodId}`, {
+        response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/timetable/${editingData.periodId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ const TimetableCalendar: React.FC<TimetableCalendarProps> = ({
         });
       } else {
         // Create new period
-        response = await fetch('/api/admin/timetable', {
+        response = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/timetable', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

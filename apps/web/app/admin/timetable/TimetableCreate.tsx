@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { AlertCircle, BookOpen, GraduationCap, Users, MapPin, Clock } from 'lucide-react';
+import { getApiUrl } from '@/lib/api-config';
 
 interface Section {
   id: string;
@@ -109,10 +110,10 @@ export const TimetableCreate = () => {
     try {
       setLoading(true);
       const [sectionsRes, teachersRes, roomsRes, timeSlotsRes] = await Promise.all([
-        fetch('/api/admin/sections'),
-        fetch('/api/admin/teachers'),
-        fetch('/api/admin/rooms'),
-        fetch('/api/admin/timeslots')
+        fetch(getApiUrl('sections')),
+        fetch(getApiUrl('teachers')),
+        fetch(getApiUrl('rooms')),
+        fetch(getApiUrl('timeslots'))
       ]);
 
       const [sectionsData, teachersData, roomsData, timeSlotsData] = await Promise.all([
@@ -136,7 +137,7 @@ export const TimetableCreate = () => {
 
   const fetchGradeAppropriateSubjects = async (classId: string) => {
     try {
-      const response = await fetch(`/api/admin/subjects/appropriate-for-class/${classId}`);
+      const response = await fetch(getApiUrl(`subjects/appropriate-for-class/${classId}`));
       const data = await response.json();
       setSubjects(data.data || []);
     } catch (error) {
@@ -147,7 +148,7 @@ export const TimetableCreate = () => {
 
   const fetchSubjectTeacherMappings = async (classId: string) => {
     try {
-      const response = await fetch(`/api/admin/subjects/subject-teacher-class-mapping?classId=${classId}`);
+      const response = await fetch(getApiUrl(`subjects/subject-teacher-class-mapping?classId=${classId}`));
       const data = await response.json();
       setSubjectTeacherMappings(data.data || []);
     } catch (error) {
@@ -157,7 +158,7 @@ export const TimetableCreate = () => {
 
   const validateAssignment = async (subjectId: string, teacherId: string, classId: string) => {
     try {
-      const response = await fetch('/api/admin/subjects/validate-assignment', {
+      const response = await fetch(getApiUrl('subjects/validate-assignment'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subjectId, teacherId, classId })
