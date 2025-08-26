@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useParams } from 'react-router-dom';
 import { useNotify, useDataProvider, useRedirect } from 'ra-core';
+import { getApiUrl } from '@/lib/api-config';
 import TimetableCalendar from './components/TimetableCalendar';
 
 interface Section {
@@ -70,7 +71,7 @@ const TimetableShow: React.FC = () => {
         filter: { sectionId: id, isActive: true },
       });
 
-      const timeSlotsResponse = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3005/api/v1'}/timetable/time-slots', {
+      const timeSlotsResponse = await fetch(getApiUrl('timetable/time-slots'), {
         headers: {
           'Content-Type': 'application/json',
           'X-Branch-Id': 'branch1',
