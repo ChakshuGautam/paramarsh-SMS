@@ -68,7 +68,7 @@
     "date-fns": "^4.1.0",
     "helmet": "^8.1.0",
     "pdfmake": "^0.2.12",
-    "prisma": "^5.17.0",
+    "prisma": "^6.15.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1",
