@@ -178,11 +178,12 @@ model Tenant {
 }
 
 model Class {
-  id         String    @id @default(uuid())
-  branchId   String?
-  name       String
-  gradeLevel Int?
-  sections   Section[]
+  id               String                @id @default(uuid())
+  branchId         String?
+  name             String
+  gradeLevel       Int?
+  sections         Section[]
+  subjectTeachers  ClassSubjectTeacher[]
 }
 
 model Section {
@@ -197,6 +198,20 @@ model Section {
   class              Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
   homeroomTeacher    Teacher?            @relation(fields: [homeroomTeacherId], references: [id])
   periods            TimetablePeriod[]
+}
+
+model ClassSubjectTeacher {
+  id        String  @id @default(uuid())
+  branchId  String?
+  classId   String
+  subjectId String
+  teacherId String
+  class     Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher   Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  
+  @@unique([classId, subjectId, teacherId])
+  @@index([branchId])
 }
 
 model Enrollment {
@@ -309,6 +324,7 @@ model Teacher {
   substitutingFor   TeacherDailyAttendance[]  @relation("SubstituteFor")
   dailyAttendance   TeacherDailyAttendance[]  @relation("TeacherAttendance")
   periods           TimetablePeriod[]
+  classSubjects     ClassSubjectTeacher[]
 
   @@index([deletedAt])
 }
@@ -425,20 +441,21 @@ model TicketAttachment {
 }
 
 model Subject {
-  id                 String              @id @default(uuid())
+  id                 String                @id @default(uuid())
   branchId           String?
-  code               String              @unique
+  code               String                @unique
   name               String
   description        String?
   credits            Int?
-  isElective         Boolean             @default(false)
+  isElective         Boolean               @default(false)
   prerequisites      String?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
   attendanceSessions AttendanceSession[]
   marks              Mark[]
   constraints        SubjectConstraint[]
   periods            TimetablePeriod[]
+  classTeachers      ClassSubjectTeacher[]
 }
 
 model Room {

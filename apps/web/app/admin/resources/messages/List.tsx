@@ -9,6 +9,7 @@ import {
   Count,
   TextInput,
   SelectInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ export const MessagesList = () => (
     sort={{ field: "sentAt", order: "DESC" }}
     filterDefaultValues={{ status: "sent" }}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -90,15 +92,19 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="pending">
         <MessagesTable storeKey={storeKeyByStatus.pending} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="sent">
         <MessagesTable storeKey={storeKeyByStatus.sent} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="delivered">
         <MessagesTable storeKey={storeKeyByStatus.delivered} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="failed">
         <MessagesTable storeKey={storeKeyByStatus.failed} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );

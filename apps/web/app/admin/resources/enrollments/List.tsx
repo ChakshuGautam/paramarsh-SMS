@@ -17,6 +17,7 @@ import {
   StatusBadge,
   ToggleFilterButton,
   TextInput,
+  ListPagination,
 } from "@/components/admin";
 import { Search, Users, Calendar } from "lucide-react";
 import { getStatusColor } from "@/lib/theme/colors";
@@ -35,7 +36,12 @@ export const EnrollmentsList = () => (
           tabs={statusTabs.enrollment}
           defaultTab="active"
         >
-          {(tab) => <EnrollmentsTable storeKey={tab.storeKey} />}
+          {(tab) => (
+            <>
+              <EnrollmentsTable storeKey={tab.storeKey} />
+              <ListPagination className="justify-start mt-2" />
+            </>
+          )}
         </TabbedResourceList>
       </div>
     </div>
@@ -53,7 +59,7 @@ const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
   >
     {/* Always visible columns */}
     <DataTable.Col label="Student">
-      <ReferenceField reference="students" source="studentId" link={false}>
+      <ReferenceField reference="students" source="studentId" link="show">
         <TextField source="fullName" />
       </ReferenceField>
     </DataTable.Col>
@@ -65,8 +71,8 @@ const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
     </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col label="Section" className="hidden md:table-cell">
-      <ReferenceField reference="sections" source="sectionId" link={false}>
+    <DataTable.Col label="Section">
+      <ReferenceField reference="sections" source="sectionId" link="show">
         <TextField source="name" />
       </ReferenceField>
     </DataTable.Col>
@@ -164,5 +170,6 @@ const EndDateField = () => {
   // Show a dash or "Current" for null end dates (active enrollments)
   return <span className="text-muted-foreground">Current</span>;
 };
+
 
 export default EnrollmentsList;

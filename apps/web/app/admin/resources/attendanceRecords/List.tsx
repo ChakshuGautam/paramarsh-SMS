@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext, useRecordContext } from "ra-core";
+import { useListContext, useRecordContext, useRedirect } from "ra-core";
 import {
   DataTable,
   List,
@@ -10,11 +10,13 @@ import {
   TextInput,
   SelectInput,
   DateInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format, subDays, startOfWeek, startOfMonth } from "date-fns";
-import { Check, X, Clock, Shield, AlertCircle, Calendar } from "lucide-react";
+import { Check, X, Clock, Shield, AlertCircle, Calendar, BarChart3 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 // Store keys for different date ranges
@@ -68,12 +70,29 @@ const attendanceFilters = [
   <DateInput source="date" placeholder="Filter by date" label="" />,
 ];
 
+const ListActions = () => {
+  const redirect = useRedirect();
+  
+  return (
+    <Button
+      variant="default"
+      onClick={() => redirect('/admin/attendance-dashboard')}
+      className="gap-2"
+    >
+      <BarChart3 className="w-4 h-4" />
+      View Dashboard
+    </Button>
+  );
+};
+
 export const AttendanceRecordsList = () => (
   <List
     sort={{ field: "date", order: "DESC" }}
     filterDefaultValues={{ ...getDateFilter("today") }}
     filters={attendanceFilters}
     perPage={10}
+    pagination={false}
+    actions={<ListActions />}
   >
     <TabbedDataTable />
   </List>
@@ -136,18 +155,23 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="today">
         <AttendanceTable storeKey={storeKeyByDateRange.today} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="yesterday">
         <AttendanceTable storeKey={storeKeyByDateRange.yesterday} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="thisWeek">
         <AttendanceTable storeKey={storeKeyByDateRange.thisWeek} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="thisMonth">
         <AttendanceTable storeKey={storeKeyByDateRange.thisMonth} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <AttendanceTable storeKey={storeKeyByDateRange.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );

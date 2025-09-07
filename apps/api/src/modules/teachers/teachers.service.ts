@@ -104,7 +104,7 @@ export class TeachersService extends BaseCrudService<any> {
       orderBy = { [sortField]: sortOrder };
     }
 
-    const [data, total] = await Promise.all([
+    const [teachers, total] = await Promise.all([
       this.prisma.teacher.findMany({
         where,
         skip,
@@ -112,10 +112,42 @@ export class TeachersService extends BaseCrudService<any> {
         ...(orderBy && { orderBy }),
         include: {
           staff: true,
+          classSubjects: {
+            include: {
+              class: true,
+              subject: true,
+            },
+          },
         },
       }),
       this.prisma.teacher.count({ where }),
     ]);
+
+    // Transform data to include classIds and sectionIds for React Admin
+    const data = await Promise.all(teachers.map(async (teacher) => {
+      // Get unique class IDs from classSubjects
+      const classIds = [...new Set(teacher.classSubjects.map(cs => cs.classId))];
+      
+      // Get sections where teacher teaches (from timetable periods)
+      const periods = await this.prisma.timetablePeriod.findMany({
+        where: {
+          teacherId: teacher.id,
+          branchId: teacher.branchId,
+        },
+        select: {
+          sectionId: true,
+        },
+        distinct: ['sectionId'],
+      });
+      
+      const sectionIds = periods.map(p => p.sectionId).filter(Boolean);
+      
+      return {
+        ...teacher,
+        classIds,
+        sectionIds,
+      };
+    }));
 
     return { data, total };
   }
@@ -124,19 +156,48 @@ export class TeachersService extends BaseCrudService<any> {
    * Override getOne to include staff relation and branchId filtering
    */
   async getOne(id: string, branchId?: string) {
-    const data = await this.prisma.teacher.findFirst({
+    const teacher = await this.prisma.teacher.findFirst({
       where: { 
         id,
         ...(branchId && { branchId })
       },
       include: {
         staff: true,
+        classSubjects: {
+          include: {
+            class: true,
+            subject: true,
+          },
+        },
       },
     });
 
-    if (!data) {
+    if (!teacher) {
       throw new NotFoundException('Teacher not found');
     }
+
+    // Get unique class IDs from classSubjects
+    const classIds = [...new Set(teacher.classSubjects.map(cs => cs.classId))];
+    
+    // Get sections where teacher teaches (from timetable periods)
+    const periods = await this.prisma.timetablePeriod.findMany({
+      where: {
+        teacherId: teacher.id,
+        branchId: teacher.branchId,
+      },
+      select: {
+        sectionId: true,
+      },
+      distinct: ['sectionId'],
+    });
+    
+    const sectionIds = periods.map(p => p.sectionId).filter(Boolean);
+
+    const data = {
+      ...teacher,
+      classIds,
+      sectionIds,
+    };
 
     return { data };
   }
@@ -219,5 +280,213 @@ export class TeachersService extends BaseCrudService<any> {
    */
   protected supportsBranchScoping(): boolean {
     return true;
+  }
+
+  /**
+   * Get all class/subject assignments for a teacher
+   */
+  async getTeacherAssignments(teacherId: string, branchId: string) {
+    // Validate teacher exists
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id: teacherId, branchId }
+    });
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
+    }
+
+    const assignments = await this.prisma.classSubjectTeacher.findMany({
+      where: {
+        teacherId,
+        branchId
+      },
+      include: {
+        class: true,
+        subject: true
+      }
+    });
+
+    return {
+      data: assignments.map(a => ({
+        id: a.id,
+        classId: a.classId,
+        className: a.class.name,
+        gradeLevel: a.class.gradeLevel,
+        subjectId: a.subjectId,
+        subjectName: a.subject.name,
+        subjectCode: a.subject.code
+      }))
+    };
+  }
+
+  /**
+   * Get all sections where teacher teaches (via timetable periods)
+   */
+  async getTeacherSections(teacherId: string, branchId: string) {
+    // Validate teacher exists
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id: teacherId, branchId }
+    });
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
+    }
+
+    // Get unique sections from timetable periods
+    const periods = await this.prisma.timetablePeriod.findMany({
+      where: {
+        teacherId,
+        branchId
+      },
+      select: {
+        section: {
+          include: {
+            class: true
+          }
+        }
+      },
+      distinct: ['sectionId']
+    });
+
+    // Also get sections where teacher is homeroom teacher
+    const homeroomSections = await this.prisma.section.findMany({
+      where: {
+        homeroomTeacherId: teacherId,
+        branchId
+      },
+      include: {
+        class: true
+      }
+    });
+
+    // Combine and deduplicate
+    const allSections = new Map();
+    
+    periods.forEach(p => {
+      if (p.section) {
+        allSections.set(p.section.id, {
+          id: p.section.id,
+          sectionName: p.section.name,
+          classId: p.section.classId,
+          className: p.section.class.name,
+          capacity: p.section.capacity,
+          isHomeroom: false
+        });
+      }
+    });
+
+    homeroomSections.forEach(s => {
+      if (allSections.has(s.id)) {
+        allSections.get(s.id).isHomeroom = true;
+      } else {
+        allSections.set(s.id, {
+          id: s.id,
+          sectionName: s.name,
+          classId: s.classId,
+          className: s.class.name,
+          capacity: s.capacity,
+          isHomeroom: true
+        });
+      }
+    });
+
+    return {
+      data: Array.from(allSections.values())
+    };
+  }
+
+  /**
+   * Assign teacher to a class for a subject
+   */
+  async assignToClass(teacherId: string, classId: string, subjectId: string, branchId: string) {
+    // Validate teacher exists
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id: teacherId, branchId }
+    });
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
+    }
+
+    // Validate class exists
+    const classEntity = await this.prisma.class.findFirst({
+      where: { id: classId, branchId }
+    });
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Validate subject exists
+    const subject = await this.prisma.subject.findFirst({
+      where: { id: subjectId, branchId }
+    });
+    if (!subject) {
+      throw new NotFoundException('Subject not found');
+    }
+
+    // Check if assignment already exists
+    const existing = await this.prisma.classSubjectTeacher.findFirst({
+      where: {
+        teacherId,
+        classId,
+        subjectId
+      }
+    });
+
+    if (existing) {
+      return { data: existing, message: 'Assignment already exists' };
+    }
+
+    // Create assignment
+    const assignment = await this.prisma.classSubjectTeacher.create({
+      data: {
+        branchId,
+        teacherId,
+        classId,
+        subjectId
+      },
+      include: {
+        class: true,
+        subject: true
+      }
+    });
+
+    return {
+      data: {
+        id: assignment.id,
+        classId: assignment.classId,
+        className: assignment.class.name,
+        subjectId: assignment.subjectId,
+        subjectName: assignment.subject.name
+      }
+    };
+  }
+
+  /**
+   * Remove teacher from a class/subject assignment
+   */
+  async removeFromClass(teacherId: string, classId: string, subjectId: string, branchId: string) {
+    // Validate teacher exists
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id: teacherId, branchId }
+    });
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
+    }
+
+    const deleted = await this.prisma.classSubjectTeacher.deleteMany({
+      where: {
+        teacherId,
+        classId,
+        subjectId,
+        branchId
+      }
+    });
+
+    if (deleted.count === 0) {
+      throw new NotFoundException('Teacher assignment not found');
+    }
+
+    return {
+      data: { deleted: deleted.count },
+      message: 'Teacher removed from class successfully'
+    };
   }
 }

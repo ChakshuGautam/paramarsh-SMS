@@ -10,6 +10,7 @@ import {
   TextInput,
   SelectInput,
   DateInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,8 @@ export const AttendanceSessionsList = () => (
   <List
     sort={{ field: "date", order: "DESC" }}
     filters={sessionFilters}
+    perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -107,15 +110,19 @@ const TabbedDataTable = () => {
       
       <TabsContent value="scheduled">
         <SessionsTable storeKey={storeKeyByStatus.scheduled} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="inProgress">
         <SessionsTable storeKey={storeKeyByStatus.inProgress} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="completed">
         <SessionsTable storeKey={storeKeyByStatus.completed} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <SessionsTable storeKey={storeKeyByStatus.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );

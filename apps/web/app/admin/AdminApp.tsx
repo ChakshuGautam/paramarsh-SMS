@@ -6,6 +6,7 @@ import { type DataProvider as RADataProvider } from "ra-core";
 import { Resource } from "react-admin";
 import { dataProvider } from "./DataProvider";
 import authProvider from "./authProvider";
+import { Dashboard } from "./Dashboard";
 // import { PermissionAwareResource } from "./components/PermissionAwareResource"; // Disabled for development
 import { RoleSwitcher } from "./components/RoleSwitcher";
 import * as Students from "./resources/students";
@@ -20,7 +21,7 @@ import * as Classes from "./resources/classes";
 import * as Sections from "./resources/sections";
 import * as Enrollments from "./resources/enrollments";
 import * as Marks from "./resources/marks";
-import * as AttendanceRecords from "./resources/attendanceRecords";
+// import * as AttendanceRecords from "./resources/attendanceRecords"; // Removed due to API issues
 import * as AttendanceSessions from "./resources/attendanceSessions";
 import * as TeacherAttendance from "./resources/teacherAttendance";
 import * as Staff from "./resources/staff";
@@ -62,7 +63,7 @@ const AdminApp = () => {
   }
 
   return (
-    <Admin dataProvider={raDataProvider} authProvider={authProvider}>
+    <Admin dataProvider={raDataProvider} authProvider={authProvider} dashboard={Dashboard}>
     {/* Core Academic Structure */}
     <Resource
       name="students"
@@ -149,14 +150,7 @@ const AdminApp = () => {
     />
     
     {/* Academic Records & History */}
-    <Resource
-      name="attendanceRecords"
-      options={{ label: "Attendance History" }}
-      list={AttendanceRecords.List}
-      show={AttendanceRecords.Show}
-      edit={AttendanceRecords.Edit}
-      create={AttendanceRecords.Create}
-    />
+    {/* Removed attendanceRecords due to API issues */}
     
     {/* Academic Planning */}
     <Resource

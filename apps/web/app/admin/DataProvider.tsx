@@ -328,15 +328,15 @@ function resourceToPath(resource: string): string {
     subjects: "subjects",
     rooms: "rooms",
     timetable: "timetable",
-    timetablePeriods: "timetable/periods", // Missing backend implementation
+    timetablePeriods: "timetable/periods",
     timetableGrid: "timetable/grid",
     timeSlots: "timeslots",
     timeslots: "timeslots",
-    substitutions: "timetable/substitutions",
+    substitutions: "timetable/substitutions", // Handled within timetable controller
     sectionTimetables: "sections",
     timetables: "timetable",
     
-    // Communications - Using alt controllers (non-comms prefix)
+    // Communications
     templates: "templates",
     campaigns: "campaigns", 
     messages: "comms/messages",

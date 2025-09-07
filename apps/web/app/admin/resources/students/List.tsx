@@ -14,8 +14,9 @@ import {
   TextField,
   ToggleFilterButton,
   TextInput,
-  ListPagination,
   GenderBadge,
+  StatusBadge,
+  ListPagination,
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
 import { User, BookOpen, Users } from "lucide-react";
@@ -24,9 +25,9 @@ import { getStatusColor } from "@/lib/theme/colors";
 export const StudentsList = () => {
   return (
     <List
-      perPage={25}
-      sort={{ field: "firstName", order: "ASC" }}
+      perPage={10}
       pagination={false}
+      sort={{ field: "firstName", order: "ASC" }}
     >
       <div className="flex flex-row gap-4 mb-4">
         <SidebarFilters />
@@ -35,6 +36,12 @@ export const StudentsList = () => {
             <DataTable.Col source="admissionNo" label="Admission No" />
             <DataTable.Col source="firstName" label="First Name" />
             <DataTable.Col source="lastName" label="Last Name" />
+            <DataTable.Col 
+              source="status" 
+              label="Status"
+            >
+              <StatusBadge size="sm" />
+            </DataTable.Col>
             <DataTable.Col 
               source="gender" 
               label="Gender" 

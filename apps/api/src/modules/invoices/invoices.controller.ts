@@ -143,4 +143,32 @@ export class InvoicesController {
     const { key } = await this.service.exportPdfAndUpload(id);
     return { data: { key } };
   }
+
+  // Invoice generation and sharing endpoints
+  @Post(':id/generate')
+  generateInvoice(@Param('id') invoiceId: string) {
+    return this.service.generateInvoice(invoiceId);
+  }
+
+  @Post(':id/share')
+  shareInvoice(
+    @Param('id') invoiceId: string,
+    @Body() body: { method: 'email' | 'sms' | 'both'; recipients?: string[] }
+  ) {
+    return this.service.shareInvoice(invoiceId, body.method, body.recipients);
+  }
+
+  @Post('bulk/generate')
+  generateBulkInvoices(
+    @Body() body: { classId?: string; sectionId?: string; period?: string; dueDate?: string }
+  ) {
+    return this.service.generateBulkInvoices(body.classId, body.sectionId, body.period, body.dueDate);
+  }
+
+  @Post('reminders/send')
+  sendPaymentReminders(
+    @Body() body: { method: 'email' | 'sms' | 'both' }
+  ) {
+    return this.service.sendPaymentReminders(body.method);
+  }
 }

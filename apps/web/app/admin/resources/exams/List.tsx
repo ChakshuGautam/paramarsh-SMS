@@ -10,6 +10,7 @@ import {
   TextField,
   TextInput,
   SelectInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +21,18 @@ import {
   GraduationCap, 
   FileText, 
   ClipboardCheck,
-  Percent
+  Percent,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  CalendarDays,
+  Download,
+  Eye,
+  Send,
+  Share2
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useRedirect } from "ra-core";
 
 // Store keys for different time periods
 const storeKeyByPeriod = {
@@ -106,6 +117,7 @@ export const ExamsList = () => {
       filters={examFilters}
       filterDefaultValues={defaultFilter}
       perPage={10}
+      pagination={false}
     >
       <TabbedDataTable />
     </List>
@@ -161,15 +173,19 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="upcoming">
         <ExamsTable storeKey={storeKeyByPeriod.upcoming} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="ongoing">
         <ExamsTable storeKey={storeKeyByPeriod.ongoing} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="completed">
         <ExamsTable storeKey={storeKeyByPeriod.completed} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <ExamsTable storeKey={storeKeyByPeriod.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
@@ -197,30 +213,34 @@ const ExamsTable = ({ storeKey }: { storeKey: string }) => (
     <DataTable.Col source="examType" label="Type">
       <ExamTypeBadge />
     </DataTable.Col>
+    <DataTable.Col label="Days Remaining">
+      <DaysRemaining />
+    </DataTable.Col>
+    <DataTable.Col label="Readiness">
+      <ReadinessStatus />
+    </DataTable.Col>
     <DataTable.Col source="startDate" label="Start Date">
       <DateBadge source="startDate" />
     </DataTable.Col>
-    <DataTable.Col source="endDate" label="End Date">
+    <DataTable.Col source="endDate" label="End Date" className="hidden md:table-cell">
       <DateBadge source="endDate" />
     </DataTable.Col>
-    <DataTable.Col source="status" label="Status">
+    <DataTable.Col source="status" label="Status" className="hidden lg:table-cell">
       <StatusBadge />
     </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col source="term" label="Term" className="hidden lg:table-cell">
+    <DataTable.Col source="term" label="Term" className="hidden xl:table-cell">
       <TermDisplay />
     </DataTable.Col>
-    <DataTable.Col source="weightagePercent" label="Weightage" className="hidden lg:table-cell">
+    <DataTable.Col source="weightagePercent" label="Weightage" className="hidden xl:table-cell">
       <WeightageDisplay />
     </DataTable.Col>
     <DataTable.Col source="maxMarks" label="Max Marks" className="hidden xl:table-cell">
       <TextField source="maxMarks" />
     </DataTable.Col>
-    <DataTable.Col source="academicYearId" label="Academic Year" className="hidden xl:table-cell">
-      <ReferenceField source="academicYearId" reference="academicYears" link={false}>
-        <TextField source="name" />
-      </ReferenceField>
+    <DataTable.Col label="Actions" className="hidden md:table-cell">
+      <ExamActions />
     </DataTable.Col>
   </DataTable>
 );
@@ -320,6 +340,171 @@ const WeightageDisplay = () => {
     <div className="flex items-center gap-1">
       <Percent className="h-3 w-3 text-muted-foreground" />
       <span className="font-medium">{record.weightagePercent}%</span>
+    </div>
+  );
+};
+
+const DaysRemaining = () => {
+  const record = useRecordContext();
+  if (!record?.startDate) return <span className="text-muted-foreground">-</span>;
+  
+  const today = new Date();
+  const startDate = new Date(record.startDate);
+  const endDate = new Date(record.endDate);
+  
+  // Calculate days remaining
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / msPerDay);
+  const daysUntilEnd = Math.ceil((endDate.getTime() - today.getTime()) / msPerDay);
+  
+  if (daysUntilStart > 0) {
+    // Exam hasn't started yet
+    const urgencyColor = daysUntilStart <= 3 ? 'text-red-700 bg-red-100' : 
+                        daysUntilStart <= 7 ? 'text-orange-700 bg-orange-100' : 
+                        'text-blue-700 bg-blue-100';
+    
+    return (
+      <Badge className={`${urgencyColor} flex items-center gap-1`}>
+        <Clock className="h-3 w-3" />
+        {daysUntilStart} day{daysUntilStart !== 1 ? 's' : ''}
+      </Badge>
+    );
+  } else if (daysUntilEnd >= 0) {
+    // Exam is ongoing
+    return (
+      <Badge className="text-green-700 bg-green-100 flex items-center gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        Ongoing
+      </Badge>
+    );
+  } else {
+    // Exam has ended
+    return (
+      <Badge variant="secondary">
+        Completed
+      </Badge>
+    );
+  }
+};
+
+const ReadinessStatus = () => {
+  const record = useRecordContext();
+  if (!record) return <span className="text-muted-foreground">-</span>;
+  
+  // This would typically check various factors like:
+  // - Question papers prepared
+  // - Seating arrangements done
+  // - Invigilators assigned
+  // - Hall tickets generated
+  // For now, we'll simulate based on days remaining
+  
+  const today = new Date();
+  const startDate = new Date(record.startDate);
+  const daysUntilStart = Math.ceil((startDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+  
+  if (daysUntilStart < 0) {
+    // Exam has passed
+    return (
+      <Badge variant="secondary">
+        N/A
+      </Badge>
+    );
+  }
+  
+  // Simulate readiness based on days remaining
+  const readiness = daysUntilStart > 7 ? 'ready' : 
+                    daysUntilStart > 3 ? 'partial' : 
+                    'not-ready';
+  
+  const readinessConfig = {
+    'ready': {
+      label: 'Ready',
+      color: 'text-green-700 bg-green-100',
+      icon: CheckCircle2
+    },
+    'partial': {
+      label: 'In Progress',
+      color: 'text-orange-700 bg-orange-100',
+      icon: AlertCircle
+    },
+    'not-ready': {
+      label: 'Not Ready',
+      color: 'text-red-700 bg-red-100',
+      icon: AlertCircle
+    }
+  };
+  
+  const config = readinessConfig[readiness];
+  const Icon = config.icon;
+  
+  return (
+    <Badge className={`${config.color} flex items-center gap-1`}>
+      <Icon className="h-3 w-3" />
+      {config.label}
+    </Badge>
+  );
+};
+
+const ExamActions = () => {
+  const record = useRecordContext();
+  const redirect = useRedirect();
+  
+  if (!record) return null;
+  
+  const handleViewDateSheet = () => {
+    // Navigate to date sheet view for this exam
+    redirect(`/admin/exams/${record.id}/datesheet`);
+  };
+  
+  const handleGenerateDateSheet = () => {
+    // This would typically generate a PDF or printable date sheet
+    // For now, we'll simulate by opening a date sheet view
+    console.log('Generating date sheet for exam:', record.name);
+    // In a real app, this would call a backend API to generate PDF
+    alert(`Date sheet generation for "${record.name}" would be triggered here`);
+  };
+  
+  const handleShareMarks = () => {
+    // This would typically trigger an API call to send marks to parents
+    // via email/SMS/app notification
+    console.log('Sharing marks for exam:', record.name);
+    alert(`Mark sharing for "${record.name}" would be triggered here. Parents would receive marks via SMS/Email.`);
+  };
+  
+  // Check if exam is completed to show marks sharing button
+  const today = new Date();
+  const endDate = new Date(record.endDate);
+  const isCompleted = endDate < today;
+  
+  return (
+    <div className="flex items-center gap-2">
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={handleViewDateSheet}
+        title="View Date Sheet"
+      >
+        <Eye className="h-4 w-4" />
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={handleGenerateDateSheet}
+        title="Generate Date Sheet"
+      >
+        <CalendarDays className="h-4 w-4" />
+      </Button>
+      {isCompleted && (
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleShareMarks}
+          title="Notify/Share Marks to Parents"
+          className="text-blue-600 hover:text-blue-700"
+        >
+          <Share2 className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 };

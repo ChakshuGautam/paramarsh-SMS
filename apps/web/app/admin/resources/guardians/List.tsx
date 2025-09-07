@@ -11,6 +11,7 @@ import {
   RelationBadge,
   TextInput,
   SelectInput,
+  ListPagination,
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
 import { Phone, Mail, User } from "lucide-react";
@@ -38,12 +39,18 @@ export const GuardiansList = () => (
     filters={filters}
     sort={{ field: "name", order: "ASC" }}
     perPage={10}
+    pagination={false}
   >
     <TabbedResourceList
       tabs={statusTabs.guardianRelation}
       defaultTab="all"
     >
-      {(tab) => <GuardiansTable storeKey={tab.storeKey} />}
+      {(tab) => (
+        <>
+          <GuardiansTable storeKey={tab.storeKey} />
+          <ListPagination className="justify-start mt-2" />
+        </>
+      )}
     </TabbedResourceList>
   </List>
 );

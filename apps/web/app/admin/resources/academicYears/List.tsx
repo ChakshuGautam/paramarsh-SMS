@@ -21,7 +21,7 @@ import { formatDate } from "@/lib/utils";
 export const AcademicYearsList = () => {
   return (
     <List
-      perPage={25}
+      perPage={10}
       sort={{ field: "startDate", order: "DESC" }}
       pagination={false}
     >

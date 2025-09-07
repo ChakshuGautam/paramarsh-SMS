@@ -4,36 +4,23 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Put,
+  Patch,
   Param,
   Delete,
   Query,
   Headers,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TemplatesService } from './templates.service';
 import { CreateTemplateDto } from './dto/create-template.dto';
 import { UpdateTemplateDto } from './dto/update-template.dto';
 import { ListDocs, CreateDocs, UpdateDocs, DeleteDocs } from '../../common/swagger.decorators';
 
-@ApiTags('Communication Templates')
-@Controller('comms/templates')
+@ApiTags('Templates')
+@Controller('templates')
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
-
-  @Post()
-  @ApiOperation({ 
-    summary: 'Create message template',
-    description: 'Creates a reusable message template for SMS, email, push notifications, or WhatsApp'
-  })
-  @CreateDocs('Template created successfully')
-  create(
-    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
-    @Body() createTemplateDto: CreateTemplateDto,
-  ) {
-    return this.templatesService.create(createTemplateDto);
-  }
 
   @Get()
   @ApiOperation({ 
@@ -53,6 +40,7 @@ export class TemplatesController {
     @Query('sort') sort?: string,
     @Query('filter') filterStr?: string,
     @Query('ids') idsStr?: string,
+    @Query('include') include?: string,
   ) {
     let filter = {};
     if (filterStr) {
@@ -82,7 +70,6 @@ export class TemplatesController {
     description: 'Retrieves detailed information about a specific message template'
   })
   @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
-  @ApiQuery({ name: 'include', required: false, description: 'Include related data (campaigns)', example: 'campaigns' })
   @ListDocs('Template details')
   findOne(
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
@@ -93,6 +80,19 @@ export class TemplatesController {
       return this.templatesService.getOneWithIncludes(id, include);
     }
     return this.templatesService.getOne(id);
+  }
+
+  @Post()
+  @ApiOperation({ 
+    summary: 'Create message template',
+    description: 'Creates a reusable message template for SMS, email, push notifications, or WhatsApp'
+  })
+  @CreateDocs('Template created successfully')
+  create(
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+    @Body() createTemplateDto: CreateTemplateDto,
+  ) {
+    return this.templatesService.create(createTemplateDto);
   }
 
   @Put(':id')
@@ -137,39 +137,5 @@ export class TemplatesController {
     @Param('id') id: string,
   ) {
     return this.templatesService.delete(id);
-  }
-
-  @Post(':id/preview')
-  @ApiOperation({ 
-    summary: 'Preview template',
-    description: 'Generates a preview of the template with provided variable values'
-  })
-  @ApiParam({ name: 'id', description: 'Template ID', example: 'template-123' })
-  @ApiBody({
-    description: 'Variables to substitute in template',
-    schema: {
-      type: 'object',
-      example: {
-        parent_name: 'John Doe',
-        amount: '5000',
-        due_date: '2024-01-31'
-      }
-    }
-  })
-  @ListDocs('Template preview with substituted variables')
-  async preview(
-    @Param('id') id: string,
-    @Body() variables: Record<string, any>,
-  ) {
-    const result = await this.templatesService.getOne(id);
-    const template = result.data;
-    if (!template) {
-      throw new Error('Template not found');
-    }
-    const rendered = await this.templatesService.renderTemplate(
-      template,
-      variables,
-    );
-    return { preview: rendered };
   }
 }

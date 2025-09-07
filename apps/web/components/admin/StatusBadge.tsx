@@ -36,6 +36,7 @@ export const StatusBadge = ({
     enrolled: 'Enrolled',
     on_leave: 'On Leave',
     terminated: 'Terminated',
+    transferred: 'Transferred',
     pending: 'Pending',
     approved: 'Approved',
     rejected: 'Rejected',

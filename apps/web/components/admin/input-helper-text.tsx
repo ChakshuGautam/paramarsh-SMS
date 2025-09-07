@@ -2,7 +2,16 @@ import { useTranslate } from "ra-core";
 import { isValidElement, ReactNode } from "react";
 import { FormDescription } from "@/components/admin/form";
 
-export function InputHelperText({ helperText }: { helperText?: ReactNode }) {
+export function InputHelperText({ 
+  helperText, 
+  touched, 
+  error, 
+  ...rest 
+}: { 
+  helperText?: ReactNode;
+  touched?: boolean;
+  error?: string;
+}) {
   const translate = useTranslate();
 
   if (!helperText) {

@@ -7,6 +7,7 @@ import {
   Count,
   TextInput,
   SelectInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,7 @@ export const CampaignsList = () => (
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "draft" }}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -95,18 +97,23 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="draft">
         <CampaignsTable storeKey={storeKeyByStatus.draft} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="scheduled">
         <CampaignsTable storeKey={storeKeyByStatus.scheduled} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="running">
         <CampaignsTable storeKey={storeKeyByStatus.running} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="completed">
         <CampaignsTable storeKey={storeKeyByStatus.completed} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="paused">
         <CampaignsTable storeKey={storeKeyByStatus.paused} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
@@ -114,35 +121,35 @@ const TabbedDataTable = () => {
 
 const CampaignsTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
-    storeKey={storeKey}
-    rowClassName={(record) => {
-      const statusColors = {
-        draft: 'border-l-4 border-l-gray-400',
-        scheduled: 'border-l-4 border-l-blue-500',
-        running: 'border-l-4 border-l-green-500',
-        completed: 'border-l-4 border-l-purple-500',
-        paused: 'border-l-4 border-l-yellow-500',
-      };
-      return statusColors[record.status] || '';
-    }}
-  >
-    {/* Always visible columns */}
-    <DataTable.Col source="name" label="Campaign Name" />
-    <DataTable.Col source="status" label="Status">
-      <StatusBadge />
-    </DataTable.Col>
-    <DataTable.Col source="schedule" label="Schedule">
-      <ScheduleBadge />
-    </DataTable.Col>
-    
-    {/* Desktop-only columns */}
-    <DataTable.Col label="Template" className="hidden md:table-cell">
-      <TemplateField />
-    </DataTable.Col>
-    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
-      <CreatedDateField />
-    </DataTable.Col>
-  </DataTable>
+      storeKey={storeKey}
+      rowClassName={(record) => {
+        const statusColors = {
+          draft: 'border-l-4 border-l-gray-400',
+          scheduled: 'border-l-4 border-l-blue-500',
+          running: 'border-l-4 border-l-green-500',
+          completed: 'border-l-4 border-l-purple-500',
+          paused: 'border-l-4 border-l-yellow-500',
+        };
+        return statusColors[record.status] || '';
+      }}
+    >
+      {/* Always visible columns */}
+      <DataTable.Col source="name" label="Campaign Name" />
+      <DataTable.Col source="status" label="Status">
+        <StatusBadge />
+      </DataTable.Col>
+      <DataTable.Col source="schedule" label="Schedule">
+        <ScheduleBadge />
+      </DataTable.Col>
+      
+      {/* Desktop-only columns */}
+      <DataTable.Col label="Template" className="hidden md:table-cell">
+        <TemplateField />
+      </DataTable.Col>
+      <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
+        <CreatedDateField />
+      </DataTable.Col>
+    </DataTable>
 );
 
 const StatusBadge = () => {

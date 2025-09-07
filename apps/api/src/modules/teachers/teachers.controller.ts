@@ -84,4 +84,40 @@ export class TeachersController {
   ) {
     return this.service.delete(id);
   }
+
+  // Teacher class/section assignment endpoints
+  @Get(':id/assignments')
+  getTeacherAssignments(
+    @Param('id') teacherId: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
+  ) {
+    return this.service.getTeacherAssignments(teacherId, branchId);
+  }
+
+  @Get(':id/sections')
+  getTeacherSections(
+    @Param('id') teacherId: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
+  ) {
+    return this.service.getTeacherSections(teacherId, branchId);
+  }
+
+  @Post(':id/assignments')
+  assignToClass(
+    @Param('id') teacherId: string,
+    @Body() body: { classId: string; subjectId: string },
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
+  ) {
+    return this.service.assignToClass(teacherId, body.classId, body.subjectId, branchId);
+  }
+
+  @Delete(':id/assignments/:classId/:subjectId')
+  removeFromClass(
+    @Param('id') teacherId: string,
+    @Param('classId') classId: string,
+    @Param('subjectId') subjectId: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID
+  ) {
+    return this.service.removeFromClass(teacherId, classId, subjectId, branchId);
+  }
 }

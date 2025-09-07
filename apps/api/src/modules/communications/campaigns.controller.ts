@@ -4,12 +4,11 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   Query,
   Headers,
-  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CampaignsService } from './campaigns.service';
@@ -17,23 +16,10 @@ import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { ListDocs, CreateDocs, UpdateDocs, DeleteDocs } from '../../common/swagger.decorators';
 
-@ApiTags('Communication Campaigns')
-@Controller('comms/campaigns')
+@ApiTags('Campaigns')
+@Controller('campaigns')
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
-
-  @Post()
-  @ApiOperation({ 
-    summary: 'Create campaign',
-    description: 'Creates a new communication campaign with template, audience, and scheduling details'
-  })
-  @CreateDocs('Campaign created successfully')
-  async create(
-    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
-    @Body() createCampaignDto: CreateCampaignDto,
-  ) {
-    return this.campaignsService.create(createCampaignDto);
-  }
 
   @Get()
   @ApiOperation({ 
@@ -72,8 +58,8 @@ export class CampaignsController {
     }
     
     const currentPage = page ? Number(page) : 1;
-    const pageSize = perPage ? Number(perPage) : 25;
-    const skip = (currentPage - 1) * pageSize;
+    const itemsPerPage = perPage ? Number(perPage) : 25;
+    const skip = (currentPage - 1) * itemsPerPage;
     
     // Build sort order
     let orderBy = {};
@@ -85,7 +71,7 @@ export class CampaignsController {
     
     return this.campaignsService.getList({
       page: currentPage,
-      perPage: pageSize,
+      perPage: itemsPerPage,
       sort,
       filter,
     });
@@ -99,32 +85,26 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @ListDocs('Campaign details')
   async findOne(
-    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
-    @Query('include') include?: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
-    if (include) {
-      return this.campaignsService.getOneWithIncludes(id, include);
-    }
     return this.campaignsService.getOne(id);
   }
 
-  @Put(':id')
+  @Post()
   @ApiOperation({ 
-    summary: 'Replace campaign',
-    description: 'Completely replaces an existing campaign'
+    summary: 'Create campaign',
+    description: 'Creates a new communication campaign with template, audience, and scheduling details'
   })
-  @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
-  @UpdateDocs('Campaign replaced successfully')
-  async replace(
+  @CreateDocs('Campaign created successfully')
+  async create(
+    @Body() createCampaignDto: CreateCampaignDto,
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
-    @Param('id') id: string,
-    @Body() updateCampaignDto: UpdateCampaignDto,
   ) {
-    return this.campaignsService.update(id, updateCampaignDto);
+    return this.campaignsService.create(createCampaignDto);
   }
 
-  @Patch(':id')
+  @Put(':id')
   @ApiOperation({ 
     summary: 'Update campaign',
     description: 'Updates an existing campaign with new details or status'
@@ -132,9 +112,9 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @UpdateDocs('Campaign updated successfully')
   async update(
-    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.campaignsService.update(id, updateCampaignDto);
   }
@@ -147,31 +127,9 @@ export class CampaignsController {
   @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
   @DeleteDocs('Campaign deleted successfully')
   async remove(
-    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
     @Param('id') id: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
     return this.campaignsService.delete(id);
-  }
-
-  @Post(':id/execute')
-  @ApiOperation({ 
-    summary: 'Execute campaign',
-    description: 'Triggers immediate execution of a scheduled or draft campaign'
-  })
-  @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
-  @CreateDocs('Campaign execution started successfully')
-  execute(@Param('id') id: string) {
-    return this.campaignsService.execute(id);
-  }
-
-  @Get(':id/stats')
-  @ApiOperation({ 
-    summary: 'Get campaign statistics',
-    description: 'Retrieves delivery statistics and analytics for a campaign'
-  })
-  @ApiParam({ name: 'id', description: 'Campaign ID', example: 'campaign-123' })
-  @ListDocs('Campaign statistics and analytics')
-  getStats(@Param('id') id: string) {
-    return this.campaignsService.getStats(id);
   }
 }

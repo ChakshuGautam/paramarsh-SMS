@@ -383,13 +383,17 @@ export class AttendanceSessionsService {
     status?: string;
     page?: number;
     pageSize?: number;
+    sortField?: string;
+    sortOrder?: 'asc' | 'desc';
+    branchId?: string;
   }) {
     const page = Math.max(1, params.page || 1);
     const pageSize = Math.min(100, Math.max(1, params.pageSize || 25));
     const skip = (page - 1) * pageSize;
     
     const where: any = {};
-    const { branchId } = PrismaService.getScope();
+    // Use provided branchId or get from scope
+    const branchId = params.branchId || PrismaService.getScope()?.branchId;
     if (branchId) where.branchId = branchId;
     
     if (params.date) {
@@ -407,6 +411,15 @@ export class AttendanceSessionsService {
     
     if (params.sectionId) where.sectionId = params.sectionId;
     if (params.status) where.status = params.status;
+    
+    // Build orderBy based on sort parameters
+    const orderBy: any = {};
+    if (params.sortField) {
+      orderBy[params.sortField] = params.sortOrder || 'desc';
+    } else {
+      // Default sort
+      orderBy.id = 'desc';
+    }
     
     const [data, total] = await Promise.all([
       this.prisma.attendanceSession.findMany({
@@ -435,22 +448,15 @@ export class AttendanceSessionsService {
             }
           }
         },
-        orderBy: [
-          { date: 'desc' },
-          { startTime: 'asc' }
-        ]
+        orderBy
       }),
       this.prisma.attendanceSession.count({ where })
     ]);
     
+    // Return in React Admin format
     return {
       data,
-      meta: {
-        page,
-        pageSize,
-        total,
-        totalPages: Math.ceil(total / pageSize)
-      }
+      total
     };
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useListContext, useRecordContext } from "ra-core";
+import { useListContext, useRecordContext, FilterLiveForm, useTranslate, Translate, useDataProvider } from "ra-core";
+import { useEffect, useState } from "react";
 import {
   DataTable,
   List,
@@ -9,10 +10,12 @@ import {
   NumberInput,
   BooleanInput,
   Count,
+  ToggleFilterButton,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Star, Award } from "lucide-react";
+import { BookOpen, Star, Award, Filter, School, GraduationCap } from "lucide-react";
+import type { ReactNode } from "react";
 
 // Store keys for different subject types
 const storeKeyByType = {
@@ -23,23 +26,20 @@ const storeKeyByType = {
   all: "subjects.list.all",
 };
 
-// Label-less filters with placeholders
-const subjectFilters = [
-  <TextInput source="q" placeholder="Search subjects..." label="" alwaysOn />,
-  <NumberInput source="credits" placeholder="Filter by credits" label="" />,
-  <BooleanInput source="isActive" label="" />,
-  <BooleanInput source="isElective" label="" />,
-];
-
 export const SubjectsList = () => {
   return (
     <List
       sort={{ field: "name", order: "ASC" }}
       filterDefaultValues={{ isActive: true }}
-      filters={subjectFilters}
       perPage={10}
+      pagination={false}
     >
-      <TabbedDataTable />
+      <div className="flex flex-row gap-4 mb-4">
+        <SidebarFilters />
+        <div className="flex-1">
+          <TabbedDataTable />
+        </div>
+      </div>
     </List>
   );
 };
@@ -159,13 +159,15 @@ const SubjectsTable = ({ storeKey }: { storeKey: string }) => (
     <DataTable.Col source="credits" label="Credits">
       <CreditsBadge />
     </DataTable.Col>
+    <DataTable.Col label="Classes" className="hidden md:table-cell">
+      <ClassTags />
+    </DataTable.Col>
     
     {/* Desktop-only columns */}
-    <DataTable.Col source="description" label="Description" className="hidden md:table-cell" />
-    <DataTable.Col source="isElective" label="Type" className="hidden md:table-cell">
+    <DataTable.Col source="description" label="Description" className="hidden lg:table-cell" />
+    <DataTable.Col source="isElective" label="Type" className="hidden lg:table-cell">
       <TypeBadge />
     </DataTable.Col>
-    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell" />
   </DataTable>
 );
 
@@ -234,3 +236,215 @@ const TypeBadge = () => {
     </Badge>
   );
 };
+
+const ClassTags = () => {
+  const record = useRecordContext();
+  const dataProvider = useDataProvider();
+  const [classes, setClasses] = useState<any[]>([]);
+  
+  useEffect(() => {
+    if (record?.id) {
+      // Fetch timetable entries for this subject to find which classes it's taught in
+      dataProvider
+        .getList('timetablePeriods', {
+          filter: { subjectId: record.id },
+          pagination: { page: 1, perPage: 100 },
+          sort: { field: 'id', order: 'ASC' }
+        })
+        .then(({ data }) => {
+          // Extract unique class IDs from sections
+          const classIds = new Set<string>();
+          const classData: any[] = [];
+          
+          data.forEach((period: any) => {
+            if (period.section?.class && !classIds.has(period.section.class.id)) {
+              classIds.add(period.section.class.id);
+              classData.push(period.section.class);
+            }
+          });
+          
+          // Sort by grade level
+          classData.sort((a, b) => (a.gradeLevel || 0) - (b.gradeLevel || 0));
+          setClasses(classData);
+        })
+        .catch(() => {
+          // Fallback to showing general grade level tags if available
+          setClasses([]);
+        });
+    }
+  }, [record?.id, dataProvider]);
+  
+  // If no classes found, show grade level ranges based on subject type
+  if (!classes || classes.length === 0) {
+    if (!record) return <span className="text-muted-foreground text-sm">-</span>;
+    
+    // Infer grade levels based on subject attributes
+    const gradeLevels = [];
+    
+    // Basic heuristics for subject grade levels
+    if (record.name?.toLowerCase().includes('elementary') || 
+        record.name?.toLowerCase().includes('primary')) {
+      gradeLevels.push({ label: 'Primary', color: 'bg-blue-100 text-blue-700' });
+    }
+    if (record.name?.toLowerCase().includes('middle') || 
+        record.name?.toLowerCase().includes('secondary')) {
+      gradeLevels.push({ label: 'Middle', color: 'bg-green-100 text-green-700' });
+    }
+    if (record.name?.toLowerCase().includes('high') || 
+        record.name?.toLowerCase().includes('senior') ||
+        record.name?.toLowerCase().includes('advanced')) {
+      gradeLevels.push({ label: 'High', color: 'bg-purple-100 text-purple-700' });
+    }
+    
+    if (gradeLevels.length === 0) {
+      // Default for all subjects
+      return (
+        <div className="flex items-center gap-1">
+          <School className="w-4 h-4 text-muted-foreground" />
+          <Badge variant="outline" className="text-xs">All Classes</Badge>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex flex-wrap gap-1">
+        {gradeLevels.map((level, idx) => (
+          <Badge key={idx} className={`text-xs ${level.color}`}>
+            {level.label}
+          </Badge>
+        ))}
+      </div>
+    );
+  }
+  
+  // Group classes by grade level ranges
+  const groupedClasses = {
+    primary: classes.filter(c => c.gradeLevel >= 1 && c.gradeLevel <= 5),
+    middle: classes.filter(c => c.gradeLevel >= 6 && c.gradeLevel <= 8),
+    high: classes.filter(c => c.gradeLevel >= 9 && c.gradeLevel <= 12),
+  };
+  
+  return (
+    <div className="flex items-center gap-2">
+      <GraduationCap className="w-4 h-4 text-muted-foreground" />
+      <div className="flex flex-wrap gap-1">
+        {groupedClasses.primary.length > 0 && (
+          <Badge className="text-xs bg-blue-100 text-blue-700">
+            Primary ({groupedClasses.primary.map(c => c.name).join(', ')})
+          </Badge>
+        )}
+        {groupedClasses.middle.length > 0 && (
+          <Badge className="text-xs bg-green-100 text-green-700">
+            Middle ({groupedClasses.middle.map(c => c.name).join(', ')})
+          </Badge>
+        )}
+        {groupedClasses.high.length > 0 && (
+          <Badge className="text-xs bg-purple-100 text-purple-700">
+            High ({groupedClasses.high.map(c => c.name).join(', ')})
+          </Badge>
+        )}
+        {classes.length === 0 && (
+          <span className="text-xs text-muted-foreground">Not assigned</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const SidebarFilters = () => {
+  const translate = useTranslate();
+  return (
+    <div className="min-w-48 hidden md:block">
+      <FilterLiveForm>
+        <TextInput
+          source="q"
+          placeholder={translate("ra.action.search")}
+          label=""
+          className="mb-6"
+        />
+      </FilterLiveForm>
+      <FilterCategory
+        icon={<BookOpen size={16} />}
+        label="Subject Type"
+      >
+        <ToggleFilterButton
+          label="Core"
+          value={{ isElective: false }}
+        />
+        <ToggleFilterButton
+          label="Elective"
+          value={{ isElective: true }}
+        />
+      </FilterCategory>
+      <FilterCategory
+        icon={<Filter size={16} />}
+        label="Status"
+      >
+        <ToggleFilterButton
+          label="Active"
+          value={{ isActive: true }}
+        />
+        <ToggleFilterButton
+          label="Inactive"
+          value={{ isActive: false }}
+        />
+      </FilterCategory>
+      <FilterCategory
+        icon={<GraduationCap size={16} />}
+        label="Grade Level"
+      >
+        <ToggleFilterButton
+          label="Primary (1-5)"
+          value={{ gradeLevel: 'primary' }}
+        />
+        <ToggleFilterButton
+          label="Middle (6-8)"
+          value={{ gradeLevel: 'middle' }}
+        />
+        <ToggleFilterButton
+          label="High (9-12)"
+          value={{ gradeLevel: 'high' }}
+        />
+      </FilterCategory>
+      <FilterCategory
+        icon={<Award size={16} />}
+        label="Credits"
+      >
+        <ToggleFilterButton
+          label="1 Credit"
+          value={{ credits: 1 }}
+        />
+        <ToggleFilterButton
+          label="2 Credits"
+          value={{ credits: 2 }}
+        />
+        <ToggleFilterButton
+          label="3 Credits"
+          value={{ credits: 3 }}
+        />
+        <ToggleFilterButton
+          label="4+ Credits"
+          value={{ credits_gte: 4 }}
+        />
+      </FilterCategory>
+    </div>
+  );
+};
+
+const FilterCategory = ({
+  icon,
+  label,
+  children,
+}: {
+  icon: ReactNode;
+  label: string;
+  children?: ReactNode;
+}) => (
+  <>
+    <h3 className="flex flex-row items-center gap-2 mb-1 font-bold text-sm">
+      {icon}
+      <Translate i18nKey={label} />
+    </h3>
+    <div className="flex flex-col items-start ml-3 mb-4">{children}</div>
+  </>
+);

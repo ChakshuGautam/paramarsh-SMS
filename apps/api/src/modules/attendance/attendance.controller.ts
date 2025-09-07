@@ -210,4 +210,48 @@ export class AttendanceController {
   ) {
     return this.attendanceService.getSectionAttendanceReport(sectionId, date);
   }
+
+  @Get('dashboard/stats')
+  @ApiOperation({ summary: 'Get attendance dashboard statistics' })
+  @ApiQuery({ name: 'date', required: false, type: String, description: 'Date for statistics (defaults to today)' })
+  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Start date for range statistics' })
+  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'End date for range statistics' })
+  @ApiQuery({ name: 'classId', required: false, type: String, description: 'Filter by class ID' })
+  @ApiQuery({ name: 'sectionId', required: false, type: String, description: 'Filter by section ID' })
+  async getDashboardStats(
+    @Query('date') date?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('classId') classId?: string,
+    @Query('sectionId') sectionId?: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.attendanceService.getDashboardStats(branchId, { date, startDate, endDate, classId, sectionId });
+  }
+
+  @Get('reports/class-section-summary')
+  @ApiOperation({ summary: 'Get class and section wise attendance summary' })
+  @ApiQuery({ name: 'date', required: false, type: String, description: 'Date for summary (defaults to today)' })
+  async getClassSectionSummary(
+    @Query('date') date?: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.attendanceService.getClassSectionSummary(branchId, date);
+  }
+
+  @Get('analytics/trends')
+  @ApiOperation({ summary: 'Get attendance trends over time' })
+  @ApiQuery({ name: 'days', required: false, type: Number, description: 'Number of days for trend analysis (default: 30)' })
+  @ApiQuery({ name: 'granularity', required: false, enum: ['daily', 'weekly', 'monthly'], description: 'Trend granularity' })
+  async getAttendanceTrends(
+    @Query('days') days?: string,
+    @Query('granularity') granularity?: 'daily' | 'weekly' | 'monthly',
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.attendanceService.getAttendanceTrends(
+      branchId,
+      days ? Number(days) : 30,
+      granularity || 'daily'
+    );
+  }
 }

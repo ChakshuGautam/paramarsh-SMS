@@ -18,7 +18,7 @@ import { FileCheck, Hash, Calendar } from "lucide-react";
 export const AdmissionsApplicationsList = () => (
   <List
     sort={{ field: "submittedAt", order: "DESC" }}
-    perPage={25}
+    perPage={10}
     pagination={false}
   >
     <div className="flex flex-row gap-4 mb-4">

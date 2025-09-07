@@ -1,18 +1,20 @@
 "use client";
 
-import { Edit, SimpleForm, TextInput } from "@/components/admin";
+import { Edit, SimpleForm, TextInput, NumberInput } from "@/components/admin";
 import { ReferenceInput } from "@/components/admin/reference-input";
 import { AutocompleteInput } from "@/components/admin/autocomplete-input";
 
 export const TeachersEdit = () => (
   <Edit>
     <SimpleForm>
-      <ReferenceInput reference="staff" source="staffId" label="Staff">
-        <AutocompleteInput optionText="firstName" />
+      <ReferenceInput reference="staff" source="staffId" label="Staff Member">
+        <AutocompleteInput 
+          optionText={(record: any) => `${record.firstName} ${record.lastName}`} 
+        />
       </ReferenceInput>
-      <TextInput source="subjects" label="Subjects (CSV or JSON)" />
+      <TextInput source="subjects" label="Subjects" helperText="Comma-separated list of subjects" />
       <TextInput source="qualifications" label="Qualifications" />
-      <TextInput source="experienceYears" label="Experience (years)" />
+      <NumberInput source="experienceYears" label="Experience (years)" />
     </SimpleForm>
   </Edit>
 );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
   List,
@@ -11,10 +11,11 @@ import {
   SelectInput,
   NumberInput,
   DateInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Smartphone, Building, DollarSign } from "lucide-react";
+import { CreditCard, Smartphone, Building, IndianRupee } from "lucide-react";
 
 // Store keys for different status tabs
 const storeKeyByStatus = {
@@ -53,9 +54,10 @@ const paymentFilters = [
 export const PaymentsList = () => (
   <List
     sort={{ field: "createdAt", order: "DESC" }}
-    filterDefaultValues={{ status: "successful" }}
+    filterDefaultValues={{ status: "success" }}
     filters={paymentFilters}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -70,7 +72,7 @@ const TabbedDataTable = () => {
   };
   
   return (
-    <Tabs value={filterValues.status ?? "successful"}>
+    <Tabs value={filterValues.status ?? "success"}>
       <TabsList>
         <TabsTrigger value="pending" onClick={handleChange("pending")}>
           Pending
@@ -78,10 +80,10 @@ const TabbedDataTable = () => {
             <Count filter={{ ...filterValues, status: "pending" }} />
           </Badge>
         </TabsTrigger>
-        <TabsTrigger value="successful" onClick={handleChange("successful")}>
+        <TabsTrigger value="success" onClick={handleChange("success")}>
           Successful
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, status: "successful" }} />
+            <Count filter={{ ...filterValues, status: "success" }} />
           </Badge>
         </TabsTrigger>
         <TabsTrigger value="failed" onClick={handleChange("failed")}>
@@ -99,15 +101,19 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="pending">
         <PaymentsTable storeKey={storeKeyByStatus.pending} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
-      <TabsContent value="successful">
+      <TabsContent value="success">
         <PaymentsTable storeKey={storeKeyByStatus.successful} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="failed">
         <PaymentsTable storeKey={storeKeyByStatus.failed} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="refunded">
         <PaymentsTable storeKey={storeKeyByStatus.refunded} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
@@ -119,7 +125,7 @@ const PaymentsTable = ({ storeKey }: { storeKey: string }) => (
     rowClassName={(record) => {
       const statusColors = {
         pending: 'border-l-4 border-l-yellow-500',
-        successful: 'border-l-4 border-l-green-500',
+        success: 'border-l-4 border-l-green-500',
         failed: 'border-l-4 border-l-red-500',
         refunded: 'border-l-4 border-l-orange-500',
       };
@@ -147,12 +153,13 @@ const PaymentsTable = ({ storeKey }: { storeKey: string }) => (
   </DataTable>
 );
 
-const StatusBadge = ({ record }: { record?: any }) => {
+const StatusBadge = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const variants = {
     pending: 'warning',
-    successful: 'default',
+    success: 'default',
     failed: 'destructive',
     refunded: 'secondary',
   } as const;
@@ -164,7 +171,8 @@ const StatusBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const AmountBadge = ({ record }: { record?: any }) => {
+const AmountBadge = () => {
+  const record = useRecordContext();
   if (!record || !record.amount) return null;
   
   const amount = parseFloat(record.amount);
@@ -177,7 +185,7 @@ const AmountBadge = ({ record }: { record?: any }) => {
   
   return (
     <div className="flex items-center gap-2">
-      <DollarSign className="w-4 h-4 text-green-600" />
+      <IndianRupee className="w-4 h-4 text-green-600" />
       <Badge className={getAmountColor()}>
         ₹{amount.toLocaleString()}
       </Badge>
@@ -185,16 +193,19 @@ const AmountBadge = ({ record }: { record?: any }) => {
   );
 };
 
-const MethodIcon = ({ record }: { record?: any }) => {
+const MethodIcon = () => {
+  const record = useRecordContext();
   if (!record) return null;
   
   const icons = {
-    cash: <DollarSign className="w-4 h-4" />,
+    cash: <IndianRupee className="w-4 h-4" />,
     card: <CreditCard className="w-4 h-4" />,
     upi: <Smartphone className="w-4 h-4" />,
     bank_transfer: <Building className="w-4 h-4" />,
     cheque: <Building className="w-4 h-4" />,
     online: <CreditCard className="w-4 h-4" />,
+    offline: <IndianRupee className="w-4 h-4" />,
+    neft: <Building className="w-4 h-4" />,
   };
   
   const colors = {
@@ -204,11 +215,13 @@ const MethodIcon = ({ record }: { record?: any }) => {
     bank_transfer: 'text-orange-600',
     cheque: 'text-gray-600',
     online: 'text-indigo-600',
+    offline: 'text-gray-600',
+    neft: 'text-orange-600',
   };
   
   return (
     <div className={`flex items-center gap-2 ${colors[record.method] || 'text-gray-600'}`}>
-      {icons[record.method] || <DollarSign className="w-4 h-4" />}
+      {icons[record.method] || <IndianRupee className="w-4 h-4" />}
       <span className="capitalize">{record.method?.replace('_', ' ')}</span>
     </div>
   );

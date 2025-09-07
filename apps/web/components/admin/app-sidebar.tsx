@@ -38,7 +38,7 @@ import {
   Building2,
   UsersRound,
   FileText,
-  DollarSign,
+  IndianRupee,
   Receipt,
   Wallet,
   CalendarDays,
@@ -50,6 +50,8 @@ import {
   TicketCheck,
   Cog,
   Database,
+  LayoutDashboard,
+  BarChart3,
 } from "lucide-react";
 import { useGetIdentity } from "ra-core";
 import { isResourceAllowed } from "@/app/admin/permissions";
@@ -117,7 +119,7 @@ const resourceGroups = {
     icon: CreditCard,
     resources: ['feeStructures', 'feeSchedules', 'invoices', 'payments'],
     resourceIcons: {
-      feeStructures: DollarSign,
+      feeStructures: IndianRupee,
       feeSchedules: Receipt,
       invoices: FileText,
       payments: Wallet,
@@ -151,6 +153,7 @@ export function AppSidebar() {
   const roles = (identity as any)?.roles as string[] | undefined;
   const { openMobile, setOpenMobile } = useSidebar();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    'Dashboards': true,
     'Students': true,
     'Attendance': true,
   });
@@ -199,16 +202,38 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {/* Dashboard */}
-        {hasDashboard && (
-          <SidebarGroup>
+        {/* Dashboards Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel 
+            onClick={() => toggleGroup('Dashboards')}
+            className="cursor-pointer hover:bg-accent/50 transition-colors"
+          >
+            <div className="flex items-center gap-2 w-full py-1">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="flex-1 text-left text-sm font-medium">Dashboards</span>
+              <ChevronRight 
+                className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  openGroups['Dashboards'] && "rotate-90"
+                )}
+              />
+            </div>
+          </SidebarGroupLabel>
+          {openGroups['Dashboards'] !== false && (
             <SidebarGroupContent>
               <SidebarMenu>
-                <DashboardMenuItem onClick={handleClick} />
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild className="pl-8">
+                    <Link to="/" onClick={handleClick}>
+                      <House className="h-4 w-4" />
+                      Main Dashboard
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+          )}
+        </SidebarGroup>
 
         {/* Resource Groups */}
         {Object.entries(resourceGroups).map(([groupName, groupConfig]) => {

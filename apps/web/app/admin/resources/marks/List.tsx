@@ -8,6 +8,7 @@ import {
   BooleanInput,
   TextInput,
   SelectInput,
+  ListPagination,
 } from "@/components/admin";
 import { ReferenceField } from "@/components/admin/reference-field";
 import { Badge } from "@/components/ui/badge";
@@ -50,8 +51,10 @@ export const MarksList = () => (
     filters={marksFilters}
     sort={{ field: "createdAt", order: "DESC" }}
     perPage={10}
+    pagination={false}
   >
     <MarksTable />
+    <ListPagination className="justify-start mt-2" />
   </List>
 );
 

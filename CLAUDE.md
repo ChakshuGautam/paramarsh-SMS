@@ -496,3 +496,4 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 ---
 
 **Remember**: Every task is a learning opportunity. The system gets smarter with each interaction. Document everything, learn from failures, apply patterns, and evolve continuously.
+- never start servers. They will always be running. Ask me for logs.

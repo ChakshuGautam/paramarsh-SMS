@@ -377,6 +377,25 @@ export abstract class BaseCrudService<T> {
    */
   protected buildComplexFilter(where: any, key: string, value: any): void {
     try {
+      // First check if this looks like a date string that got parsed with indexed properties
+      // but also has filter operators (e.g., { "0": "2", "1": "0", ..., "gte": "2025-08-31" })
+      const keys = Object.keys(value);
+      const hasNumericKeys = keys.some(k => /^\d+$/.test(k));
+      const hasFilterOps = keys.some(k => ['gte', 'lte', 'gt', 'lt', 'equals', 'in', 'not', 'contains'].includes(k));
+      
+      if (hasNumericKeys && hasFilterOps) {
+        // This is a date field that got parsed incorrectly but also has operators
+        // Extract just the filter operators
+        const filterObj: any = {};
+        for (const [k, v] of Object.entries(value)) {
+          if (['gte', 'lte', 'gt', 'lt', 'equals', 'in', 'not', 'contains'].includes(k)) {
+            filterObj[k] = v;
+          }
+        }
+        where[key] = filterObj;
+        return;
+      }
+
       if (value.$contains !== undefined) {
         // PostgreSQL supports case insensitive search with ilike
         // Use case-insensitive contains without the mode option

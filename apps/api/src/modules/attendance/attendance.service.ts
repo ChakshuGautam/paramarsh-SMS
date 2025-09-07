@@ -421,4 +421,372 @@ export class AttendanceService extends BaseCrudService<any> {
       statistics: stats
     };
   }
+
+  /**
+   * Get dashboard statistics for attendance
+   */
+  async getDashboardStats(branchId: string, params: { 
+    date?: string; 
+    startDate?: string; 
+    endDate?: string;
+    classId?: string;
+    sectionId?: string;
+  }) {
+    // Use today's date if not provided
+    const targetDate = params.date || new Date().toISOString().split('T')[0];
+    
+    // Build student filter
+    const studentFilter: any = {
+      branchId,
+      status: 'active',
+      enrollments: {
+        some: {
+          status: 'enrolled',
+          OR: [
+            { endDate: null },
+            { endDate: { gte: targetDate } }
+          ]
+        }
+      }
+    };
+    
+    // Add class and section filters if provided
+    if (params.classId) {
+      studentFilter.classId = params.classId;
+    }
+    if (params.sectionId) {
+      studentFilter.sectionId = params.sectionId;
+    }
+    
+    // Get total students with filters
+    const totalStudents = await this.prisma.student.count({
+      where: studentFilter
+    });
+
+    // Get attendance records for the date or date range
+    let whereClause: any = { branchId };
+    
+    if (params.startDate && params.endDate) {
+      whereClause.date = {
+        gte: params.startDate,
+        lte: params.endDate
+      };
+    } else {
+      whereClause.date = targetDate;
+    }
+    
+    // Add student filter for class/section if provided
+    if (params.classId || params.sectionId) {
+      whereClause.student = {};
+      if (params.classId) {
+        whereClause.student.classId = params.classId;
+      }
+      if (params.sectionId) {
+        whereClause.student.sectionId = params.sectionId;
+      }
+    }
+
+    const attendanceRecords = await this.prisma.attendanceRecord.findMany({
+      where: whereClause,
+      select: {
+        status: true,
+        date: true,
+        studentId: true
+      }
+    });
+
+    // Calculate statistics
+    const statusCounts: Record<string, number> = {
+      present: 0,
+      absent: 0,
+      late: 0,
+      sick: 0,
+      excused: 0
+    };
+
+    attendanceRecords.forEach(record => {
+      statusCounts[record.status || 'absent']++;
+    });
+
+    // Calculate attendance percentage
+    const presentCount = statusCounts.present + statusCounts.late;
+    const attendancePercentage = totalStudents > 0 
+      ? ((presentCount / totalStudents) * 100).toFixed(2) 
+      : '0.00';
+
+    // Get trends if date range provided
+    let trends = null;
+    if (params.startDate && params.endDate) {
+      const dailyData = attendanceRecords.reduce((acc, record) => {
+        if (!acc[record.date]) {
+          acc[record.date] = {
+            date: record.date,
+            present: 0,
+            absent: 0,
+            late: 0,
+            sick: 0,
+            excused: 0
+          };
+        }
+        acc[record.date][record.status || 'absent']++;
+        return acc;
+      }, {} as Record<string, any>);
+
+      trends = Object.values(dailyData).sort((a: any, b: any) => 
+        a.date.localeCompare(b.date)
+      );
+    }
+
+    return {
+      data: {
+        date: targetDate,
+        totalStudents,
+        markedCount: attendanceRecords.length,
+        unmarkedCount: totalStudents - (params.startDate && params.endDate ? 0 : attendanceRecords.length),
+        statusCounts,
+        attendancePercentage: parseFloat(attendancePercentage),
+        trends
+      }
+    };
+  }
+
+  /**
+   * Get class and section wise attendance summary
+   */
+  async getClassSectionSummary(branchId: string, date?: string) {
+    // Use today's date if not provided
+    const targetDate = date || new Date().toISOString().split('T')[0];
+
+    // Get all sections with their classes
+    const sections = await this.prisma.section.findMany({
+      where: { branchId },
+      include: {
+        class: true,
+        enrollments: {
+          where: {
+            status: 'enrolled',
+            OR: [
+              { endDate: null },
+              { endDate: { gte: targetDate } }
+            ]
+          },
+          include: {
+            student: true
+          }
+        }
+      }
+    });
+
+    // Get attendance records for the date
+    const attendanceRecords = await this.prisma.attendanceRecord.findMany({
+      where: {
+        branchId,
+        date: targetDate
+      },
+      select: {
+        studentId: true,
+        status: true
+      }
+    });
+
+    // Create a map of student attendance
+    const attendanceMap = new Map(
+      attendanceRecords.map(r => [r.studentId, r.status])
+    );
+
+    // Build summary for each section
+    const summary = sections.map(section => {
+      const students = section.enrollments.map(e => e.student);
+      const totalStudents = students.length;
+      
+      const statusCounts: Record<string, number> = {
+        present: 0,
+        absent: 0,
+        late: 0,
+        sick: 0,
+        excused: 0,
+        unmarked: 0
+      };
+
+      students.forEach(student => {
+        const status = attendanceMap.get(student.id);
+        if (status) {
+          statusCounts[status]++;
+        } else {
+          statusCounts.unmarked++;
+        }
+      });
+
+      const presentCount = statusCounts.present + statusCounts.late;
+      const attendancePercentage = totalStudents > 0 
+        ? ((presentCount / totalStudents) * 100).toFixed(2)
+        : '0.00';
+
+      return {
+        classId: section.classId,
+        className: section.class.name,
+        sectionId: section.id,
+        sectionName: section.name,
+        totalStudents,
+        statusCounts,
+        attendancePercentage: parseFloat(attendancePercentage)
+      };
+    });
+
+    // Group by class
+    const byClass = summary.reduce((acc, item) => {
+      if (!acc[item.classId]) {
+        acc[item.classId] = {
+          classId: item.classId,
+          className: item.className,
+          sections: [],
+          totalStudents: 0,
+          overallAttendance: 0
+        };
+      }
+      
+      acc[item.classId].sections.push(item);
+      acc[item.classId].totalStudents += item.totalStudents;
+      
+      return acc;
+    }, {} as Record<string, any>);
+
+    // Calculate overall attendance for each class
+    Object.values(byClass).forEach((classData: any) => {
+      const totalPresent = classData.sections.reduce((sum: number, section: any) => 
+        sum + section.statusCounts.present + section.statusCounts.late, 0
+      );
+      classData.overallAttendance = classData.totalStudents > 0
+        ? ((totalPresent / classData.totalStudents) * 100).toFixed(2)
+        : '0.00';
+      classData.overallAttendance = parseFloat(classData.overallAttendance);
+    });
+
+    return {
+      data: {
+        date: targetDate,
+        summary,
+        byClass: Object.values(byClass)
+      }
+    };
+  }
+
+  /**
+   * Get attendance trends over time
+   */
+  async getAttendanceTrends(branchId: string, days: number = 30, granularity: 'daily' | 'weekly' | 'monthly' = 'daily') {
+    // Calculate date range
+    const endDate = new Date().toISOString().split('T')[0];
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    // Get attendance records for the date range
+    const attendanceRecords = await this.prisma.attendanceRecord.findMany({
+      where: {
+        branchId,
+        date: {
+          gte: startDate,
+          lte: endDate
+        }
+      },
+      select: {
+        date: true,
+        status: true,
+        studentId: true
+      },
+      orderBy: {
+        date: 'asc'
+      }
+    });
+
+    // Get total students for percentage calculations
+    const totalStudents = await this.prisma.student.count({
+      where: {
+        branchId,
+        status: 'active'
+      }
+    });
+
+    // Group data based on granularity
+    const groupedData: Record<string, any> = {};
+
+    attendanceRecords.forEach(record => {
+      let key: string;
+      
+      if (granularity === 'daily') {
+        key = record.date;
+      } else if (granularity === 'weekly') {
+        const weekStart = this.getWeekStart(new Date(record.date));
+        key = weekStart.toISOString().split('T')[0];
+      } else {
+        // monthly
+        const date = new Date(record.date);
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      }
+
+      if (!groupedData[key]) {
+        groupedData[key] = {
+          period: key,
+          present: 0,
+          absent: 0,
+          late: 0,
+          sick: 0,
+          excused: 0,
+          total: 0
+        };
+      }
+
+      groupedData[key][record.status || 'absent']++;
+      groupedData[key].total++;
+    });
+
+    // Convert to array and calculate percentages
+    const trends = Object.values(groupedData).map((item: any) => {
+      const presentCount = item.present + item.late;
+      const attendanceRate = item.total > 0 
+        ? ((presentCount / item.total) * 100).toFixed(2)
+        : '0.00';
+
+      return {
+        ...item,
+        attendanceRate: parseFloat(attendanceRate),
+        averageStudents: Math.round(item.total / (granularity === 'monthly' ? 20 : granularity === 'weekly' ? 5 : 1))
+      };
+    });
+
+    // Calculate overall statistics
+    const overallStats = {
+      totalRecords: attendanceRecords.length,
+      averageAttendanceRate: trends.length > 0
+        ? (trends.reduce((sum, t) => sum + t.attendanceRate, 0) / trends.length).toFixed(2)
+        : '0.00',
+      highestAttendance: trends.length > 0
+        ? Math.max(...trends.map(t => t.attendanceRate))
+        : 0,
+      lowestAttendance: trends.length > 0
+        ? Math.min(...trends.map(t => t.attendanceRate))
+        : 0
+    };
+
+    return {
+      data: {
+        startDate,
+        endDate,
+        days,
+        granularity,
+        totalStudents,
+        trends,
+        overallStats
+      }
+    };
+  }
+
+  /**
+   * Helper function to get the start of the week
+   */
+  private getWeekStart(date: Date): Date {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+    return new Date(d.setDate(diff));
+  }
 }

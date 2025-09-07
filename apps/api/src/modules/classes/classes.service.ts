@@ -94,4 +94,154 @@ export class ClassesService extends BaseCrudService<any> {
     // Use parent's delete method
     return super.delete(id);
   }
+
+  /**
+   * Get teachers assigned to a class
+   */
+  async getClassTeachers(classId: string, branchId: string, subjectId?: string) {
+    // Validate class exists
+    const classEntity = await this.prisma.class.findFirst({
+      where: { id: classId, branchId }
+    });
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    const where: any = { classId, branchId };
+    if (subjectId) {
+      where.subjectId = subjectId;
+    }
+
+    const assignments = await this.prisma.classSubjectTeacher.findMany({
+      where,
+      include: {
+        teacher: {
+          include: {
+            staff: true
+          }
+        },
+        subject: true
+      }
+    });
+
+    return {
+      data: assignments.map(a => ({
+        id: a.id,
+        classId: a.classId,
+        subjectId: a.subjectId,
+        subjectName: a.subject.name,
+        teacherId: a.teacherId,
+        teacherName: `${a.teacher.staff.firstName} ${a.teacher.staff.lastName}`,
+        teacherEmail: a.teacher.staff.email
+      }))
+    };
+  }
+
+  /**
+   * Assign a teacher to a class for a specific subject
+   */
+  async assignTeacher(classId: string, teacherId: string, subjectId: string, branchId: string) {
+    // Validate class exists
+    const classEntity = await this.prisma.class.findFirst({
+      where: { id: classId, branchId }
+    });
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    // Validate teacher exists
+    const teacher = await this.prisma.teacher.findFirst({
+      where: { id: teacherId, branchId }
+    });
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found');
+    }
+
+    // Validate subject exists
+    const subject = await this.prisma.subject.findFirst({
+      where: { id: subjectId, branchId }
+    });
+    if (!subject) {
+      throw new NotFoundException('Subject not found');
+    }
+
+    // Check if assignment already exists
+    const existing = await this.prisma.classSubjectTeacher.findFirst({
+      where: {
+        classId,
+        subjectId,
+        teacherId
+      }
+    });
+
+    if (existing) {
+      return { data: existing, message: 'Assignment already exists' };
+    }
+
+    // Create new assignment
+    const assignment = await this.prisma.classSubjectTeacher.create({
+      data: {
+        branchId,
+        classId,
+        subjectId,
+        teacherId
+      },
+      include: {
+        teacher: {
+          include: {
+            staff: true
+          }
+        },
+        subject: true
+      }
+    });
+
+    return {
+      data: {
+        id: assignment.id,
+        classId: assignment.classId,
+        subjectId: assignment.subjectId,
+        subjectName: assignment.subject.name,
+        teacherId: assignment.teacherId,
+        teacherName: `${assignment.teacher.staff.firstName} ${assignment.teacher.staff.lastName}`,
+        teacherEmail: assignment.teacher.staff.email
+      }
+    };
+  }
+
+  /**
+   * Remove a teacher from a class
+   */
+  async removeTeacher(classId: string, teacherId: string, branchId: string, subjectId?: string) {
+    // Validate class exists
+    const classEntity = await this.prisma.class.findFirst({
+      where: { id: classId, branchId }
+    });
+    if (!classEntity) {
+      throw new NotFoundException('Class not found');
+    }
+
+    const where: any = {
+      classId,
+      teacherId,
+      branchId
+    };
+
+    if (subjectId) {
+      where.subjectId = subjectId;
+    }
+
+    const deleted = await this.prisma.classSubjectTeacher.deleteMany({
+      where
+    });
+
+    if (deleted.count === 0) {
+      throw new NotFoundException('Teacher assignment not found');
+    }
+
+    return {
+      data: { deleted: deleted.count },
+      message: `Removed ${deleted.count} teacher assignment(s)`
+    };
+  }
 }

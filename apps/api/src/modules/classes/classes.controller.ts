@@ -98,4 +98,35 @@ export class ClassesController {
   ) {
     return this.service.remove(id, branchId);
   }
+
+  // Teacher assignment endpoints
+  @Get(':id/teachers')
+  @ApiQuery({ name: 'subjectId', required: false, type: String, description: 'Filter by subject' })
+  getClassTeachers(
+    @Param('id') classId: string,
+    @Query('subjectId') subjectId?: string,
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
+  ) {
+    return this.service.getClassTeachers(classId, branchId, subjectId);
+  }
+
+  @Post(':id/teachers')
+  assignTeacher(
+    @Param('id') classId: string,
+    @Body() body: { teacherId: string; subjectId: string },
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
+  ) {
+    return this.service.assignTeacher(classId, body.teacherId, body.subjectId, branchId);
+  }
+
+  @Delete(':id/teachers/:teacherId')
+  @ApiQuery({ name: 'subjectId', required: false, type: String, description: 'Subject to remove teacher from' })
+  removeTeacher(
+    @Param('id') classId: string,
+    @Param('teacherId') teacherId: string,
+    @Query('subjectId') subjectId?: string,
+    @Headers('x-branch-id') branchId: string = DEFAULT_BRANCH_ID,
+  ) {
+    return this.service.removeTeacher(classId, teacherId, branchId, subjectId);
+  }
 }

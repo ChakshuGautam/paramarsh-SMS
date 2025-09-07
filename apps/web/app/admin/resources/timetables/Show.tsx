@@ -1,328 +1,314 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDataProvider, useNotify } from 'ra-core';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  ArrowLeft,
-  Edit,
-  Calendar,
-  Users,
-  BookOpen,
-  Clock,
-  AlertTriangle,
-  Download,
-  Share
-} from "lucide-react";
-import { useParams } from 'react-router-dom';
-import { useNotify, useDataProvider, useRedirect } from 'ra-core';
-import { getApiUrl } from '@/lib/api-config';
-import TimetableCalendar from './components/TimetableCalendar';
+import { Calendar, Clock, BookOpen, Users, MapPin, User, Download, Edit } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface Section {
+interface TimetablePeriod {
   id: string;
-  name: string;
-  capacity: number;
-  class: {
+  dayOfWeek: number;
+  periodNumber: number;
+  startTime: string;
+  endTime: string;
+  subject?: {
+    name: string;
+    code: string;
+    isElective?: boolean;
+  };
+  teacher?: {
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+  };
+  room?: {
+    name: string;
+  };
+  isBreak?: boolean;
+  breakType?: string;
+}
+
+interface TimetablePeriodResponse {
+  id: string;
+  dayOfWeek: number;
+  periodNumber: number;
+  startTime: string;
+  endTime: string;
+  isBreak?: boolean;
+  breakType?: string;
+  section: {
     id: string;
     name: string;
-    gradeLevel: number;
+    capacity: number;
+    class: {
+      name: string;
+      gradeLevel: number;
+    };
+    homeroomTeacher?: {
+      staff: {
+        firstName: string;
+        lastName: string;
+        email: string;
+      };
+    };
+  };
+  subject?: {
+    name: string;
+    code: string;
+  };
+  teacher?: {
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+  };
+  room?: {
+    name: string;
   };
 }
 
-const TimetableShow: React.FC = () => {
+export const TimetablesShow = () => {
   const { id } = useParams<{ id: string }>();
-  const redirect = useRedirect();
-  const notify = useNotify();
+  const navigate = useNavigate();
   const dataProvider = useDataProvider();
-
-  const [section, setSection] = useState<Section | null>(null);
+  const notify = useNotify();
+  
+  const [timetablePeriod, setTimetablePeriod] = useState<TimetablePeriodResponse | null>(null);
+  const [periods, setPeriods] = useState<TimetablePeriod[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
-
+  
+  const days = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const timeSlots = [
+    { period: 1, start: "08:00", end: "08:45" },
+    { period: 2, start: "08:45", end: "09:30" },
+    { period: 3, start: "09:30", end: "10:15" },
+    { period: 4, start: "10:30", end: "11:15" },
+    { period: 5, start: "11:15", end: "12:00" },
+    { period: 6, start: "01:00", end: "01:45" },
+    { period: 7, start: "01:45", end: "02:30" },
+    { period: 8, start: "02:30", end: "03:15" },
+  ];
+  
   useEffect(() => {
     if (id) {
-      loadSection();
-      loadStats();
+      loadSectionAndTimetable();
     }
   }, [id]);
-
-  const loadSection = async () => {
+  
+  const loadSectionAndTimetable = async () => {
     try {
       setLoading(true);
-      const response = await dataProvider.getOne('sections', { id: id! });
-      setSection(response.data as Section);
+      
+      // Load timetable period details
+      const timetableResponse = await dataProvider.getOne('timetables', { id: id! });
+      const periodData = timetableResponse.data as TimetablePeriodResponse;
+      setTimetablePeriod(periodData);
+      
+      // Load all timetable periods for this section to show the full timetable
+      const periodsResponse = await dataProvider.getList('timetablePeriods', {
+        pagination: { page: 1, perPage: 100 },
+        sort: { field: 'dayOfWeek', order: 'ASC' },
+        filter: { sectionId: periodData.section.id }
+      });
+      setPeriods(periodsResponse.data as TimetablePeriod[]);
     } catch (error) {
-      notify('Error loading section', { type: 'error' });
-      console.error('Error loading section:', error);
+      notify('Error loading timetable', { type: 'error' });
+      console.error('Error loading timetable:', error);
     } finally {
       setLoading(false);
     }
   };
-
-  const loadStats = async () => {
-    try {
-      // Get timetable statistics
-      const periodsResponse = await dataProvider.getList('timetablePeriods', {
-        pagination: { page: 1, perPage: 1000 },
-        sort: { field: 'id', order: 'ASC' },
-        filter: { sectionId: id, isActive: true },
-      });
-
-      const timeSlotsResponse = await fetch(getApiUrl('timetable/time-slots'), {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Branch-Id': 'branch1',
-        },
-      });
-      const timeSlots = await timeSlotsResponse.json();
-
-      const totalSlots = timeSlots?.length || 0;
-      const filledSlots = periodsResponse.total || 0;
-      const completionPercentage = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
-
-      // Get subject distribution
-      const subjects = new Set((periodsResponse.data as any[]).map(p => p.subject?.name).filter(Boolean));
-      const teachers = new Set((periodsResponse.data as any[]).map(p => p.teacher?.name).filter(Boolean));
-
-      setStats({
-        totalSlots,
-        filledSlots,
-        completionPercentage,
-        subjectCount: subjects.size,
-        teacherCount: teachers.size,
-        subjects: Array.from(subjects),
-        teachers: Array.from(teachers),
-      });
-    } catch (error) {
-      console.error('Error loading stats:', error);
+  
+  const getPeriodForSlot = (dayOfWeek: number, periodNumber: number): TimetablePeriod | undefined => {
+    return periods.find(p => p.dayOfWeek === dayOfWeek && p.periodNumber === periodNumber);
+  };
+  
+  const renderPeriodCell = (dayOfWeek: number, periodNumber: number) => {
+    const period = getPeriodForSlot(dayOfWeek, periodNumber);
+    
+    if (!period) {
+      return (
+        <div className="h-full p-2 text-center text-muted-foreground">
+          <span className="text-xs">Empty</span>
+        </div>
+      );
     }
+    
+    if (period.isBreak) {
+      return (
+        <div className="h-full p-2 bg-yellow-50 dark:bg-yellow-900/20 text-center">
+          <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+            {period.breakType || 'Break'}
+          </Badge>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="h-full p-2 space-y-1">
+        <div className="font-medium text-sm">
+          {period.subject?.name || 'No Subject'}
+        </div>
+        {period.teacher && (
+          <div className="text-xs text-muted-foreground">
+            {period.teacher.staff.firstName} {period.teacher.staff.lastName}
+          </div>
+        )}
+        {period.room && (
+          <div className="text-xs text-muted-foreground">
+            Room: {period.room.name}
+          </div>
+        )}
+      </div>
+    );
   };
-
-  const handleEdit = () => {
-    redirect('edit', 'timetables', id);
-  };
-
-  const handleBack = () => {
-    redirect('list', 'timetables');
-  };
-
-  const handleDownload = () => {
-    // TODO: Implement timetable PDF export
-    notify('PDF export feature coming soon', { type: 'info' });
-  };
-
-  const getCompletionColor = (percentage: number) => {
-    if (percentage >= 80) return 'bg-green-100 text-green-800 border-green-200';
-    if (percentage >= 50) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    return 'bg-red-100 text-red-800 border-red-200';
-  };
-
+  
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-pulse space-y-4 w-full max-w-6xl">
+          <div className="h-8 bg-muted rounded w-1/3"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     );
   }
-
-  if (!section) {
+  
+  if (!timetablePeriod) {
     return (
-      <div className="p-6">
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            Section not found. Please check the URL and try again.
-          </AlertDescription>
-        </Alert>
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Timetable not found</p>
       </div>
     );
   }
 
+  const section = timetablePeriod.section;
+  
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Timetables
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Timetable: {section.class?.name || 'Unknown Class'} - {section.name}
-            </h1>
-            <p className="text-gray-600">
-              Weekly schedule overview for this class section
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleDownload}>
-            <Download className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
-          <Button onClick={handleEdit}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Timetable
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Completion</div>
-                <div className="text-xl font-bold">{stats?.completionPercentage || 0}%</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Clock className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Periods</div>
-                <div className="text-xl font-bold">
-                  {stats?.filledSlots || 0}/{stats?.totalSlots || 0}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <BookOpen className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Subjects</div>
-                <div className="text-xl font-bold">{stats?.subjectCount || 0}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Users className="h-5 w-5 text-orange-600" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Teachers</div>
-                <div className="text-xl font-bold">{stats?.teacherCount || 0}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Section Info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Section Information
-            </CardTitle>
-            <Badge className={getCompletionColor(stats?.completionPercentage || 0)}>
-              {stats?.completionPercentage || 0}% Complete
-            </Badge>
+            <div>
+              <CardTitle className="text-2xl">
+                {section.class?.name || 'Unknown Class'} - Section {section.name} Timetable
+              </CardTitle>
+              <p className="text-muted-foreground mt-1">
+                Grade {section.class?.gradeLevel || 'N/A'} • Capacity: {section.capacity || 0} students
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+              <Button size="sm" onClick={() => navigate(`/timetables/${id}/edit`)}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Timetable
+              </Button>
+            </div>
           </div>
         </CardHeader>
+        {section.homeroomTeacher?.staff && (
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">
+                Homeroom Teacher: {section.homeroomTeacher.staff.firstName} {section.homeroomTeacher.staff.lastName}
+              </span>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+      
+      {/* Timetable Grid */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            Weekly Schedule
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <div className="text-sm text-gray-600">Class</div>
-              <div className="font-medium">{section.class?.name || 'Unknown Class'}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Section</div>
-              <div className="font-medium">{section.name}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Grade Level</div>
-              <div className="font-medium">Grade {section.class?.gradeLevel || 'Unknown'}</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-600">Capacity</div>
-              <div className="font-medium">{section.capacity} students</div>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border p-2 bg-muted text-left w-24">Time</th>
+                  {days.slice(1, 6).map(day => (
+                    <th key={day} className="border p-2 bg-muted text-center min-w-[150px]">
+                      {day}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {timeSlots.map(slot => (
+                  <tr key={slot.period}>
+                    <td className="border p-2 bg-muted/50">
+                      <div className="text-sm font-medium">
+                        {slot.start} - {slot.end}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Period {slot.period}
+                      </div>
+                    </td>
+                    {[1, 2, 3, 4, 5].map(dayOfWeek => (
+                      <td key={dayOfWeek} className="border p-0 h-20">
+                        {renderPeriodCell(dayOfWeek, slot.period)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          {/* Subject and Teacher Lists */}
-          {stats && (stats.subjects.length > 0 || stats.teachers.length > 0) && (
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stats.subjects.length > 0 && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-2">Subjects Taught</div>
-                  <div className="flex flex-wrap gap-1">
-                    {stats.subjects.map((subject: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {subject}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {stats.teachers.length > 0 && (
-                <div>
-                  <div className="text-sm text-gray-600 mb-2">Teachers Assigned</div>
-                  <div className="flex flex-wrap gap-1">
-                    {stats.teachers.map((teacher: string, index: number) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {teacher}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </CardContent>
       </Card>
-
-      {/* Timetable Calendar (Read Only) */}
-      <TimetableCalendar
-        sectionId={section.id}
-        sectionInfo={{
-          id: section.id,
-          name: section.name,
-          className: section.class?.name || 'Unknown Class',
-        }}
-        readOnly={true}
-      />
-
-      {/* Help Text */}
-      <Alert>
-        <Calendar className="h-4 w-4" />
-        <AlertDescription>
-          This is a read-only view of the timetable. Click "Edit Timetable" above to make changes 
-          to the schedule, add new periods, or modify teacher assignments.
-        </AlertDescription>
-      </Alert>
+      
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total Periods</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{periods.length}</div>
+            <p className="text-xs text-muted-foreground">Out of 40 weekly slots</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Subjects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(periods.filter(p => !p.isBreak).map(p => p.subject?.name)).size}
+            </div>
+            <p className="text-xs text-muted-foreground">Unique subjects</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Teachers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(periods.filter(p => !p.isBreak).map(p => p.teacher?.staff?.firstName)).size}
+            </div>
+            <p className="text-xs text-muted-foreground">Assigned teachers</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
 
-export default TimetableShow;
+export default TimetablesShow;

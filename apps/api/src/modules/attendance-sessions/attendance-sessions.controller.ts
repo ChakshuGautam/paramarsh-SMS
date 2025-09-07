@@ -57,22 +57,47 @@ export class AttendanceSessionsController {
   @ApiQuery({ name: 'sectionId', required: false })
   @ApiQuery({ name: 'status', required: false })
   @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'perPage', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  @ApiQuery({ name: 'sort', required: false, type: String })
   async listSessions(
     @Query('date') date?: string,
     @Query('teacherId') teacherId?: string,
     @Query('sectionId') sectionId?: string,
     @Query('status') status?: string,
-    @Query('page') page?: number,
-    @Query('pageSize') pageSize?: number,
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: string,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
   ) {
+    // Handle React Admin pagination
+    const pageNum = page ? Number(page) : 1;
+    const pageSizeNum = perPage ? Number(perPage) : (pageSize ? Number(pageSize) : 25);
+    
+    // Parse sort parameter (React Admin format: "-field" or "field")
+    let sortField = 'id';
+    let sortOrder: 'asc' | 'desc' = 'desc';
+    if (sort) {
+      if (sort.startsWith('-')) {
+        sortField = sort.substring(1);
+        sortOrder = 'desc';
+      } else {
+        sortField = sort;
+        sortOrder = 'asc';
+      }
+    }
+    
     return this.service.listSessions({
       date: date ? new Date(date) : undefined,
       teacherId,
       sectionId,
       status,
-      page,
-      pageSize
+      page: pageNum,
+      pageSize: pageSizeNum,
+      sortField,
+      sortOrder,
+      branchId
     });
   }
 

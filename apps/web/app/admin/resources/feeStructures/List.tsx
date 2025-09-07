@@ -12,6 +12,7 @@ import {
   TextInput,
   SelectInput,
   NumberInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +67,7 @@ export const FeeStructuresList = () => (
     sort={{ field: "gradeId", order: "ASC" }}
     filters={feeStructureFilters}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -118,15 +120,19 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="primary">
         <FeeStructuresTable storeKey={storeKeyByLevel.primary} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="middle">
         <FeeStructuresTable storeKey={storeKeyByLevel.middle} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="high">
         <FeeStructuresTable storeKey={storeKeyByLevel.high} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <FeeStructuresTable storeKey={storeKeyByLevel.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );

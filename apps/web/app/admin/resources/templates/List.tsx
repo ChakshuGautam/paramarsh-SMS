@@ -44,6 +44,7 @@ export const TemplatesList = () => (
     sort={{ field: "updatedAt", order: "DESC" }}
     filters={templateFilters}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -126,34 +127,34 @@ const TabbedDataTable = () => {
 
 const TemplatesTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
-    storeKey={storeKey}
-    rowClassName={(record) => {
-      const channelColors = {
-        SMS: 'border-l-4 border-l-blue-500',
-        EMAIL: 'border-l-4 border-l-green-500',
-        PUSH: 'border-l-4 border-l-purple-500',
-        WHATSAPP: 'border-l-4 border-l-green-600',
-      };
-      return channelColors[record.channel] || 'border-l-4 border-l-gray-400';
-    }}
-  >
-    {/* Always visible columns */}
-    <DataTable.Col source="name" label="Template Name" />
-    <DataTable.Col source="channel" label="Channel">
-      <ChannelIcon />
-    </DataTable.Col>
-    <DataTable.Col source="locale" label="Locale">
-      <LocaleBadge />
-    </DataTable.Col>
-    
-    {/* Desktop-only columns */}
-    <DataTable.Col source="createdAt" label="Created" className="hidden md:table-cell">
-      <CreatedDateField />
-    </DataTable.Col>
-    <DataTable.Col source="updatedAt" label="Updated" className="hidden lg:table-cell">
-      <UpdatedDateField />
-    </DataTable.Col>
-  </DataTable>
+      storeKey={storeKey}
+      rowClassName={(record) => {
+        const channelColors = {
+          SMS: 'border-l-4 border-l-blue-500',
+          EMAIL: 'border-l-4 border-l-green-500',
+          PUSH: 'border-l-4 border-l-purple-500',
+          WHATSAPP: 'border-l-4 border-l-green-600',
+        };
+        return channelColors[record.channel] || 'border-l-4 border-l-gray-400';
+      }}
+    >
+      {/* Always visible columns */}
+      <DataTable.Col source="name" label="Template Name" />
+      <DataTable.Col source="channel" label="Channel">
+        <ChannelIcon />
+      </DataTable.Col>
+      <DataTable.Col source="locale" label="Locale">
+        <LocaleBadge />
+      </DataTable.Col>
+      
+      {/* Desktop-only columns */}
+      <DataTable.Col source="createdAt" label="Created" className="hidden md:table-cell">
+        <CreatedDateField />
+      </DataTable.Col>
+      <DataTable.Col source="updatedAt" label="Updated" className="hidden lg:table-cell">
+        <UpdatedDateField />
+      </DataTable.Col>
+    </DataTable>
 );
 
 const ChannelIcon = () => {

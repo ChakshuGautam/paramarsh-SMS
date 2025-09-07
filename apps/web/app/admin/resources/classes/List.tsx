@@ -1,6 +1,7 @@
 "use client";
 
-import { useListContext, useRecordContext } from "ra-core";
+import { useListContext, useRecordContext, useUpdate, useNotify, useRedirect } from "ra-core";
+import { useState } from "react";
 import {
   DataTable,
   List,
@@ -10,9 +11,13 @@ import {
   EmptyState,
   TextInput,
   SelectInput,
+  EditButton,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { UserPlus } from "lucide-react";
 
 // Store keys for different grade level groups
 const storeKeyByLevel = {
@@ -66,6 +71,7 @@ export const ClassesList = () => (
     sort={{ field: "gradeLevel", order: "ASC" }}
     filters={classFilters}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -118,15 +124,19 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="primary">
         <ClassesTable storeKey={storeKeyByLevel.primary} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="middle">
         <ClassesTable storeKey={storeKeyByLevel.middle} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="high">
         <ClassesTable storeKey={storeKeyByLevel.high} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <ClassesTable storeKey={storeKeyByLevel.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
@@ -185,15 +195,40 @@ const GradeBadge = () => {
 
 const ClassTeacher = () => {
   const record = useRecordContext();
+  const redirect = useRedirect();
+  const notify = useNotify();
+  
   if (!record) return null;
   
-  // Get the first section of this class to find its homeroom teacher
-  // In a real app, you might want to have a dedicated class teacher field
+  // Check if a teacher is assigned (you'd need to check the actual field structure)
+  if (record.teacherId) {
+    return (
+      <ReferenceField reference="teachers" source="teacherId" link="show">
+        <div className="flex items-center gap-2">
+          <TextField source="name" />
+          <EditButton size="sm" />
+        </div>
+      </ReferenceField>
+    );
+  }
+  
+  // No teacher assigned - show assign button
   return (
-    <span className="text-gray-500 text-sm">
-      {/* This would need to be implemented with proper data */}
-      <EmptyState type="inline" message="No teacher assigned" />
-    </span>
+    <div className="flex items-center gap-2">
+      <span className="text-muted-foreground text-sm">No teacher assigned</span>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => {
+          // Redirect to edit page to assign teacher
+          redirect('edit', 'classes', record.id);
+        }}
+        className="gap-1"
+      >
+        <UserPlus className="w-3 h-3" />
+        Assign
+      </Button>
+    </div>
   );
 };
 

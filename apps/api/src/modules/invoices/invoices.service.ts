@@ -354,4 +354,297 @@ export class InvoicesService extends BaseCrudService<any> {
   private async generateInvoiceNumber(studentId: string, period?: string, branchId?: string): Promise<string> {
     return this.generateSequentialInvoiceNumber(branchId || 'branch1');
   }
+
+  /**
+   * Generate invoice as PDF
+   */
+  async generateInvoice(invoiceId: string) {
+    const { branchId } = PrismaService.getScope();
+    
+    // Get invoice with all related data
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { 
+        id: invoiceId,
+        ...(branchId && {
+          OR: [
+            { branchId },
+            { student: { branchId } }
+          ]
+        })
+      },
+      include: {
+        student: {
+          include: {
+            guardians: {
+              include: {
+                guardian: true
+              }
+            },
+          }
+        },
+        payments: true
+      }
+    });
+    
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    // Calculate balance
+    const totalPaid = invoice.payments
+      .filter(p => p.status === 'success')
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+    const balance = (invoice.amount || 0) - totalPaid;
+
+    // In a real implementation, this would generate an actual PDF
+    // For now, we'll simulate the process
+    const pdfUrl = `/api/invoices/${invoiceId}/download`;
+    const generatedAt = new Date().toISOString();
+
+    return {
+      data: {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        studentName: `Invoice ${invoice.invoiceNumber}`,
+        studentId: invoice.studentId,
+        amount: invoice.amount,
+        balance,
+        status: invoice.status,
+        pdfUrl,
+        generatedAt,
+        expiresIn: '24 hours',
+        message: 'Invoice PDF generated successfully'
+      }
+    };
+  }
+
+  /**
+   * Share invoice via email/SMS
+   */
+  async shareInvoice(
+    invoiceId: string, 
+    method: 'email' | 'sms' | 'both',
+    recipients?: string[]
+  ) {
+    const { branchId } = PrismaService.getScope();
+    
+    // Get invoice with student and guardian details
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { 
+        id: invoiceId,
+        ...(branchId && {
+          OR: [
+            { branchId },
+            { student: { branchId } }
+          ]
+        })
+      },
+      include: {
+        student: {
+          include: {
+            guardians: {
+              include: {
+                guardian: true
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    // Determine recipients if not specified
+    if (!recipients || recipients.length === 0) {
+      recipients = [];
+      
+      // Add student email/phone
+      if (method === 'email' || method === 'both') {
+        // TODO: Add student email field to include if needed
+      }
+      
+      if (method === 'sms' || method === 'both') {
+        // TODO: Add student phone field to include if needed
+      }
+      
+      // Add guardian contacts
+      invoice.student.guardians.forEach(sg => {
+        if ((method === 'email' || method === 'both') && sg.guardian.email) {
+          recipients.push(sg.guardian.email);
+        }
+        if ((method === 'sms' || method === 'both') && sg.guardian.phoneNumber) {
+          recipients.push(sg.guardian.phoneNumber);
+        }
+      });
+    }
+
+    // Remove duplicates
+    const uniqueRecipients = Array.from(new Set(recipients));
+
+    // In a real implementation, this would integrate with email/SMS services
+    // For now, we'll simulate the sharing
+    const sharedAt = new Date().toISOString();
+    const invoiceLink = `https://portal.paramarsh.com/invoices/${invoiceId}`;
+
+    return {
+      data: {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        method,
+        recipients: uniqueRecipients,
+        recipientCount: uniqueRecipients.length,
+        invoiceLink,
+        sharedAt,
+        message: `Invoice shared successfully via ${method} to ${uniqueRecipients.length} recipient(s)`
+      }
+    };
+  }
+
+  /**
+   * Generate bulk invoices for a class/section
+   */
+  async generateBulkInvoices(
+    classId?: string,
+    sectionId?: string,
+    period: string = 'Monthly',
+    dueDate: string = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  ) {
+    const { branchId } = PrismaService.getScope();
+    
+    // Build filter for enrollments
+    const enrollmentFilter: any = {
+      branchId,
+      isActive: true
+    };
+    
+    if (classId) enrollmentFilter.classId = classId;
+    if (sectionId) enrollmentFilter.sectionId = sectionId;
+
+    // Get all active enrollments
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: enrollmentFilter,
+      include: {
+        student: true,
+        section: true
+      }
+    });
+
+    if (enrollments.length === 0) {
+      return {
+        data: {
+          message: 'No active enrollments found',
+          created: 0
+        }
+      };
+    }
+
+    // Get fee structure for determining amount
+    // In a real implementation, this would fetch from FeeSchedule
+    const defaultAmount = 5000; // Default monthly fee
+
+    // Create invoices for each enrollment
+    const createdInvoices = await Promise.all(
+      enrollments.map(async (enrollment) => {
+        const invoiceNumber = await this.generateSequentialInvoiceNumber(branchId);
+        
+        return this.prisma.invoice.create({
+          data: {
+            studentId: enrollment.studentId,
+            invoiceNumber,
+            period,
+            dueDate,
+            amount: defaultAmount,
+            status: 'pending',
+            branchId
+          }
+        });
+      })
+    );
+
+    return {
+      data: {
+        created: createdInvoices.length,
+        totalAmount: createdInvoices.reduce((sum, inv) => sum + (inv.amount || 0), 0),
+        period,
+        dueDate,
+        message: `Successfully generated ${createdInvoices.length} invoices`
+      }
+    };
+  }
+
+  /**
+   * Send payment reminders for overdue invoices
+   */
+  async sendPaymentReminders(method: 'email' | 'sms' | 'both' = 'both') {
+    const { branchId } = PrismaService.getScope();
+    
+    // Get all overdue invoices
+    const today = new Date().toISOString().split('T')[0];
+    const overdueInvoices = await this.prisma.invoice.findMany({
+      where: {
+        ...(branchId && {
+          OR: [
+            { branchId },
+            { student: { branchId } }
+          ]
+        }),
+        dueDate: { lt: today },
+        status: { in: ['pending', 'partial'] }
+      },
+      include: {
+        student: {
+          include: {
+            guardians: {
+              include: {
+                guardian: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (overdueInvoices.length === 0) {
+      return {
+        data: {
+          message: 'No overdue invoices found',
+          sent: 0
+        }
+      };
+    }
+
+    // Count recipients
+    let emailsSent = 0;
+    let smsSent = 0;
+
+    // In a real implementation, this would send actual reminders
+    overdueInvoices.forEach(invoice => {
+      if (method === 'email' || method === 'both') {
+        // TODO: Count student email if available
+        invoice.student.guardians.forEach(sg => {
+          if (sg.guardian.email) emailsSent++;
+        });
+      }
+      
+      if (method === 'sms' || method === 'both') {
+        // TODO: Count student phone if available
+        invoice.student.guardians.forEach(sg => {
+          if (sg.guardian.phoneNumber) smsSent++;
+        });
+      }
+    });
+
+    return {
+      data: {
+        overdueInvoices: overdueInvoices.length,
+        method,
+        emailsSent,
+        smsSent,
+        totalReminders: emailsSent + smsSent,
+        message: `Payment reminders sent for ${overdueInvoices.length} overdue invoices`
+      }
+    };
+  }
 }

@@ -12,8 +12,8 @@ import {
   List,
   ToggleFilterButton,
   TextInput,
-  ListPagination,
   StatusBadge,
+  ListPagination,
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
 import { User, Building, Award, CheckCircle } from "lucide-react";
@@ -22,7 +22,7 @@ import { getStatusColor, getDesignationColor } from "@/lib/theme/colors";
 export const StaffList = () => {
   return (
     <List
-      perPage={25}
+      perPage={10}
       sort={{ field: "firstName", order: "ASC" }}
       pagination={false}
     >

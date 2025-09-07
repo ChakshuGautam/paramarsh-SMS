@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useRecordContext } from "react-admin";
 import { formatCurrency } from "@/lib/utils";
-import { Receipt, GraduationCap, Hash, DollarSign } from "lucide-react";
+import { Receipt, GraduationCap, Hash, IndianRupee } from "lucide-react";
 
 const FeeStructureDetails = () => {
   const record = useRecordContext();
@@ -56,7 +56,7 @@ const FeeStructureDetails = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
+            <IndianRupee className="h-5 w-5" />
             Fee Structure Summary
           </CardTitle>
         </CardHeader>
@@ -136,7 +136,7 @@ const FeeStructureDetails = () => {
               <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border-2 border-primary/20">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                    <DollarSign className="h-4 w-4 text-primary-foreground" />
+                    <IndianRupee className="h-4 w-4 text-primary-foreground" />
                   </div>
                   <div>
                     <p className="font-bold text-xl">Total Annual Fee</p>

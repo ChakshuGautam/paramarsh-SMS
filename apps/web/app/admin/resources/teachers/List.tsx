@@ -10,23 +10,21 @@ import {
 import {
   DataTable,
   List,
-  ReferenceField,
-  TextField,
   ToggleFilterButton,
   TextInput,
   ListPagination,
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
-import { User, BookOpen, GraduationCap, Calendar, Award } from "lucide-react";
+import { User, BookOpen, GraduationCap, Calendar, Award, Users } from "lucide-react";
 import { getExperienceColor } from "@/lib/theme/colors";
 import { parseFlexibleArray } from "@/lib/utils/parse-utils";
 
 export const TeachersList = () => {
   return (
     <List
-      perPage={25}
-      sort={{ field: "experienceYears", order: "DESC" }}
+      perPage={10}
       pagination={false}
+      sort={{ field: "experienceYears", order: "DESC" }}
     >
       <div className="flex flex-row gap-4 mb-4">
         <SidebarFilters />
@@ -35,8 +33,11 @@ export const TeachersList = () => {
             <DataTable.Col label="Staff Member">
               <StaffMemberDisplay />
             </DataTable.Col>
-            <DataTable.Col source="subjects" label="Subjects">
-              <SubjectsBadge />
+            <DataTable.Col label="Assigned Classes">
+              <AssignedClassesBadge />
+            </DataTable.Col>
+            <DataTable.Col label="Assigned Sections" className="hidden md:table-cell">
+              <AssignedSectionsBadge />
             </DataTable.Col>
             <DataTable.Col source="experienceYears" label="Experience">
               <ExperienceBadge />
@@ -44,15 +45,10 @@ export const TeachersList = () => {
             <DataTable.Col 
               source="qualifications" 
               label="Qualifications" 
-              className="hidden md:table-cell"
+              className="hidden lg:table-cell"
             >
               <QualificationsBadge />
             </DataTable.Col>
-            <DataTable.Col 
-              source="id" 
-              label="ID" 
-              className="hidden lg:table-cell" 
-            />
           </DataTable>
           <ListPagination className="justify-start mt-2" />
         </div>
@@ -100,27 +96,6 @@ const SidebarFilters = () => {
           }}
         />
       </FilterCategory>
-      <FilterCategory
-        icon={<BookOpen size={16} />}
-        label="Common Subjects"
-      >
-        <ToggleFilterButton
-          label="Mathematics"
-          value={{ subjects: "Mathematics" }}
-        />
-        <ToggleFilterButton
-          label="English"
-          value={{ subjects: "English" }}
-        />
-        <ToggleFilterButton
-          label="Science"
-          value={{ subjects: "Science" }}
-        />
-        <ToggleFilterButton
-          label="Social Studies"
-          value={{ subjects: "Social Studies" }}
-        />
-      </FilterCategory>
     </div>
   );
 };
@@ -145,27 +120,25 @@ const FilterCategory = ({
 
 const StaffMemberDisplay = () => {
   const record = useRecordContext();
-  if (!record) return null;
+  if (!record || !record.staff) return null;
   
   return (
-    <ReferenceField reference="staff" source="staffId" link={false}>
-      <div className="flex items-start gap-3">
-        <div className="p-2 bg-muted rounded-full">
-          <User className="w-5 h-5 text-muted-foreground" />
-        </div>
-        <div className="flex flex-col">
-          <span className="font-medium text-foreground">
-            <TextField source="firstName" /> <TextField source="lastName" />
-          </span>
-          <span className="text-xs text-muted-foreground">
-            <TextField source="email" />
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Staff ID: <TextField source="employeeId" />
-          </span>
-        </div>
+    <div className="flex items-start gap-3">
+      <div className="p-2 bg-muted rounded-full">
+        <User className="w-5 h-5 text-muted-foreground" />
       </div>
-    </ReferenceField>
+      <div className="flex flex-col">
+        <span className="font-medium text-foreground">
+          {record.staff.firstName} {record.staff.lastName}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {record.staff.email}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          Staff ID: {record.staff.employeeId || record.staff.id}
+        </span>
+      </div>
+    </div>
   );
 };
 
@@ -196,34 +169,38 @@ const ExperienceBadge = () => {
   );
 };
 
-const SubjectsBadge = () => {
+const AssignedClassesBadge = () => {
   const record = useRecordContext();
-  if (!record || !record.subjects) {
-    return <span className="text-muted-foreground">No subjects</span>;
+  if (!record || !record.classIds || record.classIds.length === 0) {
+    return <span className="text-muted-foreground">No classes</span>;
   }
   
-  // Use parseFlexibleArray utility instead of duplicate logic
-  const subjects = parseFlexibleArray(record.subjects);
-  
-  if (subjects.length === 0) {
-    return <span className="text-muted-foreground">No subjects</span>;
-  }
-  
+  // For now, just show the count since we have IDs
+  // React Admin will handle fetching the actual class names if needed
   return (
     <div className="flex items-center gap-2">
       <BookOpen className="w-4 h-4 text-muted-foreground" />
-      <div className="flex flex-wrap gap-1">
-        {subjects.slice(0, 2).map((subject: string, index: number) => (
-          <Badge key={index} variant="secondary" className="text-xs">
-            {subject}
-          </Badge>
-        ))}
-        {subjects.length > 2 && (
-          <Badge variant="outline" className="text-xs">
-            +{subjects.length - 2} more
-          </Badge>
-        )}
-      </div>
+      <Badge variant="secondary" className="text-xs">
+        {record.classIds.length} class{record.classIds.length !== 1 ? 'es' : ''}
+      </Badge>
+    </div>
+  );
+};
+
+const AssignedSectionsBadge = () => {
+  const record = useRecordContext();
+  if (!record || !record.sectionIds || record.sectionIds.length === 0) {
+    return <span className="text-muted-foreground">No sections</span>;
+  }
+  
+  // For now, just show the count since we have IDs
+  // React Admin will handle fetching the actual section names if needed
+  return (
+    <div className="flex items-center gap-2">
+      <Users className="w-4 h-4 text-muted-foreground" />
+      <Badge variant="outline" className="text-xs">
+        {record.sectionIds.length} section{record.sectionIds.length !== 1 ? 's' : ''}
+      </Badge>
     </div>
   );
 };

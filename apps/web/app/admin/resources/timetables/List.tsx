@@ -6,146 +6,143 @@ import {
   List,
   TextField,
   NumberField,
-  SelectInput,
-  TextInput,
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
-
-// Filters for timetables
-const timetableFilters = [
-  <TextInput source="q" placeholder="Search periods..." label="" alwaysOn />,
-  <SelectInput
-    source="dayOfWeek"
-    placeholder="Filter by day"
-    label=""
-    choices={[
-      { id: 1, name: 'Monday' },
-      { id: 2, name: 'Tuesday' },
-      { id: 3, name: 'Wednesday' },
-      { id: 4, name: 'Thursday' },
-      { id: 5, name: 'Friday' },
-      { id: 6, name: 'Saturday' },
-    ]}
-  />,
-  <SelectInput
-    source="periodNumber"
-    placeholder="Filter by period"
-    label=""
-    choices={[
-      { id: 1, name: 'Period 1' },
-      { id: 2, name: 'Period 2' },
-      { id: 3, name: 'Period 3' },
-      { id: 4, name: 'Period 4' },
-      { id: 5, name: 'Period 5' },
-      { id: 6, name: 'Period 6' },
-      { id: 7, name: 'Period 7' },
-      { id: 8, name: 'Period 8' },
-    ]}
-  />,
-];
-
-// Component to display day of week
-const DayOfWeekField = () => {
-  const record = useRecordContext();
-  const days = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  return <span>{days[record?.dayOfWeek] || '-'}</span>;
-};
-
-// Component to display time slot
-const TimeSlotField = () => {
-  const record = useRecordContext();
-  if (!record?.startTime || !record?.endTime) return <span className="text-muted-foreground">-</span>;
-  
-  return (
-    <span className="text-sm">
-      {record.startTime} - {record.endTime}
-    </span>
-  );
-};
+import { Calendar, Users, BookOpen, Clock } from "lucide-react";
 
 // Component to display class-section combination
 const ClassSectionField = () => {
   const record = useRecordContext();
-  if (!record?.section) return <span className="text-muted-foreground">-</span>;
+  if (!record) return null;
   
   return (
-    <div className="font-medium">
-      {record.section.class?.name || ''} - {record.section.name}
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-primary/10 rounded-full">
+        <Users className="w-5 h-5 text-primary" />
+      </div>
+      <div>
+        <div className="font-medium text-base">
+          {record.class?.name || 'Class'} - Section {record.name}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Grade {record.class?.gradeLevel || 'N/A'}
+        </div>
+      </div>
     </div>
   );
 };
 
-// Component to display subject
-const SubjectField = () => {
+// Component to display section capacity
+const CapacityField = () => {
   const record = useRecordContext();
-  if (!record?.subject) return <span className="text-muted-foreground">-</span>;
+  if (!record) return null;
+  
+  return (
+    <div className="flex items-center gap-2">
+      <Users className="w-4 h-4 text-muted-foreground" />
+      <span>{record.capacity || 0} students</span>
+    </div>
+  );
+};
+
+// Component to display homeroom teacher
+const HomeroomTeacherField = () => {
+  const record = useRecordContext();
+  if (!record?.homeroomTeacher) {
+    return <span className="text-muted-foreground">No homeroom teacher</span>;
+  }
   
   return (
     <div>
-      <span className="font-medium">{record.subject.name}</span>
-      {record.subject.isElective && (
-        <Badge className="ml-2 text-xs bg-purple-100 text-purple-800">Elective</Badge>
-      )}
+      <div className="font-medium">
+        {record.homeroomTeacher.staff?.firstName} {record.homeroomTeacher.staff?.lastName}
+      </div>
+      <div className="text-xs text-muted-foreground">
+        {record.homeroomTeacher.staff?.email}
+      </div>
     </div>
   );
 };
 
-// Component to display teacher
-const TeacherField = () => {
+// Component to show timetable completion status
+const TimetableStatusField = () => {
   const record = useRecordContext();
-  if (!record?.teacher?.staff) return <span className="text-muted-foreground">-</span>;
+  if (!record) return null;
+  
+  // This would ideally come from the backend
+  // For now, we'll show a placeholder
+  const totalSlots = 40; // 8 periods x 5 days
+  const filledSlots = record.timetablePeriods?.length || 0;
+  const percentage = Math.round((filledSlots / totalSlots) * 100);
   
   return (
-    <span className="text-sm">
-      {record.teacher.staff.firstName} {record.teacher.staff.lastName}
-    </span>
+    <div className="flex items-center gap-3">
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-medium">
+            {percentage}% Complete
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {filledSlots}/{totalSlots} slots
+          </span>
+        </div>
+        <div className="w-full bg-muted rounded-full h-2">
+          <div 
+            className="bg-primary rounded-full h-2 transition-all"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
-// Component to display room
-const RoomField = () => {
+// Action buttons
+const ActionButtons = () => {
   const record = useRecordContext();
-  if (record?.isBreak) {
-    return <Badge className="bg-yellow-100 text-yellow-800">{record.breakType || 'Break'}</Badge>;
-  }
-  if (!record?.room) return <span className="text-muted-foreground">No Room</span>;
+  if (!record) return null;
   
-  return <span>{record.room.name}</span>;
+  return (
+    <div className="flex items-center gap-2">
+      <Badge variant="outline" className="cursor-pointer hover:bg-primary/10">
+        <Calendar className="w-3 h-3 mr-1" />
+        View Timetable
+      </Badge>
+    </div>
+  );
 };
 
 export const TimetablesList = () => (
   <List
-    sort={{ field: "dayOfWeek", order: "ASC" }}
-    filters={timetableFilters}
-    perPage={25}
+    resource="timetables"
+    sort={{ field: "class.gradeLevel", order: "ASC" }}
+    perPage={10}
+    title="Class Timetables"
   >
-    <DataTable 
-      storeKey="timetables.list"
-      rowClassName={(record) => record?.isBreak ? 'bg-yellow-50' : ''}
-    >
-      {/* Always visible columns */}
-      <DataTable.Col label="Day">
-        <DayOfWeekField />
-      </DataTable.Col>
-      <DataTable.Col label="Period">
-        <NumberField source="periodNumber" />
-      </DataTable.Col>
-      <DataTable.Col label="Time">
-        <TimeSlotField />
-      </DataTable.Col>
+    <DataTable>
+      {/* Class and Section info */}
       <DataTable.Col label="Class - Section">
         <ClassSectionField />
       </DataTable.Col>
       
-      {/* Desktop-only columns */}
-      <DataTable.Col label="Subject" className="hidden md:table-cell">
-        <SubjectField />
+      {/* Capacity */}
+      <DataTable.Col label="Capacity" className="hidden md:table-cell">
+        <CapacityField />
       </DataTable.Col>
-      <DataTable.Col label="Teacher" className="hidden lg:table-cell">
-        <TeacherField />
+      
+      {/* Homeroom Teacher */}
+      <DataTable.Col label="Homeroom Teacher" className="hidden lg:table-cell">
+        <HomeroomTeacherField />
       </DataTable.Col>
-      <DataTable.Col label="Room" className="hidden xl:table-cell">
-        <RoomField />
+      
+      {/* Timetable Status */}
+      <DataTable.Col label="Timetable Status" className="hidden xl:table-cell">
+        <TimetableStatusField />
+      </DataTable.Col>
+      
+      {/* Actions */}
+      <DataTable.Col label="">
+        <ActionButtons />
       </DataTable.Col>
     </DataTable>
   </List>

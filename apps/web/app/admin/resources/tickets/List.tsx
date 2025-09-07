@@ -65,6 +65,7 @@ export const TicketsList = () => (
     sort={{ field: "createdAt", order: "DESC" }}
     filterDefaultValues={{ status: "open" }}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -125,50 +126,50 @@ const TabbedDataTable = () => {
 
 const TicketsTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
-    storeKey={storeKey}
-    rowClassName={(record) => {
-      const statusColors = {
-        open: 'border-l-4 border-l-red-500',
-        in_progress: 'border-l-4 border-l-yellow-500',
-        resolved: 'border-l-4 border-l-green-500',
-        closed: 'border-l-4 border-l-gray-400',
-      };
+      storeKey={storeKey}
+      rowClassName={(record) => {
+        const statusColors = {
+          open: 'border-l-4 border-l-red-500',
+          in_progress: 'border-l-4 border-l-yellow-500',
+          resolved: 'border-l-4 border-l-green-500',
+          closed: 'border-l-4 border-l-gray-400',
+        };
+        
+        const priorityAccent = {
+          urgent: ' bg-red-50',
+          high: ' bg-orange-50',
+          medium: '',
+          low: '',
+        };
+        
+        return (statusColors[record.status] || '') + (priorityAccent[record.priority] || '');
+      }}
+    >
+      {/* Always visible columns */}
+      <DataTable.Col source="subject" label="Subject">
+        <SubjectWithIcon />
+      </DataTable.Col>
+      <DataTable.Col source="priority" label="Priority">
+        <PriorityBadge />
+      </DataTable.Col>
+      <DataTable.Col source="status" label="Status">
+        <StatusBadge />
+      </DataTable.Col>
       
-      const priorityAccent = {
-        urgent: ' bg-red-50',
-        high: ' bg-orange-50',
-        medium: '',
-        low: '',
-      };
-      
-      return (statusColors[record.status] || '') + (priorityAccent[record.priority] || '');
-    }}
-  >
-    {/* Always visible columns */}
-    <DataTable.Col source="subject" label="Subject">
-      <SubjectWithIcon />
-    </DataTable.Col>
-    <DataTable.Col source="priority" label="Priority">
-      <PriorityBadge />
-    </DataTable.Col>
-    <DataTable.Col source="status" label="Status">
-      <StatusBadge />
-    </DataTable.Col>
-    
-    {/* Desktop-only columns */}
-    <DataTable.Col source="category" label="Category" className="hidden md:table-cell">
-      <CategoryBadge />
-    </DataTable.Col>
-    <DataTable.Col source="ownerType" label="Owner" className="hidden md:table-cell">
-      <OwnerTypeBadge />
-    </DataTable.Col>
-    <DataTable.Col label="Assignee" className="hidden lg:table-cell">
-      <AssigneeField />
-    </DataTable.Col>
-    <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
-      <CreatedDateField />
-    </DataTable.Col>
-  </DataTable>
+      {/* Desktop-only columns */}
+      <DataTable.Col source="category" label="Category" className="hidden md:table-cell">
+        <CategoryBadge />
+      </DataTable.Col>
+      <DataTable.Col source="ownerType" label="Owner" className="hidden md:table-cell">
+        <OwnerTypeBadge />
+      </DataTable.Col>
+      <DataTable.Col label="Assignee" className="hidden lg:table-cell">
+        <AssigneeField />
+      </DataTable.Col>
+      <DataTable.Col source="createdAt" label="Created" className="hidden lg:table-cell">
+        <CreatedDateField />
+      </DataTable.Col>
+    </DataTable>
 );
 
 const SubjectWithIcon = () => {

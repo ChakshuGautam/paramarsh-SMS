@@ -1,6 +1,6 @@
 "use client";
 
-import { useListContext } from "ra-core";
+import { useListContext, useRecordContext } from "ra-core";
 import {
   List,
   DataTable,
@@ -9,11 +9,14 @@ import {
   TextInput,
   ReferenceInput,
   AutocompleteInput,
+  ListPagination,
 } from "@/components/admin";
 import { ReferenceField } from "@/components/admin/reference-field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { FileText, Send, Download, Share2 } from "lucide-react";
 
 // Store keys for different tab states
 const storeKeyByStatus = {
@@ -40,6 +43,7 @@ export const InvoicesList = () => (
     filterDefaultValues={{ status: "pending" }}
     filters={filters}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -84,15 +88,19 @@ const TabbedDataTable = () => {
       
       <TabsContent value="pending">
         <InvoicesTable storeKey={storeKeyByStatus.pending} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="paid">
         <InvoicesTable storeKey={storeKeyByStatus.paid} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="overdue">
         <InvoicesTable storeKey={storeKeyByStatus.overdue} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="cancelled">
         <InvoicesTable storeKey={storeKeyByStatus.cancelled} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
@@ -141,6 +149,11 @@ const InvoicesTable = ({ storeKey }: { storeKey: string }) => {
       <DataTable.Col source="status" label="Status">
         <StatusBadge />
       </DataTable.Col>
+      
+      {/* Action buttons */}
+      <DataTable.Col label="Actions" className="hidden md:table-cell">
+        <InvoiceActions />
+      </DataTable.Col>
     </DataTable>
   );
 };
@@ -166,6 +179,63 @@ const StatusBadge = ({ record }: { record?: any }) => {
     <Badge className={cn('capitalize', colors[record.status] || '')}>
       {record.status}
     </Badge>
+  );
+};
+
+const InvoiceActions = () => {
+  const record = useRecordContext();
+  
+  if (!record) return null;
+  
+  const handleGenerateInvoice = () => {
+    // This would typically generate a PDF invoice
+    console.log('Generating invoice for:', record.invoiceNumber);
+    // In a real app, this would call a backend API to generate PDF
+    alert(`Invoice generation for "${record.invoiceNumber}" would be triggered here. A PDF would be generated with all invoice details.`);
+  };
+  
+  const handleShareInvoice = () => {
+    // This would typically share the invoice via email/SMS/WhatsApp
+    console.log('Sharing invoice:', record.invoiceNumber);
+    alert(`Invoice "${record.invoiceNumber}" would be shared with the parent via Email/SMS/WhatsApp. Parents would receive a PDF copy or link to view the invoice.`);
+  };
+  
+  const handleDownloadInvoice = () => {
+    // This would download the invoice PDF
+    console.log('Downloading invoice:', record.invoiceNumber);
+    alert(`Invoice "${record.invoiceNumber}" PDF download would start here.`);
+  };
+  
+  return (
+    <div className="flex items-center gap-1">
+      {record.status !== 'paid' && record.status !== 'cancelled' && (
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleGenerateInvoice}
+          title="Generate Invoice"
+        >
+          <FileText className="h-4 w-4" />
+        </Button>
+      )}
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={handleDownloadInvoice}
+        title="Download Invoice"
+      >
+        <Download className="h-4 w-4" />
+      </Button>
+      <Button 
+        variant="outline" 
+        size="sm"
+        onClick={handleShareInvoice}
+        title="Share Invoice"
+        className="text-blue-600 hover:text-blue-700"
+      >
+        <Share2 className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
 

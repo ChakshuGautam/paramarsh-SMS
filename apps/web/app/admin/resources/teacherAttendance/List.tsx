@@ -9,6 +9,7 @@ import {
   Count,
   TextInput,
   SelectInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +66,7 @@ export const TeacherAttendanceList = () => (
     sort={{ field: "date", order: "DESC" }}
     filterDefaultValues={{ ...getDateFilter("today") }}
     perPage={10}
+    pagination={false}
     resource="teacher-attendance"
   >
     <TabbedDataTable />
@@ -130,18 +132,23 @@ const TabbedDataTable = () => {
       
       <TabsContent value="today">
         <TeacherAttendanceTable storeKey={storeKeyByDateRange.today} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="yesterday">
         <TeacherAttendanceTable storeKey={storeKeyByDateRange.yesterday} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="thisWeek">
         <TeacherAttendanceTable storeKey={storeKeyByDateRange.thisWeek} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="thisMonth">
         <TeacherAttendanceTable storeKey={storeKeyByDateRange.thisMonth} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <TeacherAttendanceTable storeKey={storeKeyByDateRange.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
@@ -149,40 +156,40 @@ const TabbedDataTable = () => {
 
 const TeacherAttendanceTable = ({ storeKey }: { storeKey: string }) => (
   <DataTable 
-    storeKey={storeKey}
-    rowClassName={(record) => {
-      const statusColors = {
-        PRESENT: 'border-l-4 border-l-green-500',
-        ABSENT: 'border-l-4 border-l-red-500',
-        LATE: 'border-l-4 border-l-yellow-500',
-        HALF_DAY: 'border-l-4 border-l-orange-500',
-        ON_LEAVE: 'border-l-4 border-l-blue-500',
-      };
-      return statusColors[record.status] || '';
-    }}
-  >
-    {/* Always visible columns */}
-    <DataTable.Col label="Teacher">
-      <TeacherName />
-    </DataTable.Col>
-    <DataTable.Col source="status" label="Status">
-      <StatusBadge />
-    </DataTable.Col>
-    <DataTable.Col source="date" label="Date">
-      <DateDisplay />
-    </DataTable.Col>
-    
-    {/* Desktop-only columns */}
-    <DataTable.Col label="Check In" className="hidden md:table-cell">
-      <CheckInTime />
-    </DataTable.Col>
-    <DataTable.Col label="Check Out" className="hidden md:table-cell">
-      <CheckOutTime />
-    </DataTable.Col>
-    <DataTable.Col label="Total Hours" className="hidden lg:table-cell">
-      <TotalHours />
-    </DataTable.Col>
-  </DataTable>
+      storeKey={storeKey}
+      rowClassName={(record) => {
+        const statusColors = {
+          PRESENT: 'border-l-4 border-l-green-500',
+          ABSENT: 'border-l-4 border-l-red-500',
+          LATE: 'border-l-4 border-l-yellow-500',
+          HALF_DAY: 'border-l-4 border-l-orange-500',
+          ON_LEAVE: 'border-l-4 border-l-blue-500',
+        };
+        return statusColors[record.status] || '';
+      }}
+    >
+      {/* Always visible columns */}
+      <DataTable.Col label="Teacher">
+        <TeacherName />
+      </DataTable.Col>
+      <DataTable.Col source="status" label="Status">
+        <StatusBadge />
+      </DataTable.Col>
+      <DataTable.Col source="date" label="Date">
+        <DateDisplay />
+      </DataTable.Col>
+      
+      {/* Desktop-only columns */}
+      <DataTable.Col label="Check In" className="hidden md:table-cell">
+        <CheckInTime />
+      </DataTable.Col>
+      <DataTable.Col label="Check Out" className="hidden md:table-cell">
+        <CheckOutTime />
+      </DataTable.Col>
+      <DataTable.Col label="Total Hours" className="hidden lg:table-cell">
+        <TotalHours />
+      </DataTable.Col>
+    </DataTable>
 );
 
 const TeacherName = () => {

@@ -114,4 +114,39 @@ export class ExamsController {
   remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
+
+  // Date sheet and readiness endpoints
+  @Get(':id/datesheet')
+  getDateSheet(@Param('id') examId: string) {
+    return this.service.getDateSheet(examId);
+  }
+
+  @Post(':id/datesheet/generate')
+  generateDateSheet(
+    @Param('id') examId: string,
+    @Body() body: { sessions: Array<{ subjectId: string; date: string; startTime: string; endTime: string; roomId?: string }> }
+  ) {
+    return this.service.generateDateSheet(examId, body.sessions);
+  }
+
+  @Get(':id/readiness')
+  getExamReadiness(@Param('id') examId: string) {
+    return this.service.getExamReadiness(examId);
+  }
+
+  @Post(':id/notify-marks')
+  notifyMarks(
+    @Param('id') examId: string,
+    @Body() body: { method: 'email' | 'sms' | 'both' }
+  ) {
+    return this.service.notifyMarks(examId, body.method);
+  }
+
+  @Post(':id/share-marks')
+  shareMarks(
+    @Param('id') examId: string,
+    @Body() body: { format: 'pdf' | 'excel' | 'csv' }
+  ) {
+    return this.service.shareMarks(examId, body.format);
+  }
 }

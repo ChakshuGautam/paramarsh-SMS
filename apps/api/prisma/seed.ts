@@ -277,6 +277,7 @@ async function validateAllTables() {
     guardians: await prisma.guardian.count(),
     staff: await prisma.staff.count(),
     teachers: await prisma.teacher.count(),
+    classSubjectTeachers: await prisma.classSubjectTeacher.count(),
     
     // Academic operations
     enrollments: await prisma.enrollment.count(),
@@ -352,6 +353,7 @@ async function validateBranchDistribution() {
       students: await prisma.student.count({ where: { branchId } }),
       guardians: await prisma.guardian.count({ where: { branchId } }),
       teachers: await prisma.teacher.count({ where: { branchId } }),
+      classSubjectTeachers: await prisma.classSubjectTeacher.count({ where: { branchId } }),
       staff: await prisma.staff.count({ where: { branchId } }),
       classes: await prisma.class.count({ where: { branchId } }),
       sections: await prisma.section.count({ where: { branchId } }),
@@ -885,6 +887,83 @@ async function generateBranchData(branchId: string, config: any) {
     teachers.push(teacher);
   }
 
+  // Create ClassSubjectTeacher relationships (NEW: Teacher-Subject-Class assignments)
+  const classSubjectTeachers = [];
+  console.log(`📚 Creating teacher-subject-class assignments for ${branchId}...`);
+  
+  for (const cls of classes) {
+    // Get grade-appropriate subjects for this class
+    const gradeLevel = cls.gradeLevel || 1;
+    let classSubjects = [];
+    
+    if (gradeLevel <= 5) {
+      // Primary classes: Core subjects with single teachers
+      classSubjects = subjects.filter(s => 
+        ['English', 'Hindi', 'Mathematics', 'Environmental Studies', 'Computer Science', 'Art & Craft', 'Physical Education'].includes(s.name)
+      );
+    } else if (gradeLevel <= 8) {
+      // Middle classes: More specialized subjects
+      classSubjects = subjects.filter(s => 
+        ['English', 'Hindi', 'Mathematics', 'Science', 'Social Studies', 'Computer Science', 'Art & Craft', 'Physical Education'].includes(s.name)
+      );
+    } else if (gradeLevel <= 10) {
+      // Secondary classes: Separate sciences
+      classSubjects = subjects.filter(s => 
+        ['English', 'Hindi', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Social Studies', 'Computer Science', 'Physical Education'].includes(s.name)
+      );
+    } else {
+      // Senior secondary: Stream-based subjects
+      classSubjects = subjects.filter(s => 
+        ['English', 'Physics', 'Chemistry', 'Mathematics', 'Biology', 'Computer Science', 'Economics', 'Political Science', 'History', 'Physical Education'].includes(s.name)
+      );
+    }
+    
+    // Assign teachers to subjects for this class
+    for (const subject of classSubjects) {
+      // Find teachers who can teach this subject
+      let eligibleTeachers = teachers.filter(teacher => {
+        const teacherSubjects = teacher.subjects?.split(', ') || [];
+        return teacherSubjects.some(ts => ts.toLowerCase().includes(subject.name.toLowerCase()) || 
+                                         subject.name.toLowerCase().includes(ts.toLowerCase()));
+      });
+      
+      // If no subject-specific teacher found, assign any available teacher
+      if (eligibleTeachers.length === 0) {
+        eligibleTeachers = teachers.slice(); // All teachers are eligible
+      }
+      
+      // Select a random teacher from eligible ones
+      const selectedTeacher = eligibleTeachers[Math.floor(Math.random() * eligibleTeachers.length)];
+      
+      if (selectedTeacher) {
+        try {
+          // Check if this combination already exists to avoid duplicates
+          const existingAssignment = classSubjectTeachers.find(cst => 
+            cst.classId === cls.id && 
+            cst.subjectId === subject.id && 
+            cst.teacherId === selectedTeacher.id
+          );
+          
+          if (!existingAssignment) {
+            const classSubjectTeacher = await prisma.classSubjectTeacher.create({
+              data: {
+                branchId: branchId,
+                classId: cls.id,
+                subjectId: subject.id,
+                teacherId: selectedTeacher.id
+              }
+            });
+            classSubjectTeachers.push(classSubjectTeacher);
+          }
+        } catch (error) {
+          console.log(`⚠️ Skipped duplicate assignment: ${cls.name} - ${subject.name} - ${selectedTeacher.id}`);
+        }
+      }
+    }
+  }
+  
+  console.log(`✅ Created ${classSubjectTeachers.length} ClassSubjectTeacher assignments for ${branchId}`);
+
   // Create sections and students
   const sections = [];
   const students = [];
@@ -1230,14 +1309,26 @@ async function generateBranchData(branchId: string, config: any) {
         // CRITICAL FIX: Use grade-appropriate subjects instead of all subjects
         const subject = gradeAppropriateSubjects[Math.floor(Math.random() * gradeAppropriateSubjects.length)];
         
-        // IMPROVEMENT: Prefer teachers who specialize in this subject
-        const specializedTeachers = teachers.filter(teacher => 
-          teacher.subjects.includes(subject.name)
+        // NEW: Use ClassSubjectTeacher assignments to get the correct teacher for this subject and class
+        const classSubjectAssignment = classSubjectTeachers.find(cst => 
+          cst.classId === sectionClass.id && cst.subjectId === subject.id
         );
         
-        // If no specialized teachers found, use any teacher
-        const availableTeachers = specializedTeachers.length > 0 ? specializedTeachers : teachers;
-        const teacher = availableTeachers[Math.floor(Math.random() * availableTeachers.length)];
+        // Get teacher from ClassSubjectTeacher assignment or fallback to any teacher
+        let teacher;
+        if (classSubjectAssignment) {
+          teacher = teachers.find(t => t.id === classSubjectAssignment.teacherId);
+        }
+        
+        // Fallback: If no assignment found or teacher not found, use any available teacher
+        if (!teacher) {
+          const availableTeachers = teachers.filter(teacher => 
+            teacher.subjects.includes(subject.name)
+          );
+          teacher = availableTeachers.length > 0 ? 
+            availableTeachers[Math.floor(Math.random() * availableTeachers.length)] : 
+            teachers[Math.floor(Math.random() * teachers.length)];
+        }
         
         const period = await prisma.timetablePeriod.create({
           data: {
@@ -2303,6 +2394,7 @@ async function generateBranchData(branchId: string, config: any) {
     students: students.length,
     guardians: guardians.length,
     teachers: teachers.length,
+    classSubjectTeachers: classSubjectTeachers.length,
     classes: classes.length,
     sections: sections.length,
     rooms: rooms.length,
@@ -2369,6 +2461,7 @@ async function main() {
     students: 0,
     guardians: 0,
     teachers: 0,
+    classSubjectTeachers: 0,
     classes: 0,
     sections: 0,
     rooms: 0,
@@ -2410,6 +2503,7 @@ async function main() {
       totalStats.students += branch.students;
       totalStats.guardians += branch.guardians;
       totalStats.teachers += branch.teachers;
+      totalStats.classSubjectTeachers += branch.classSubjectTeachers;
       totalStats.classes += branch.classes;
       totalStats.sections += branch.sections;
       totalStats.rooms += branch.rooms;
@@ -2434,6 +2528,7 @@ async function main() {
   console.log(`👨‍🎓 Students: ${totalStats.students.toLocaleString()}`);
   console.log(`👨‍👩‍👧‍👦 Guardians: ${totalStats.guardians.toLocaleString()}`);
   console.log(`👨‍🏫 Teachers: ${totalStats.teachers}`);
+  console.log(`🔗 Teacher-Subject-Class Assignments: ${totalStats.classSubjectTeachers}`);
   console.log(`📚 Classes: ${totalStats.classes}`);
   console.log(`📝 Sections: ${totalStats.sections}`);
   console.log(`🏫 Rooms: ${totalStats.rooms}`);

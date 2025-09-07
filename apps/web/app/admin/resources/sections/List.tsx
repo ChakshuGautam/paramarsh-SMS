@@ -11,13 +11,13 @@ import {
   TextInput,
   SelectInput,
   NumberInput,
+  ListPagination,
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
-import { useCreatePath } from "ra-core";
-import { Link } from "react-router-dom";
+import { useRedirect } from "ra-core";
 
 // Store keys for different grade level groups
 const storeKeyByLevel = {
@@ -54,28 +54,25 @@ const sectionFilters = [
 ];
 
 const ViewTimetableButton = ({ record }: { record?: any }) => {
-  const createPath = useCreatePath();
+  const redirect = useRedirect();
   
   if (!record || !record.id) {
     return null;
   }
   
-  const path = createPath({
-    resource: "sectionTimetables",
-    type: "show",
-    id: record.id,
-  });
+  const handleClick = () => {
+    // Navigate to the timetable view for this section
+    redirect('/admin/timetable', { filter: { sectionId: record.id } });
+  };
   
   return (
     <Button 
-      asChild 
       variant="outline" 
       size="sm"
+      onClick={handleClick}
     >
-      <Link to={path}>
-        <Calendar className="w-4 h-4 mr-2" />
-        View Timetable
-      </Link>
+      <Calendar className="w-4 h-4 mr-2" />
+      View Timetable
     </Button>
   );
 };
@@ -85,6 +82,7 @@ export const SectionsList = () => (
     sort={{ field: "name", order: "ASC" }}
     filters={sectionFilters}
     perPage={10}
+    pagination={false}
   >
     <TabbedDataTable />
   </List>
@@ -137,15 +135,19 @@ const TabbedDataTable = () => {
       </TabsList>
       <TabsContent value="primary">
         <SectionsTable storeKey={storeKeyByLevel.primary} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="middle">
         <SectionsTable storeKey={storeKeyByLevel.middle} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="high">
         <SectionsTable storeKey={storeKeyByLevel.high} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
       <TabsContent value="all">
         <SectionsTable storeKey={storeKeyByLevel.all} />
+        <ListPagination className="justify-start mt-2" />
       </TabsContent>
     </Tabs>
   );
