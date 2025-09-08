@@ -53,7 +53,7 @@
     "fix:inappropriate-assignments": "tsx scripts/fix-inappropriate-assignments.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.708.0",
+    "@aws-sdk/client-s3": "^3.883.0",
     "@aws-sdk/s3-request-presigner": "^3.708.0",
     "@clerk/backend": "^2.9.4",
     "@nestjs/common": "^11.0.1",
