@@ -71,6 +71,7 @@ const AdminApp = () => {
       show={Students.Show}
       edit={Students.Edit}
       create={Students.Create}
+      recordRepresentation={(record) => `${record.firstName} ${record.lastName}`}
     />
     <Resource
       name="guardians"
@@ -219,6 +220,10 @@ const AdminApp = () => {
       show={Subjects.Show}
       edit={Subjects.Edit}
       create={Subjects.Create}
+    />
+    <Resource
+      name="classSubjectTeachers"
+      options={{ label: "Class Subject Teachers" }}
     />
     <Resource
       name="rooms"

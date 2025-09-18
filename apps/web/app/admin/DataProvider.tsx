@@ -326,6 +326,7 @@ function resourceToPath(resource: string): string {
     
     // Timetable
     subjects: "subjects",
+    classSubjectTeachers: "class-subject-teachers",
     rooms: "rooms",
     timetable: "timetable",
     timetablePeriods: "timetable/periods",

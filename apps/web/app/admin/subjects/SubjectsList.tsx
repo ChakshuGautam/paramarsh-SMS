@@ -14,7 +14,7 @@ import {
 } from "@/components/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Star, Award, Filter, School, GraduationCap } from "lucide-react";
+import { BookOpen, Star, Award, Filter, GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
 
 // Store keys for different subject types
@@ -240,113 +240,53 @@ const TypeBadge = () => {
 const ClassTags = () => {
   const record = useRecordContext();
   const dataProvider = useDataProvider();
-  const [classes, setClasses] = useState<any[]>([]);
+  const [classAssignments, setClassAssignments] = useState<any[]>([]);
   
   useEffect(() => {
-    if (record?.id) {
-      // Fetch timetable entries for this subject to find which classes it's taught in
-      dataProvider
-        .getList('timetablePeriods', {
-          filter: { subjectId: record.id },
-          pagination: { page: 1, perPage: 100 },
-          sort: { field: 'id', order: 'ASC' }
-        })
-        .then(({ data }) => {
-          // Extract unique class IDs from sections
-          const classIds = new Set<string>();
-          const classData: any[] = [];
-          
-          data.forEach((period: any) => {
-            if (period.section?.class && !classIds.has(period.section.class.id)) {
-              classIds.add(period.section.class.id);
-              classData.push(period.section.class);
-            }
-          });
-          
-          // Sort by grade level
-          classData.sort((a, b) => (a.gradeLevel || 0) - (b.gradeLevel || 0));
-          setClasses(classData);
-        })
-        .catch(() => {
-          // Fallback to showing general grade level tags if available
-          setClasses([]);
-        });
-    }
-  }, [record?.id, dataProvider]);
+    // Note: ClassSubjectTeacher endpoint not yet implemented in backend
+    // For now, just show "Not assigned" for all subjects
+    setClassAssignments([]);
+  }, [record?.id]);
   
-  // If no classes found, show grade level ranges based on subject type
-  if (!classes || classes.length === 0) {
-    if (!record) return <span className="text-muted-foreground text-sm">-</span>;
-    
-    // Infer grade levels based on subject attributes
-    const gradeLevels = [];
-    
-    // Basic heuristics for subject grade levels
-    if (record.name?.toLowerCase().includes('elementary') || 
-        record.name?.toLowerCase().includes('primary')) {
-      gradeLevels.push({ label: 'Primary', color: 'bg-blue-100 text-blue-700' });
-    }
-    if (record.name?.toLowerCase().includes('middle') || 
-        record.name?.toLowerCase().includes('secondary')) {
-      gradeLevels.push({ label: 'Middle', color: 'bg-green-100 text-green-700' });
-    }
-    if (record.name?.toLowerCase().includes('high') || 
-        record.name?.toLowerCase().includes('senior') ||
-        record.name?.toLowerCase().includes('advanced')) {
-      gradeLevels.push({ label: 'High', color: 'bg-purple-100 text-purple-700' });
-    }
-    
-    if (gradeLevels.length === 0) {
-      // Default for all subjects
-      return (
-        <div className="flex items-center gap-1">
-          <School className="w-4 h-4 text-muted-foreground" />
-          <Badge variant="outline" className="text-xs">All Classes</Badge>
-        </div>
-      );
-    }
-    
+  if (!record) return <span className="text-muted-foreground text-sm">-</span>;
+  
+  // If no assignments found
+  if (!classAssignments || classAssignments.length === 0) {
     return (
-      <div className="flex flex-wrap gap-1">
-        {gradeLevels.map((level, idx) => (
-          <Badge key={idx} className={`text-xs ${level.color}`}>
-            {level.label}
-          </Badge>
-        ))}
-      </div>
+      <span className="text-xs text-muted-foreground">Not assigned</span>
     );
   }
   
-  // Group classes by grade level ranges
-  const groupedClasses = {
-    primary: classes.filter(c => c.gradeLevel >= 1 && c.gradeLevel <= 5),
-    middle: classes.filter(c => c.gradeLevel >= 6 && c.gradeLevel <= 8),
-    high: classes.filter(c => c.gradeLevel >= 9 && c.gradeLevel <= 12),
-  };
+  // Group classes by grade level ranges for compact display
+  const classes = classAssignments.map(a => a.class).filter(Boolean);
+  const uniqueClasses = Array.from(new Map(classes.map(c => [c.id, c])).values());
   
+  // Sort by grade level
+  uniqueClasses.sort((a, b) => (a.gradeLevel || 0) - (b.gradeLevel || 0));
+  
+  // Group by grade level ranges
+  const primaryClasses = uniqueClasses.filter(c => c.gradeLevel >= 1 && c.gradeLevel <= 5);
+  const middleClasses = uniqueClasses.filter(c => c.gradeLevel >= 6 && c.gradeLevel <= 8);
+  const highClasses = uniqueClasses.filter(c => c.gradeLevel >= 9 && c.gradeLevel <= 12);
+  
+  // Create compact display text
+  const displayParts = [];
+  if (primaryClasses.length > 0) {
+    displayParts.push(`Primary (LKG, UKG, ${primaryClasses.map(c => `Class ${c.gradeLevel}`).join(', ')})`);
+  }
+  if (middleClasses.length > 0) {
+    displayParts.push(`Middle (${middleClasses.map(c => `Class ${c.gradeLevel}`).join(', ')})`);
+  }
+  if (highClasses.length > 0) {
+    displayParts.push(`High (${highClasses.map(c => `Class ${c.gradeLevel}`).join(', ')})`);
+  }
+  
+  // Display as single line text
   return (
-    <div className="flex items-center gap-2">
-      <GraduationCap className="w-4 h-4 text-muted-foreground" />
-      <div className="flex flex-wrap gap-1">
-        {groupedClasses.primary.length > 0 && (
-          <Badge className="text-xs bg-blue-100 text-blue-700">
-            Primary ({groupedClasses.primary.map(c => c.name).join(', ')})
-          </Badge>
-        )}
-        {groupedClasses.middle.length > 0 && (
-          <Badge className="text-xs bg-green-100 text-green-700">
-            Middle ({groupedClasses.middle.map(c => c.name).join(', ')})
-          </Badge>
-        )}
-        {groupedClasses.high.length > 0 && (
-          <Badge className="text-xs bg-purple-100 text-purple-700">
-            High ({groupedClasses.high.map(c => c.name).join(', ')})
-          </Badge>
-        )}
-        {classes.length === 0 && (
-          <span className="text-xs text-muted-foreground">Not assigned</span>
-        )}
-      </div>
+    <div className="flex items-center gap-2 text-xs">
+      <span className="text-muted-foreground truncate max-w-md">
+        {displayParts.join(' | ') || 'Not assigned'}
+      </span>
     </div>
   );
 };
