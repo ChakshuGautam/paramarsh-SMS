@@ -48,10 +48,10 @@ import get from "lodash/get";
 export function DataTable<RecordType extends RaRecord = RaRecord>(
   props: DataTableProps<RecordType>
 ) {
-  const { children, className, rowClassName, ...rest } = props;
+  const { children, className, rowClassName, bulkActionButtons = true, selectable = true, ...rest } = props;
   return (
     <DataTableBase<RecordType>
-      hasBulkActions
+      hasBulkActions={bulkActionButtons !== false && selectable !== false}
       loading={null}
       empty={<DataTableEmpty />}
       {...rest}
@@ -231,6 +231,8 @@ export interface DataTableProps<RecordType extends RaRecord = RaRecord>
   children: ReactNode;
   className?: string;
   rowClassName?: (record: RecordType) => string | undefined;
+  bulkActionButtons?: boolean;
+  selectable?: boolean;
 }
 
 export function DataTableColumn<

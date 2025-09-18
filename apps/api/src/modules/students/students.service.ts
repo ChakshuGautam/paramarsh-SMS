@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BaseCrudService } from '../../common/base-crud.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Student } from '@prisma/client';
+
+// Type definition for single response
+export interface SingleResponse<T> {
+  data: T;
+}
 
 @Injectable()
 export class StudentsService extends BaseCrudService<any> {
@@ -132,16 +138,6 @@ export class StudentsService extends BaseCrudService<any> {
   }
 
   /**
-   * Override create method
-   */
-  async update(id: string, data: any) {
-    const result = await super.update(id, data);
-    return {
-      data: result.data,
-    };
-  }
-
-  /**
    * Override to add school aliasing and support soft delete
    */
   async delete(id: string, userId?: string) {
@@ -160,6 +156,51 @@ export class StudentsService extends BaseCrudService<any> {
       { lastName: { contains: search, mode: 'insensitive' } },
       { admissionNo: { contains: search, mode: 'insensitive' } },
     ];
+  }
+
+  /**
+   * Override buildWhereClause to filter by active status by default
+   * This ensures consistency with attendance service student counting
+   */
+  protected buildWhereClause(filter?: Record<string, any>): any {
+    const where = super.buildWhereClause(filter);
+    
+    // Filter by active status by default unless explicitly requesting all statuses
+    // This matches the behavior of attendance service for consistent student counts
+    if (!filter?.includeAllStatuses && !where.status) {
+      where.status = 'active';
+    }
+    
+    return where;
+  }
+
+  /**
+   * Override update to handle guardian relations properly
+   */
+  async update(id: string, data: any): Promise<SingleResponse<Student>> {
+    try {
+      // Remove nested relation data that can't be directly updated
+      const { guardians, enrollments, attendanceRecords, ...updateData } = data;
+      
+      const updated = await this.prisma.student.update({
+        where: { id },
+        data: updateData,
+        include: {
+          guardians: {
+            include: {
+              guardian: true,
+            },
+          },
+        },
+      });
+
+      return { data: updated };
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException('Student not found');
+      }
+      throw error;
+    }
   }
 
 }

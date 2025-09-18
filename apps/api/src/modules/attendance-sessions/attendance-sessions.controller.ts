@@ -7,6 +7,7 @@ import {
   Param, 
   Query,
   Patch,
+  Put,
   UseGuards,
   Request,
   Headers
@@ -113,6 +114,28 @@ export class AttendanceSessionsController {
   @ApiParam({ name: 'id', description: 'Session ID' })
   async getSessionRoster(@Param('id') id: string) {
     return this.service.getSessionRoster(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update attendance session' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  async updateSession(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.service.updateSession(id, body, branchId);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update attendance session (PUT)' })
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  async updateSessionPut(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    return this.service.updateSession(id, body, branchId);
   }
 
   @Post(':id/mark')

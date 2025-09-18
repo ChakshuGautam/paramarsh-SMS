@@ -14,6 +14,7 @@ export * from "./create-button";
 export * from "./create";
 export * from "./data-table";
 export * from "./date-input";
+export * from "./dependent-filters";
 export * from "./date-range-input";
 export * from "./delete-button";
 export * from "./edit-button";

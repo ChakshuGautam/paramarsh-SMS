@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 // Kendriya Vidyalaya (kvs): kvs-central, kvs-cantonment, kvs-airport
 // St. Paul's School (sps): sps-primary, sps-secondary, sps-senior
 // Ryan International School (ris): ris-main, ris-extension
+// Swami Vivekanad Public School (svps): svps-main, svps-senior, svps-junior
 
 // ========== INDIAN NAMES DATABASE ==========
 const INDIAN_NAMES = {
@@ -199,6 +200,36 @@ const BRANCH_CONFIGS = {
     sections: ['A', 'B', 'C'],
     grades: ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'],
     baseFee: 10200
+  },
+  'svps-main': {
+    name: 'Swami Vivekanad Public School - Main Campus',
+    subdomain: 'svps-main',
+    type: 'CBSE',
+    location: 'mumbai',
+    studentsPerSection: 35,
+    sections: ['A', 'B', 'C', 'D'],
+    grades: ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'],
+    baseFee: 8500
+  },
+  'svps-senior': {
+    name: 'Swami Vivekanad Public School - Senior Secondary Wing',
+    subdomain: 'svps-senior',
+    type: 'CBSE',
+    location: 'mumbai',
+    studentsPerSection: 32,
+    sections: ['A', 'B', 'C'],
+    grades: ['Class 9', 'Class 10', 'Class 11', 'Class 12'],
+    baseFee: 9200
+  },
+  'svps-junior': {
+    name: 'Swami Vivekanad Public School - Junior Wing',
+    subdomain: 'svps-junior',
+    type: 'CBSE',
+    location: 'mumbai',
+    studentsPerSection: 30,
+    sections: ['A', 'B', 'C'],
+    grades: ['Nursery', 'LKG', 'UKG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8'],
+    baseFee: 7800
   }
 };
 
@@ -334,7 +365,7 @@ async function validateAllTables() {
   return { emptyTables, populatedTables, tableValidations };
 }
 
-// MANDATORY: Validate data across all 13 composite branches
+// MANDATORY: Validate data across all 16 composite branches
 async function validateBranchDistribution() {
   console.log('🏫 Validating branch-wise data distribution...');
   
@@ -342,7 +373,8 @@ async function validateBranchDistribution() {
     'dps-main', 'dps-north', 'dps-south', 'dps-east', 'dps-west',
     'kvs-central', 'kvs-cantonment', 'kvs-airport',
     'sps-primary', 'sps-secondary', 'sps-senior',
-    'ris-main', 'ris-extension'
+    'ris-main', 'ris-extension',
+    'svps-main', 'svps-senior', 'svps-junior'
   ];
   
   const branchData: Record<string, any> = {};
@@ -506,7 +538,7 @@ async function generateValidationReport(validationResults: any) {
   report += `Total Teachers: ${totalTeachers}\n`;
   report += `Total Classes: ${totalClasses}\n`;
   report += `Student-Teacher Ratio: 1:${totalTeachers > 0 ? Math.round(totalStudents / totalTeachers) : 0}\n`;
-  report += `Average Students per Branch: ${Math.round(totalStudents / 13)}\n`;
+  report += `Average Students per Branch: ${Math.round(totalStudents / 16)}\n`;
   
   // Recommendations
   report += `\n🔧 RECOMMENDATIONS\n`;
@@ -515,7 +547,7 @@ async function generateValidationReport(validationResults: any) {
   if (validationResults.emptyTables.length === 0) {
     report += `✅ All tables populated successfully\n`;
     report += `✅ Ready for production use\n`;
-    report += `✅ All 13 branches have data\n`;
+    report += `✅ All 16 branches have data\n`;
   } else {
     report += `❌ IMMEDIATE ACTION REQUIRED:\n`;
     for (const table of validationResults.emptyTables) {
@@ -553,7 +585,7 @@ async function generateValidationReport(validationResults: any) {
       totalTeachers,
       totalClasses,
       studentTeacherRatio: totalTeachers > 0 ? Math.round(totalStudents / totalTeachers) : 0,
-      averageStudentsPerBranch: Math.round(totalStudents / 13)
+      averageStudentsPerBranch: Math.round(totalStudents / 16)
     }
   };
   
@@ -605,7 +637,7 @@ async function runComprehensiveValidation(): Promise<boolean> {
     if (tableResults.emptyTables.length === 0) {
       console.log('\n🎉 VALIDATION PASSED - ALL TABLES POPULATED!');
       console.log('✅ Database is ready for production use');
-      console.log('✅ All 13 branches have complete data');
+      console.log('✅ All 16 branches have complete data');
       
       // Print summary table
       console.log('\n📊 FINAL VALIDATION SUMMARY:');

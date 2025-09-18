@@ -14,11 +14,6 @@
         "@modelcontextprotocol/server-postgres",
         "postgresql://paramarsh:paramarsh123@localhost:5432/paramarsh_sms"
       ]
-    },
-    "curl": {
-      "command": "node",
-      "args": ["./curl-mcp/index.js"],
-      "env": {}
     }
   }
 }

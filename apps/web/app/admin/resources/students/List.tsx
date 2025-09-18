@@ -1,70 +1,190 @@
 "use client";
 
-import type { ReactNode } from "react";
+import React from "react";
 import {
   useRecordContext,
-  Translate,
-  useTranslate,
-  FilterLiveForm,
 } from "ra-core";
 import {
   DataTable,
   List,
   ReferenceField,
+  ReferenceInput,
+  SelectInput,
   TextField,
-  ToggleFilterButton,
   TextInput,
   GenderBadge,
   StatusBadge,
   ListPagination,
+  DependentSectionFilter,
 } from "@/components/admin";
 import { Badge } from "@/components/ui/badge";
-import { User, BookOpen, Users } from "lucide-react";
-import { getStatusColor } from "@/lib/theme/colors";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+// Define filters array with consistent height styling
+const studentFilters = [
+  <TextInput 
+    key="search" 
+    source="q" 
+    placeholder="Search students..." 
+    label="" 
+    alwaysOn 
+    className="h-10"
+  />,
+  <ReferenceInput key="class" reference="classes" source="classId" label="">
+    <SelectInput 
+      source="classId"
+      optionText="name"
+      placeholder="Filter by Class"
+      allowEmpty
+      emptyText="All Classes"
+      className="h-10"
+    />
+  </ReferenceInput>,
+  <DependentSectionFilter 
+    key="section"
+    source="sectionId"
+    classIdSource="classId"
+    placeholder="Filter by Section"
+    label={false}
+    className="h-10"
+  />,
+  <SelectInput 
+    key="gender"
+    source="gender"
+    label=""
+    placeholder="Filter by Gender"
+    allowEmpty
+    emptyText="All Genders"
+    choices={[
+      { id: 'male', name: 'Male' },
+      { id: 'female', name: 'Female' },
+      { id: 'other', name: 'Other' }
+    ]}
+    className="h-10"
+  />,
+  <SelectInput 
+    key="status"
+    source="status"
+    label=""
+    placeholder="Filter by Status"
+    allowEmpty
+    emptyText="All Status"
+    choices={[
+      { id: 'active', name: 'Active' },
+      { id: 'inactive', name: 'Inactive' },
+      { id: 'graduated', name: 'Graduated' },
+      { id: 'transferred', name: 'Transferred' },
+      { id: 'dropped', name: 'Dropped' }
+    ]}
+    className="h-10"
+  />
+];
 
 export const StudentsList = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <List
       perPage={10}
       pagination={false}
       sort={{ field: "firstName", order: "ASC" }}
+      filters={studentFilters}
     >
-      <div className="flex flex-row gap-4 mb-4">
-        <SidebarFilters />
-        <div className="flex-1">
-          <DataTable>
-            <DataTable.Col source="admissionNo" label="Admission No" />
-            <DataTable.Col source="firstName" label="First Name" />
-            <DataTable.Col source="lastName" label="Last Name" />
-            <DataTable.Col 
-              source="status" 
-              label="Status"
-            >
-              <StatusBadge size="sm" />
-            </DataTable.Col>
-            <DataTable.Col 
-              source="gender" 
-              label="Gender" 
-              className="hidden md:table-cell"
-            >
-              <GenderBadge size="sm" />
-            </DataTable.Col>
-            <DataTable.Col label="Class" className="hidden md:table-cell">
-              <ReferenceField reference="classes" source="classId">
-                <TextField source="name" />
-              </ReferenceField>
-            </DataTable.Col>
-            <DataTable.Col label="Section" className="hidden lg:table-cell">
-              <ReferenceField reference="sections" source="sectionId">
-                <TextField source="name" />
-              </ReferenceField>
-            </DataTable.Col>
-            <DataTable.Col label="Guardian Phone" className="hidden lg:table-cell">
-              <GuardianPhones />
-            </DataTable.Col>
+      <div className="flex-1 overflow-x-auto">
+          <DataTable bulkActionButtons={isMobile ? false : undefined} selectable={!isMobile}>
+            {isMobile ? (
+              // Mobile-specific columns
+              <>
+                <DataTable.Col 
+                  source="firstName" 
+                  label="Student"
+                  render={(record) => (
+                    <div className="space-y-1">
+                      <div className="font-medium">
+                        {record.firstName} {record.lastName}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {record.admissionNo}
+                      </div>
+                    </div>
+                  )}
+                />
+                <DataTable.Col 
+                  label="Class/Section"
+                  render={(record) => (
+                    <div className="text-sm">
+                      <ReferenceField reference="classes" source="classId">
+                        <TextField source="name" />
+                      </ReferenceField>
+                      {" - "}
+                      <ReferenceField reference="sections" source="sectionId">
+                        <TextField source="name" />
+                      </ReferenceField>
+                    </div>
+                  )}
+                />
+                <DataTable.Col 
+                  source="status" 
+                  label="Status"
+                  className="text-right"
+                >
+                  <StatusBadge size="sm" />
+                </DataTable.Col>
+              </>
+            ) : (
+              // Desktop columns
+              <>
+                <DataTable.Col 
+                  source="admissionNo" 
+                  label="Admission No"
+                  className="min-w-[120px]" 
+                />
+                <DataTable.Col 
+                  source="firstName" 
+                  label="First Name"
+                />
+                <DataTable.Col 
+                  source="lastName" 
+                  label="Last Name" 
+                />
+                <DataTable.Col 
+                  source="status" 
+                  label="Status"
+                >
+                  <StatusBadge size="sm" />
+                </DataTable.Col>
+                <DataTable.Col 
+                  source="gender" 
+                  label="Gender"
+                  className="hidden lg:table-cell"
+                >
+                  <GenderBadge size="sm" />
+                </DataTable.Col>
+                <DataTable.Col 
+                  label="Class"
+                >
+                  <ReferenceField reference="classes" source="classId">
+                    <TextField source="name" />
+                  </ReferenceField>
+                </DataTable.Col>
+                <DataTable.Col 
+                  label="Section"
+                  className="hidden xl:table-cell"
+                >
+                  <ReferenceField reference="sections" source="sectionId">
+                    <TextField source="name" />
+                  </ReferenceField>
+                </DataTable.Col>
+                <DataTable.Col 
+                  label="Guardian Phone" 
+                  className="hidden xl:table-cell"
+                >
+                  <GuardianPhones />
+                </DataTable.Col>
+              </>
+            )}
           </DataTable>
           <ListPagination className="justify-start mt-2" />
-        </div>
       </div>
     </List>
   );
@@ -115,69 +235,6 @@ const GuardianPhones = () => {
   );
 };
 
-const SidebarFilters = () => {
-  const translate = useTranslate();
-  return (
-    <div className="min-w-48 hidden md:block">
-      <FilterLiveForm>
-        <TextInput
-          source="q"
-          placeholder={translate("ra.action.search")}
-          label=""
-          className="mb-6"
-        />
-      </FilterLiveForm>
-      <FilterCategory
-        icon={<User size={16} />}
-        label="Gender"
-      >
-        <ToggleFilterButton
-          label="Male"
-          value={{ gender: "male" }}
-        />
-        <ToggleFilterButton
-          label="Female"
-          value={{ gender: "female" }}
-        />
-      </FilterCategory>
-      <FilterCategory
-        icon={<BookOpen size={16} />}
-        label="Status"
-      >
-        <ToggleFilterButton
-          label="Active"
-          value={{ status: "active" }}
-        />
-        <ToggleFilterButton
-          label="Inactive"
-          value={{ status: "inactive" }}
-        />
-        <ToggleFilterButton
-          label="Transferred"
-          value={{ status: "transferred" }}
-        />
-      </FilterCategory>
-    </div>
-  );
-};
-
-const FilterCategory = ({
-  icon,
-  label,
-  children,
-}: {
-  icon: ReactNode;
-  label: string;
-  children?: ReactNode;
-}) => (
-  <>
-    <h3 className="flex flex-row items-center gap-2 mb-1 font-bold text-sm">
-      {icon}
-      <Translate i18nKey={label} />
-    </h3>
-    <div className="flex flex-col items-start ml-3 mb-4">{children}</div>
-  </>
-);
 
 
 export default StudentsList;

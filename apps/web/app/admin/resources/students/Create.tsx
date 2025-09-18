@@ -8,6 +8,7 @@ import {
   DateInput,
   ReferenceInput,
   AutocompleteInput,
+  DependentSectionInput,
   required 
 } from "@/components/admin";
 import { STUDENT_STATUS, GENDER } from "@/lib/constants";
@@ -64,13 +65,11 @@ export const StudentsCreate = () => (
           validate={required()} 
         />
       </ReferenceInput>
-      <ReferenceInput reference="sections" source="sectionId" label="Section">
-        <AutocompleteInput 
-          optionText="name" 
-          placeholder="Search for section (e.g. Section A)"
-          validate={required()} 
-        />
-      </ReferenceInput>
+      <DependentSectionInput 
+        source="sectionId"
+        placeholder="Search for section (e.g. Section A)"
+        validate={required()} 
+      />
       <SelectInput 
         source="status" 
         label="Status" 

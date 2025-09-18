@@ -50,28 +50,30 @@ export const CreateView = ({
   const hasDashboard = useHasDashboard();
 
   return (
-    <>
-      <Breadcrumb className="my-4">
-        {hasDashboard && (
+    <div className="bg-background h-full">
+      <div className="px-2 sm:px-4">
+        <Breadcrumb className="my-4">
+          {hasDashboard && (
+            <BreadcrumbItem>
+              <Link to="/">
+                <Translate i18nKey="ra.page.dashboard">Home</Translate>
+              </Link>
+            </BreadcrumbItem>
+          )}
           <BreadcrumbItem>
-            <Link to="/">
-              <Translate i18nKey="ra.page.dashboard">Home</Translate>
-            </Link>
+            <Link to={listLink}>{listLabel}</Link>
           </BreadcrumbItem>
-        )}
-        <BreadcrumbItem>
-          <Link to={listLink}>{listLabel}</Link>
-        </BreadcrumbItem>
-        <BreadcrumbPage>
-          <Translate i18nKey="ra.action.create">Create</Translate>
-        </BreadcrumbPage>
-      </Breadcrumb>
-      <div className="flex justify-between items-start flex-wrap gap-2 my-2">
-        <h2 className="text-2xl font-bold tracking-tight">
-          {title !== undefined ? title : context.defaultTitle}
-        </h2>
+          <BreadcrumbPage>
+            <Translate i18nKey="ra.action.create">Create</Translate>
+          </BreadcrumbPage>
+        </Breadcrumb>
+        <div className="flex justify-between items-start flex-wrap gap-2 my-2">
+          <h2 className="text-2xl font-bold tracking-tight">
+            {title !== undefined ? title : context.defaultTitle}
+          </h2>
+        </div>
+        <div className="my-2">{children}</div>
       </div>
-      <div className="my-2">{children}</div>
-    </>
+    </div>
   );
 };

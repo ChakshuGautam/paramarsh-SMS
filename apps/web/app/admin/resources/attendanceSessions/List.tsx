@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useListContext, useRecordContext } from "ra-core";
 import {
   DataTable,
@@ -18,6 +19,16 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Users, BookOpen, CheckCircle, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
+
+// Safe Count component with error handling
+const SafeCount = ({ filter }: { filter: any }) => {
+  try {
+    return <Count filter={filter} />;
+  } catch (error) {
+    console.error('Error in Count component:', error);
+    return <span>0</span>;
+  }
+};
 
 // Store keys for different session states
 const storeKeyByStatus = {
@@ -51,22 +62,43 @@ export const AttendanceSessionsList = () => (
     perPage={10}
     pagination={false}
   >
-    <TabbedDataTable />
+    <ErrorBoundaryWrapper>
+      <TabbedDataTable />
+    </ErrorBoundaryWrapper>
   </List>
 );
+
+// Error boundary wrapper component
+const ErrorBoundaryWrapper = ({ children }: { children: React.ReactNode }) => {
+  try {
+    return <>{children}</>;
+  } catch (error) {
+    console.error('Error in attendance sessions list:', error);
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Error loading attendance sessions</p>
+        <p className="text-sm text-gray-500">Please refresh the page or contact support</p>
+      </div>
+    );
+  }
+};
 
 const TabbedDataTable = () => {
   const listContext = useListContext();
   const { filterValues, setFilters, displayedFilters } = listContext;
   
   const handleChange = (status: string) => () => {
-    const newFilters = { ...filterValues };
-    if (status === 'all') {
-      delete newFilters.status;
-    } else {
-      newFilters.status = status;
+    try {
+      const newFilters = { ...filterValues };
+      if (status === 'all') {
+        delete newFilters.status;
+      } else {
+        newFilters.status = status;
+      }
+      setFilters(newFilters, displayedFilters);
+    } catch (error) {
+      console.error('Error changing tab filter:', error);
     }
-    setFilters(newFilters, displayedFilters);
   };
   
   const getCurrentTab = () => {
@@ -74,6 +106,24 @@ const TabbedDataTable = () => {
     if (filterValues.status === 'in-progress') return 'inProgress';
     if (filterValues.status === 'completed') return 'completed';
     return 'all';
+  };
+
+  // Safe filter creation with error handling
+  const createSafeFilter = (status?: string) => {
+    try {
+      const baseFilter = { ...filterValues };
+      // Remove any potential problematic properties
+      delete baseFilter.logs;
+      delete baseFilter.console;
+      
+      if (status) {
+        baseFilter.status = status;
+      }
+      return baseFilter;
+    } catch (error) {
+      console.error('Error creating filter:', error);
+      return status ? { status } : {};
+    }
   };
   
   return (
@@ -83,27 +133,27 @@ const TabbedDataTable = () => {
           <Clock className="w-4 h-4 mr-2" />
           Scheduled
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, status: 'scheduled' }} />
+            <SafeCount filter={createSafeFilter('scheduled')} />
           </Badge>
         </TabsTrigger>
         <TabsTrigger value="inProgress" onClick={handleChange('in-progress')}>
           <Play className="w-4 h-4 mr-2" />
           In Progress
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, status: 'in-progress' }} />
+            <SafeCount filter={createSafeFilter('in-progress')} />
           </Badge>
         </TabsTrigger>
         <TabsTrigger value="completed" onClick={handleChange('completed')}>
           <CheckCircle className="w-4 h-4 mr-2" />
           Completed
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, status: 'completed' }} />
+            <SafeCount filter={createSafeFilter('completed')} />
           </Badge>
         </TabsTrigger>
         <TabsTrigger value="all" onClick={handleChange('all')}>
           All Sessions
           <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues }} />
+            <SafeCount filter={createSafeFilter()} />
           </Badge>
         </TabsTrigger>
       </TabsList>
@@ -133,13 +183,19 @@ const SessionsTable = ({ storeKey }: { storeKey: string }) => {
     <DataTable 
       storeKey={storeKey}
       rowClassName={(record) => {
-        const statusColors = {
-          'scheduled': 'border-l-4 border-l-gray-400',
-          'in-progress': 'border-l-4 border-l-blue-500',
-          'completed': 'border-l-4 border-l-green-500',
-          'cancelled': 'border-l-4 border-l-red-500',
-        };
-        return statusColors[record.status as keyof typeof statusColors] || '';
+        try {
+          if (!record || !record.status) return '';
+          const statusColors = {
+            'scheduled': 'border-l-4 border-l-gray-400',
+            'in-progress': 'border-l-4 border-l-blue-500',
+            'completed': 'border-l-4 border-l-green-500',
+            'cancelled': 'border-l-4 border-l-red-500',
+          };
+          return statusColors[record.status as keyof typeof statusColors] || '';
+        } catch (error) {
+          console.error('Error in rowClassName:', error);
+          return '';
+        }
       }}
     >
       <DataTable.Col source="date" label="Date">
@@ -174,12 +230,17 @@ const DateDisplay = () => {
   const record = useRecordContext();
   if (!record) return null;
   
-  return (
-    <div className="flex items-center gap-2">
-      <Calendar className="w-4 h-4 text-gray-500" />
-      <span>{formatDate(record.date)}</span>
-    </div>
-  );
+  try {
+    return (
+      <div className="flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-gray-500" />
+        <span>{formatDate(record.date)}</span>
+      </div>
+    );
+  } catch (error) {
+    console.error('Error in DateDisplay:', error);
+    return <span>-</span>;
+  }
 };
 
 const PeriodInfo = () => {
@@ -267,20 +328,26 @@ const AttendanceStats = () => {
   const record = useRecordContext();
   if (!record) return null;
   
-  const markedCount = record._count?.studentRecords || 0;
-  const totalCount = record.section?.enrollments?.length || 0;
-  
-  return (
-    <div className="text-center">
-      <span className="font-medium">{markedCount}</span>
-      <span className="text-gray-500"> / {totalCount}</span>
-      {markedCount > 0 && totalCount > 0 && (
-        <div className="text-xs text-gray-500">
-          {Math.round((markedCount / totalCount) * 100)}%
-        </div>
-      )}
-    </div>
-  );
+  try {
+    // Safely access nested properties without assuming structure
+    const markedCount = record._count?.studentRecords || 0;
+    const totalCount = record.section?.enrollments?.length || 0;
+    
+    return (
+      <div className="text-center">
+        <span className="font-medium">{markedCount}</span>
+        <span className="text-gray-500"> / {totalCount}</span>
+        {markedCount > 0 && totalCount > 0 && (
+          <div className="text-xs text-gray-500">
+            {Math.round((markedCount / totalCount) * 100)}%
+          </div>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error('Error in AttendanceStats:', error);
+    return <span>-</span>;
+  }
 };
 
 const ActionButtons = () => {

@@ -25,7 +25,7 @@ export function RbacRolesMenuButton() {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="fixed bottom-4 right-4 z-50 shadow">
+        <Button variant="outline" size="sm" className="fixed bottom-4 right-4 z-50 shadow hidden sm:flex">
           <Shield className="mr-2 h-4 w-4" />
           Roles
         </Button>

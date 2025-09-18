@@ -1,3 +1,4 @@
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-9.0.0.tgz
 
 > web@0.1.0 lint /Users/__chaks__/repos/paramarsh-SMS/apps/web
 > next lint
@@ -8,7 +9,42 @@
 
 
 ./app/admin/AdminApp.tsx
-35:13  Warning: 'TimetableGrid' is defined but never used.  @typescript-eslint/no-unused-vars
+36:13  Warning: 'TimetableGrid' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/Dashboard.tsx
+52:7  Warning: 'COLORS' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+124:10  Warning: 'selectedDate' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+168:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+204:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+277:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+345:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+346:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+374:40  Warning: 'totalInvoices' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+390:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+407:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+408:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+426:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+458:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+482:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+499:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+519:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+529:71  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+546:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+552:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+553:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+670:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+857:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+880:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+883:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+987:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1041:66  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1096:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1118:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1194:69  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1220:93  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1227:88  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1409:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+1465:78  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/DataProvider.tsx
 14:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
@@ -123,10 +159,10 @@
 249:93  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/attendanceRecords/List.tsx
-49:3  Error: Missing "key" prop for element in array  react/jsx-key
 50:3  Error: Missing "key" prop for element in array  react/jsx-key
-56:3  Error: Missing "key" prop for element in array  react/jsx-key
-69:3  Error: Missing "key" prop for element in array  react/jsx-key
+51:3  Error: Missing "key" prop for element in array  react/jsx-key
+57:3  Error: Missing "key" prop for element in array  react/jsx-key
+70:3  Error: Missing "key" prop for element in array  react/jsx-key
 
 ./app/admin/resources/attendanceSessions/Edit.tsx
 40:3  Warning: 'Activity' is defined but never used.  @typescript-eslint/no-unused-vars
@@ -139,10 +175,10 @@
 306:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
 
 ./app/admin/resources/attendanceSessions/List.tsx
-17:27  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
-31:3  Error: Missing "key" prop for element in array  react/jsx-key
+18:27  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
 32:3  Error: Missing "key" prop for element in array  react/jsx-key
 33:3  Error: Missing "key" prop for element in array  react/jsx-key
+34:3  Error: Missing "key" prop for element in array  react/jsx-key
 
 ./app/admin/resources/attendanceSessions/Show.tsx
 79:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
@@ -151,18 +187,18 @@
 82:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/campaigns/List.tsx
-26:3  Error: Missing "key" prop for element in array  react/jsx-key
 27:3  Error: Missing "key" prop for element in array  react/jsx-key
-39:3  Error: Missing "key" prop for element in array  react/jsx-key
+28:3  Error: Missing "key" prop for element in array  react/jsx-key
+40:3  Error: Missing "key" prop for element in array  react/jsx-key
 
 ./app/admin/resources/classes/List.tsx
 3:44  Warning: 'useUpdate' is defined but never used.  @typescript-eslint/no-unused-vars
 4:10  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
 11:3  Warning: 'EmptyState' is defined but never used.  @typescript-eslint/no-unused-vars
-193:9  Warning: 'notify' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+199:9  Warning: 'notify' is assigned a value but never used.  @typescript-eslint/no-unused-vars
 
 ./app/admin/resources/enrollments/List.tsx
-21:10  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+22:10  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
 
 ./app/admin/resources/exams/Create.tsx
 12:3  Warning: 'FormDataConsumer' is defined but never used.  @typescript-eslint/no-unused-vars
@@ -172,56 +208,56 @@
 
 ./app/admin/resources/exams/List.tsx
 8:3  Warning: 'ReferenceField' is defined but never used.  @typescript-eslint/no-unused-vars
-16:27  Warning: 'isBefore' is defined but never used.  @typescript-eslint/no-unused-vars
-28:3  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
-30:3  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
-63:3  Error: Missing "key" prop for element in array  react/jsx-key
+17:27  Warning: 'isBefore' is defined but never used.  @typescript-eslint/no-unused-vars
+29:3  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+31:3  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
 64:3  Error: Missing "key" prop for element in array  react/jsx-key
-70:3  Error: Missing "key" prop for element in array  react/jsx-key
-242:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-265:74  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+65:3  Error: Missing "key" prop for element in array  react/jsx-key
+71:3  Error: Missing "key" prop for element in array  react/jsx-key
+248:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+271:74  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/feeStructures/Edit.tsx
 87:73  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 116:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/feeStructures/List.tsx
-43:3  Error: Missing "key" prop for element in array  react/jsx-key
 44:3  Error: Missing "key" prop for element in array  react/jsx-key
-50:3  Error: Missing "key" prop for element in array  react/jsx-key
-60:3  Error: Missing "key" prop for element in array  react/jsx-key
+45:3  Error: Missing "key" prop for element in array  react/jsx-key
+51:3  Error: Missing "key" prop for element in array  react/jsx-key
 61:3  Error: Missing "key" prop for element in array  react/jsx-key
-150:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-161:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-165:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-182:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+62:3  Error: Missing "key" prop for element in array  react/jsx-key
+156:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+167:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+171:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+188:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/feeStructures/Show.tsx
 18:66  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 103:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/guardians/List.tsx
-20:3  Error: Missing "key" prop for element in array  react/jsx-key
 21:3  Error: Missing "key" prop for element in array  react/jsx-key
-32:3  Error: Missing "key" prop for element in array  react/jsx-key
+22:3  Error: Missing "key" prop for element in array  react/jsx-key
 33:3  Error: Missing "key" prop for element in array  react/jsx-key
-83:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-83:38  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
-143:7  Warning: 'NameWithIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-143:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-156:7  Warning: 'PhoneWithIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-156:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-167:7  Warning: 'EmailWithIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-167:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:3  Error: Missing "key" prop for element in array  react/jsx-key
+90:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+90:38  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+150:7  Warning: 'NameWithIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+150:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+163:7  Warning: 'PhoneWithIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+163:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+174:7  Warning: 'EmailWithIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+174:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
 ./app/admin/resources/invoices/List.tsx
-18:20  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
-29:3  Error: Missing "key" prop for element in array  react/jsx-key
+19:20  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
 30:3  Error: Missing "key" prop for element in array  react/jsx-key
-105:9  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
-108:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-155:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
-158:9  Warning: 'variants' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+31:3  Error: Missing "key" prop for element in array  react/jsx-key
+111:9  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+114:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+161:45  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+164:9  Warning: 'variants' is assigned a value but never used.  @typescript-eslint/no-unused-vars
 
 ./app/admin/resources/marks/Create.tsx
 116:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
@@ -233,4 +269,453 @@
 
 ./app/admin/resources/marks/List.tsx
 7:3  Warning: 'TextField' is defined but never used.  @typescript-eslint/no-unused-vars
-12:10  Warning: 'ReferenceField' is defined but never used.  @typescript-eslint/no-unused-vars
+13:10  Warning: 'ReferenceField' is defined but never used.  @typescript-eslint/no-unused-vars
+27:3  Error: Missing "key" prop for element in array  react/jsx-key
+28:3  Error: Missing "key" prop for element in array  react/jsx-key
+34:3  Error: Missing "key" prop for element in array  react/jsx-key
+40:3  Error: Missing "key" prop for element in array  react/jsx-key
+46:3  Error: Missing "key" prop for element in array  react/jsx-key
+
+./app/admin/resources/marks/Show.tsx
+7:3  Warning: 'BooleanField' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/messages/List.tsx
+28:3  Error: Missing "key" prop for element in array  react/jsx-key
+29:3  Error: Missing "key" prop for element in array  react/jsx-key
+40:3  Error: Missing "key" prop for element in array  react/jsx-key
+41:3  Error: Missing "key" prop for element in array  react/jsx-key
+
+./app/admin/resources/payments/List.tsx
+30:3  Error: Missing "key" prop for element in array  react/jsx-key
+31:3  Error: Missing "key" prop for element in array  react/jsx-key
+37:3  Error: Missing "key" prop for element in array  react/jsx-key
+50:3  Error: Missing "key" prop for element in array  react/jsx-key
+51:3  Error: Missing "key" prop for element in array  react/jsx-key
+
+./app/admin/resources/sections/List.tsx
+46:3  Error: Missing "key" prop for element in array  react/jsx-key
+47:3  Error: Missing "key" prop for element in array  react/jsx-key
+53:3  Error: Missing "key" prop for element in array  react/jsx-key
+56:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/admin/resources/staff/List.tsx
+19:10  Warning: 'User' is defined but never used.  @typescript-eslint/no-unused-vars
+20:10  Warning: 'getStatusColor' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/students/List.tsx
+21:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+22:26  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+23:10  Warning: 'getStatusColor' is defined but never used.  @typescript-eslint/no-unused-vars
+83:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/admin/resources/teacherAttendance/List.tsx
+47:3  Error: Missing "key" prop for element in array  react/jsx-key
+48:3  Error: Missing "key" prop for element in array  react/jsx-key
+60:3  Error: Missing "key" prop for element in array  react/jsx-key
+
+./app/admin/resources/teachers/Create.tsx
+13:10  Warning: 'parseFlexibleArray' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/teachers/Edit.tsx
+12:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/admin/resources/teachers/List.tsx
+18:51  Warning: 'Award' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/templates/List.tsx
+28:3  Error: Missing "key" prop for element in array  react/jsx-key
+59:15  Warning: 'channel' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/tickets/List.tsx
+25:3  Error: Missing "key" prop for element in array  react/jsx-key
+26:3  Error: Missing "key" prop for element in array  react/jsx-key
+38:3  Error: Missing "key" prop for element in array  react/jsx-key
+49:3  Error: Missing "key" prop for element in array  react/jsx-key
+
+./app/admin/resources/timetableGrid/List.tsx
+9:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+17:3  Warning: 'ChevronLeft' is defined but never used.  @typescript-eslint/no-unused-vars
+18:3  Warning: 'ChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
+96:21  Warning: 'setConflicts' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+104:60  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+115:6  Warning: React Hook useEffect has missing dependencies: 'loadSections', 'loadSubjects', and 'loadTeachers'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+122:6  Warning: React Hook useEffect has a missing dependency: 'loadGridData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+155:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+268:58  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+299:90  Warning: 'timeSlot' is defined but never used.  @typescript-eslint/no-unused-vars
+329:66  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+369:14  Warning: 'dayIndex' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/timetables/Edit.tsx
+13:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/admin/resources/timetables/List.tsx
+7:3  Warning: 'TextField' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'NumberField' is defined but never used.  @typescript-eslint/no-unused-vars
+11:27  Warning: 'BookOpen' is defined but never used.  @typescript-eslint/no-unused-vars
+11:37  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/resources/timetables/Show.tsx
+8:20  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+8:27  Warning: 'BookOpen' is defined but never used.  @typescript-eslint/no-unused-vars
+8:37  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+8:44  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+100:6  Warning: React Hook useEffect has a missing dependency: 'loadSectionAndTimetable'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/resources/timetables/components/TimetableCalendar.tsx
+52:48  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+53:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:3  Warning: 'onPeriodUpdate' is defined but never used.  @typescript-eslint/no-unused-vars
+73:3  Warning: 'onPeriodCreate' is defined but never used.  @typescript-eslint/no-unused-vars
+80:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+82:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+83:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+92:6  Warning: React Hook useEffect has a missing dependency: 'loadTimetableData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+133:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+178:17  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+187:18  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+216:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+298:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+299:30  Warning: 'timeSlot' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+491:33  Warning: 'index' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/rooms/RoomsList.tsx
+7:3  Warning: 'TextField' is defined but never used.  @typescript-eslint/no-unused-vars
+32:3  Error: Missing "key" prop for element in array  react/jsx-key
+33:3  Error: Missing "key" prop for element in array  react/jsx-key
+34:3  Error: Missing "key" prop for element in array  react/jsx-key
+49:3  Error: Missing "key" prop for element in array  react/jsx-key
+50:3  Error: Missing "key" prop for element in array  react/jsx-key
+51:3  Error: Missing "key" prop for element in array  react/jsx-key
+72:9  Error: 'newFilters' is never reassigned. Use 'const' instead.  prefer-const
+
+./app/admin/subjects/SubjectsList.tsx
+8:3  Warning: 'TextField' is defined but never used.  @typescript-eslint/no-unused-vars
+10:3  Warning: 'NumberInput' is defined but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'BooleanInput' is defined but never used.  @typescript-eslint/no-unused-vars
+52:9  Error: 'newFilters' is never reassigned. Use 'const' instead.  prefer-const
+243:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+257:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+259:33  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./app/admin/timetable/TimetableCreate.tsx
+7:3  Warning: 'TextInput' is defined but never used.  @typescript-eslint/no-unused-vars
+19:10  Warning: 'Separator' is defined but never used.  @typescript-eslint/no-unused-vars
+20:55  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+100:6  Warning: React Hook useEffect has a missing dependency: 'fetchInitialData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+107:6  Warning: React Hook useEffect has a missing dependency: 'fetchGradeAppropriateSubjects'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+187:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+253:20  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/timetable/TimetableEdit.tsx
+7:3  Warning: 'TextInput' is defined but never used.  @typescript-eslint/no-unused-vars
+20:10  Warning: 'Separator' is defined but never used.  @typescript-eslint/no-unused-vars
+21:55  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+102:6  Warning: React Hook useEffect has a missing dependency: 'fetchInitialData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+113:6  Warning: React Hook useEffect has a missing dependency: 'fetchGradeAppropriateSubjects'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+197:55  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+265:20  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/timetable/TimetableList.tsx
+7:3  Warning: 'TextField' is defined but never used.  @typescript-eslint/no-unused-vars
+29:3  Error: Missing "key" prop for element in array  react/jsx-key
+30:3  Error: Missing "key" prop for element in array  react/jsx-key
+33:3  Error: Missing "key" prop for element in array  react/jsx-key
+36:3  Error: Missing "key" prop for element in array  react/jsx-key
+43:3  Error: Missing "key" prop for element in array  react/jsx-key
+46:3  Error: Missing "key" prop for element in array  react/jsx-key
+47:3  Error: Missing "key" prop for element in array  react/jsx-key
+68:9  Error: 'newFilters' is never reassigned. Use 'const' instead.  prefer-const
+
+./app/page.tsx
+184:80  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+308:21  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+308:43  Error: `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`.  react/no-unescaped-entities
+
+./app/sign-in/[[...sign-in]]/page.tsx
+65:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+136:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/BaseForm.tsx
+9:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+10:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+10:62  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+11:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+11:61  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+178:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+210:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+214:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+215:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+215:64  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+216:39  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+216:63  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+222:10  Error: Component definition is missing display name  react/display-name
+
+./components/admin/GenderBadge.tsx
+5:26  Warning: 'GenderType' is defined but never used.  @typescript-eslint/no-unused-vars
+7:16  Warning: 'UserIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+11:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/RelationBadge.tsx
+5:28  Warning: 'RelationType' is defined but never used.  @typescript-eslint/no-unused-vars
+11:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/StatusBadge.tsx
+5:26  Warning: 'StatusType' is defined but never used.  @typescript-eslint/no-unused-vars
+10:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:3  Warning: 'showIcon' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/TabbedResourceList.tsx
+13:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+36:3  Warning: 'storePersistent' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/TimetableGrid.tsx
+8:88  Warning: 'Info' is defined but never used.  @typescript-eslint/no-unused-vars
+90:6  Warning: React Hook useEffect has a missing dependency: 'fetchTimetableData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/admin/TimetableWeekView.tsx
+96:9  Warning: 'timeSlots' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/admin.tsx
+1:43  Warning: 'Resource' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/app-sidebar.tsx
+54:3  Warning: 'BarChart3' is defined but never used.  @typescript-eslint/no-unused-vars
+150:9  Warning: 'hasDashboard' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+153:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+340:10  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/autocomplete-array-input.tsx
+36:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+66:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+68:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/autocomplete-input.tsx
+42:47  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/boolean-input.tsx
+76:20  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+76:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+84:19  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+84:27  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/bulk-export-button.tsx
+71:13  Warning: '_resource' is defined but never used.  @typescript-eslint/no-unused-vars
+72:13  Warning: '_exporter' is defined but never used.  @typescript-eslint/no-unused-vars
+73:12  Warning: '_onClick' is defined but never used.  @typescript-eslint/no-unused-vars
+74:10  Warning: '_label' is defined but never used.  @typescript-eslint/no-unused-vars
+75:9  Warning: '_icon' is defined but never used.  @typescript-eslint/no-unused-vars
+76:9  Warning: '_meta' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/data-table.tsx
+58:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/date-range-input.tsx
+56:11  Warning: 'invalid' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/dependent-filters.tsx
+51:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+149:14  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/edit-guesser.tsx
+68:7  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+95:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+97:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+106:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+111:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+117:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+118:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+122:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+123:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+126:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+127:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/filters/FilterWrapper.tsx
+45:65  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:31  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/filters/index.tsx
+167:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+248:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+259:28  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+494:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./components/admin/form.tsx
+102:6  Warning: 'props' is defined but never used.  @typescript-eslint/no-unused-vars
+138:3  Error: Definition for rule 'react-refresh/only-export-components' was not found.  react-refresh/only-export-components
+
+./components/admin/input-helper-text.tsx
+7:3  Warning: 'touched' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+9:6  Warning: 'rest' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/list-guesser.tsx
+112:9  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+140:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+144:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+155:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+160:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+166:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+176:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+184:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+184:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+196:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+201:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+208:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/number-field.tsx
+38:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+42:57  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/record-field.tsx
+16:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+16:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+92:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+92:59  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/select-input.tsx
+23:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+44:7  Warning: 'translateChoice' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+65:9  Error: React Hook "useInput" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+71:28  Error: React Hook "useChoicesContext" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+74:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/show-guesser.tsx
+72:7  Warning: Unused eslint-disable directive (no problems were reported from 'no-console').
+99:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+101:15  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+110:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+115:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+121:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+131:46  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+139:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+139:44  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+151:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+156:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+162:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+163:29  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/simple-form-iterator.tsx
+38:30  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+54:66  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/admin/text-input.tsx
+30:15  Warning: '_validateProp' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+31:13  Warning: '_formatProp' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+32:5  Warning: 'alwaysOn' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/toggle-filter-button.tsx
+15:10  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./components/ui/base-dialog.tsx
+407:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./components/ui/calendar.tsx
+5:21  Warning: 'DateRange' is defined but never used.  @typescript-eslint/no-unused-vars
+57:25  Warning: 'props' is defined but never used.  @typescript-eslint/no-unused-vars
+58:26  Warning: 'props' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/error-boundary.tsx
+8:10  Warning: 'cn' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/loading-skeleton.tsx
+267:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./components/ui/responsive-column.tsx
+127:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+./components/ui/table-actions.tsx
+40:3  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+79:22  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:32  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:12  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+94:21  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+95:23  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+200:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+427:16  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+452:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/sanitizeInputRestProps.ts
+2:3  Warning: 'afterSubmit' is defined but never used.  @typescript-eslint/no-unused-vars
+3:3  Warning: 'allowNull' is defined but never used.  @typescript-eslint/no-unused-vars
+4:3  Warning: 'alwaysOn' is defined but never used.  @typescript-eslint/no-unused-vars
+5:3  Warning: 'beforeSubmit' is defined but never used.  @typescript-eslint/no-unused-vars
+6:3  Warning: 'component' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+8:3  Warning: 'defaultValue' is defined but never used.  @typescript-eslint/no-unused-vars
+9:3  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+10:3  Warning: 'format' is defined but never used.  @typescript-eslint/no-unused-vars
+11:3  Warning: 'formatOnBlur' is defined but never used.  @typescript-eslint/no-unused-vars
+12:3  Warning: 'initializeForm' is defined but never used.  @typescript-eslint/no-unused-vars
+13:3  Warning: 'input' is defined but never used.  @typescript-eslint/no-unused-vars
+14:3  Warning: 'isEqual' is defined but never used.  @typescript-eslint/no-unused-vars
+15:3  Warning: 'isRequired' is defined but never used.  @typescript-eslint/no-unused-vars
+16:3  Warning: 'label' is defined but never used.  @typescript-eslint/no-unused-vars
+17:3  Warning: 'limitChoicesToValue' is defined but never used.  @typescript-eslint/no-unused-vars
+18:3  Warning: 'locale' is defined but never used.  @typescript-eslint/no-unused-vars
+19:3  Warning: 'meta' is defined but never used.  @typescript-eslint/no-unused-vars
+20:3  Warning: 'multiple' is defined but never used.  @typescript-eslint/no-unused-vars
+21:3  Warning: 'name' is defined but never used.  @typescript-eslint/no-unused-vars
+22:3  Warning: 'options' is defined but never used.  @typescript-eslint/no-unused-vars
+23:3  Warning: 'optionText' is defined but never used.  @typescript-eslint/no-unused-vars
+24:3  Warning: 'optionValue' is defined but never used.  @typescript-eslint/no-unused-vars
+25:3  Warning: 'parse' is defined but never used.  @typescript-eslint/no-unused-vars
+26:3  Warning: 'record' is defined but never used.  @typescript-eslint/no-unused-vars
+27:3  Warning: 'ref' is defined but never used.  @typescript-eslint/no-unused-vars
+28:3  Warning: 'refetch' is defined but never used.  @typescript-eslint/no-unused-vars
+29:3  Warning: 'render' is defined but never used.  @typescript-eslint/no-unused-vars
+30:3  Warning: 'resource' is defined but never used.  @typescript-eslint/no-unused-vars
+31:3  Warning: 'setFilter' is defined but never used.  @typescript-eslint/no-unused-vars
+32:3  Warning: 'setPagination' is defined but never used.  @typescript-eslint/no-unused-vars
+33:3  Warning: 'setSort' is defined but never used.  @typescript-eslint/no-unused-vars
+34:3  Warning: 'shouldUnregister' is defined but never used.  @typescript-eslint/no-unused-vars
+35:3  Warning: 'source' is defined but never used.  @typescript-eslint/no-unused-vars
+36:3  Warning: 'submitError' is defined but never used.  @typescript-eslint/no-unused-vars
+37:3  Warning: 'subscription' is defined but never used.  @typescript-eslint/no-unused-vars
+38:3  Warning: 'textAlign' is defined but never used.  @typescript-eslint/no-unused-vars
+39:3  Warning: 'translate' is defined but never used.  @typescript-eslint/no-unused-vars
+40:3  Warning: 'translateChoice' is defined but never used.  @typescript-eslint/no-unused-vars
+41:3  Warning: 'validate' is defined but never used.  @typescript-eslint/no-unused-vars
+42:3  Warning: 'validateFields' is defined but never used.  @typescript-eslint/no-unused-vars
+43:3  Warning: 'value' is defined but never used.  @typescript-eslint/no-unused-vars
+45:4  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/utils/date-utils.ts
+10:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+26:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/utils/parse-utils.ts
+14:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+50:35  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+127:82  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+188:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+202:36  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+203:8  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+223:50  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+240:51  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+244:24  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./lib/utils.ts
+13:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+33:34  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:38  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+48:37  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:41  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:53  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:42  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:54  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:40  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+111:43  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+ ELIFECYCLE  Command failed with exit code 1.

@@ -3,12 +3,30 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, School, Users, Calendar, CreditCard, BarChart3, Shield, Globe, Zap, ArrowRight, Star, Menu, X } from "lucide-react"
+import { CheckCircle2, School, Users, Calendar, CreditCard, BarChart3, Shield, Globe, Zap, ArrowRight, Star, Menu, X, GraduationCap, Briefcase } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Dynamic Admin Dashboard URL based on environment
+  const getAdminDashboardUrl = () => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname
+      
+      // Local development
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:3001/admin'
+      }
+      
+      // Production - use the same domain with /admin path
+      return `${window.location.protocol}//${hostname}/admin`
+    }
+    
+    // Fallback for SSR
+    return '/admin'
+  }
 
   const features = [
     {
@@ -110,6 +128,56 @@ export default function HomePage() {
       role: "Director, St. Paul's School",
       content: "Parents love the real-time updates. Our communication has never been better.",
       rating: 5
+    },
+    {
+      name: "Dr. Meera Gupta",
+      role: "Principal, Swami Vivekanad Public School",
+      content: "The comprehensive modules and intuitive interface have revolutionized our administrative processes.",
+      rating: 5
+    }
+  ]
+
+  const teamMembers = [
+    {
+      name: "Devashish",
+      role: "Strategy",
+      education: [
+        { icon: <GraduationCap className="h-4 w-4" />, text: "B.Tech, Delhi Technological University" },
+        { icon: <GraduationCap className="h-4 w-4" />, text: "MBA, IIM Lucknow" }
+      ],
+      experience: [
+        "Founded an ed-tech startup",
+        "Consulted for Deloitte",
+        "Ministry of Education advisor",
+        "RBI Innovation Hub consultant",
+        "Government of UP advisor"
+      ]
+    },
+    {
+      name: "Dimple",
+      role: "Product",
+      education: [
+        { icon: <GraduationCap className="h-4 w-4" />, text: "B.Tech, NIT Kurukshetra" },
+        { icon: <GraduationCap className="h-4 w-4" />, text: "MBA, IIM Lucknow" }
+      ],
+      experience: [
+        "Product Lead at Oracle Financial Services",
+        "Digital initiatives at Hindustan Unilever Limited",
+        "Product innovation at Airtel"
+      ]
+    },
+    {
+      name: "Chakshu",
+      role: "Technology",
+      education: [
+        { icon: <GraduationCap className="h-4 w-4" />, text: "B.Tech, Galgotias University" },
+        { icon: <GraduationCap className="h-4 w-4" />, text: "M.Tech, IIT Delhi" }
+      ],
+      experience: [
+        "GovTech at Samagra",
+        "Led Engineering at multiple startups",
+        "Led a Successful acquisition"
+      ]
     }
   ]
 
@@ -127,12 +195,13 @@ export default function HomePage() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-gray-900 transition">Features</a>
+              <a href="#about" className="text-gray-600 hover:text-gray-900 transition">About Us</a>
               <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition">Pricing</a>
               <a href="#testimonials" className="text-gray-600 hover:text-gray-900 transition">Testimonials</a>
               <Link href="/sign-in">
                 <Button variant="outline" className="mr-2">Sign In</Button>
               </Link>
-              <Link href="https://paramarsh.theflywheel.in/admin" target="_blank">
+              <Link href={getAdminDashboardUrl()}>
                 <Button>
                   Admin Dashboard
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -155,12 +224,13 @@ export default function HomePage() {
           <div className="md:hidden bg-white border-t">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <a href="#features" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Features</a>
+              <a href="#about" className="block px-3 py-2 text-gray-600 hover:text-gray-900">About Us</a>
               <a href="#pricing" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Pricing</a>
               <a href="#testimonials" className="block px-3 py-2 text-gray-600 hover:text-gray-900">Testimonials</a>
               <Link href="/sign-in" className="block px-3 py-2">
                 <Button variant="outline" className="w-full">Sign In</Button>
               </Link>
-              <Link href="https://paramarsh.theflywheel.in/admin" target="_blank" className="block px-3 py-2">
+              <Link href={getAdminDashboardUrl()} className="block px-3 py-2">
                 <Button className="w-full">Admin Dashboard</Button>
               </Link>
             </div>
@@ -184,7 +254,7 @@ export default function HomePage() {
               Streamline admissions, attendance, fees, and academics with India's most comprehensive school management platform. Built for the future of education.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="https://paramarsh.theflywheel.in/admin" target="_blank">
+              <Link href={getAdminDashboardUrl()}>
                 <Button size="lg" className="text-lg px-8">
                   Access Admin Portal
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -221,6 +291,64 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-gray-600">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section id="about" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Meet Our Team
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Experienced professionals dedicated to transforming education through technology
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {teamMembers.map((member, index) => (
+              <Card key={index} className="border-gray-200 hover:shadow-lg transition-shadow">
+                <CardHeader className="pb-4">
+                  <div className="text-center">
+                    <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <span className="text-3xl font-bold text-gray-600">
+                        {member.name[0]}
+                      </span>
+                    </div>
+                    <CardTitle className="text-xl mb-1">{member.name}</CardTitle>
+                    <CardDescription className="text-gray-700 font-medium">
+                      {member.role}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">Education</h4>
+                    <div className="space-y-1">
+                      {member.education.map((edu, eduIndex) => (
+                        <div key={eduIndex} className="flex items-start text-sm text-gray-600">
+                          <span className="mr-2 mt-0.5">{edu.icon}</span>
+                          <span>{edu.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2 text-sm">Experience</h4>
+                    <ul className="space-y-1">
+                      {member.experience.map((exp, expIndex) => (
+                        <li key={expIndex} className="flex items-start text-sm text-gray-600">
+                          <Briefcase className="h-3 w-3 mr-2 mt-0.5 flex-shrink-0" />
+                          <span>{exp}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -330,7 +458,7 @@ export default function HomePage() {
             Join thousands of schools already using Paramarsh SMS to streamline their operations
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="https://paramarsh.theflywheel.in/admin" target="_blank">
+            <Link href={getAdminDashboardUrl()} target="_blank">
               <Button size="lg" variant="secondary" className="text-lg px-8">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -363,7 +491,7 @@ export default function HomePage() {
                 <li><a href="#features" className="hover:text-white transition">Features</a></li>
                 <li><a href="#pricing" className="hover:text-white transition">Pricing</a></li>
                 <li><Link href="/sign-in" className="hover:text-white transition">Sign In</Link></li>
-                <li><Link href="https://paramarsh.theflywheel.in/admin" className="hover:text-white transition">Admin Portal</Link></li>
+                <li><Link href={getAdminDashboardUrl()} className="hover:text-white transition">Admin Portal</Link></li>
               </ul>
             </div>
             

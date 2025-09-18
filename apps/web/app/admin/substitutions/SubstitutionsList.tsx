@@ -6,49 +6,51 @@ import {
   StatusBadge,
 } from '@/components/admin';
 import { useRecordContext } from 'ra-core';
+import { DateField } from 'react-admin';
 
 const PeriodField = () => {
   const record = useRecordContext();
-  if (!record?.periodId) return <span>-</span>;
-  // Display period number and day instead of trying to show a name
-  return <span>Period {record.periodNumber || '-'}</span>;
+  if (!record?.period) return <span>-</span>;
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const day = dayNames[record.period.dayOfWeek] || '';
+  return <span>{day} - Period {record.period.periodNumber || '-'}</span>;
 };
 
-const TeacherNameField = () => {
+const SubstituteTeacherField = () => {
   const record = useRecordContext();
-  if (!record) return null;
-  // Combine firstName and lastName for teachers linked to staff
-  return <span>{record.firstName} {record.lastName}</span>;
+  if (!record?.substituteTeacher?.staff) return <span>-</span>;
+  const staff = record.substituteTeacher.staff;
+  return <span>{staff.firstName} {staff.lastName}</span>;
+};
+
+const SubstituteRoomField = () => {
+  const record = useRecordContext();
+  if (!record?.substituteRoom) return <span>-</span>;
+  return <span>{record.substituteRoom.name}</span>;
 };
 
 const ApprovedByField = () => {
   const record = useRecordContext();
-  if (!record) return null;
-  // Combine firstName and lastName for staff
-  return <span>{record.firstName} {record.lastName}</span>;
+  if (!record?.approvedBy) return <span>-</span>;
+  // For now just show the ID, since we don't have the full staff data
+  return <span>{record.approvedBy}</span>;
 };
 
 export const SubstitutionsList = () => {
   return (
     <List>
       <DataTable>
-        <DataTable.Col source="periodId" label="Period">
+        <DataTable.Col source="period" label="Period">
           <PeriodField />
         </DataTable.Col>
         <DataTable.Col source="date" label="Date">
-          <TextField source="date" />
+          <DateField source="date" />
         </DataTable.Col>
         <DataTable.Col label="Substitute Teacher">
-          <ReferenceField source="substituteTeacherId" reference="teachers" link={false}>
-            <ReferenceField source="staffId" reference="staff" link={false}>
-              <TeacherNameField />
-            </ReferenceField>
-          </ReferenceField>
+          <SubstituteTeacherField />
         </DataTable.Col>
         <DataTable.Col label="Substitute Room">
-          <ReferenceField source="substituteRoomId" reference="rooms" link={false}>
-            <TextField source="name" />
-          </ReferenceField>
+          <SubstituteRoomField />
         </DataTable.Col>
         <DataTable.Col source="reason" label="Reason">
           <TextField source="reason" />
@@ -57,9 +59,7 @@ export const SubstitutionsList = () => {
           <StatusBadge />
         </DataTable.Col>
         <DataTable.Col label="Approved By">
-          <ReferenceField source="approvedBy" reference="staff" link={false}>
-            <ApprovedByField />
-          </ReferenceField>
+          <ApprovedByField />
         </DataTable.Col>
       </DataTable>
     </List>

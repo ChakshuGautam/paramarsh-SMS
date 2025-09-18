@@ -22,6 +22,20 @@ import {
 import { Search, Users, Calendar } from "lucide-react";
 import { getStatusColor } from "@/lib/theme/colors";
 
+const StudentNameField = () => {
+  const record = useRecordContext();
+  if (!record || !record.student) return null;
+  
+  const { firstName, lastName } = record.student;
+  const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+  
+  return (
+    <span className="font-medium">
+      {fullName || 'Unknown Student'}
+    </span>
+  );
+};
+
 export const EnrollmentsList = () => (
   <List
     sort={{ field: "startDate", order: "DESC" }}
@@ -59,9 +73,7 @@ const EnrollmentsTable = ({ storeKey }: { storeKey: string }) => (
   >
     {/* Always visible columns */}
     <DataTable.Col label="Student">
-      <ReferenceField reference="students" source="studentId" link="show">
-        <TextField source="fullName" />
-      </ReferenceField>
+      <StudentNameField />
     </DataTable.Col>
     <DataTable.Col source="status" label="Status">
       <StatusBadge size="sm" />

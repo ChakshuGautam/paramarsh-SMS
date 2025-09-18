@@ -3,12 +3,15 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 🚨 MANDATORY AGENT USAGE RULES
-1. **Frontend Tests**: ALWAYS use `frontend-tester` agent EXCLUSIVELY
-2. **Backend Tests**: Use `tester` agent
-3. **Frontend UI**: Use `frontend-implementer` agent
-4. **Backend API**: Use `backend-implementer` agent
-5. **NEVER** write frontend tests without invoking `frontend-tester`
-6. **NEVER** let main Claude write tests - delegate to specialists
+1. **Playwright E2E Tests**: ALWAYS use `playwright-e2e-tester` agent EXCLUSIVELY
+2. **Frontend Unit Tests**: Use `frontend-tester` agent
+3. **Backend Tests**: Use `tester` agent
+4. **Frontend UI**: Use `frontend-implementer` agent
+5. **Backend API**: Use `backend-implementer` agent
+6. **NEVER** write Playwright E2E tests without invoking `playwright-e2e-tester`
+7. **NEVER** write frontend unit tests without invoking `frontend-tester`
+8. **NEVER** let main Claude write tests - delegate to specialists
+9. **NEVER** create .md files in root - ALWAYS use docs/ subdirectories
 
 > **📚 Documentation**: See `docs/` for comprehensive system documentation
 > **🧠 Learning Repository**: See `.claude/ISSUES_AND_LEARNINGS.md` for documented issues and solutions
@@ -169,19 +172,22 @@ MANDATORY after EVERY change:
 
 | Agent | Version | Success Rate | Last Updated | Specializations |
 |-------|---------|--------------|--------------|-----------------|
+| **playwright-e2e-tester** | v1.0 | NEW | 2024-09-13 | **EXCLUSIVE** for ALL Playwright E2E tests - browser automation |
 | **backend-implementer** | v1.3 | 85% | 2024-01-20 | Multi-tenancy, React Admin format |
 | **frontend-implementer** | v1.5 | 78% | 2024-01-21 | shadcn/ui only, date safety |
 | **tester** | v1.2 | 90% | 2024-01-19 | Backend E2E tests ONLY (NOT frontend) |
-| **frontend-tester** | v5.0 | MANDATORY | 2024-08-24 | **EXCLUSIVE** for ALL frontend tests - REAL components + verification |
+| **frontend-tester** | v5.0 | MANDATORY | 2024-08-24 | **EXCLUSIVE** for frontend UNIT tests - REAL components |
 | **seed-data-manager** | v2.0 | 100% | 2024-08-24 | **SOLE AUTHORITY** for ALL seeding |
 | **implementation-reviewer** | v1.0 | 88% | 2024-01-17 | Pattern compliance |
 
 ### ⚠️ CRITICAL AGENT ASSIGNMENT RULES
-- **Frontend Tests**: MUST use `frontend-tester` EXCLUSIVELY
+- **Playwright E2E Tests**: MUST use `playwright-e2e-tester` EXCLUSIVELY
+- **Frontend Unit Tests**: MUST use `frontend-tester` EXCLUSIVELY
 - **Backend Tests**: Use `tester` agent
 - **Seed Data**: MUST use `seed-data-manager` EXCLUSIVELY
-- **NEVER** write frontend tests without `frontend-tester` agent
-- **NEVER** use main Claude or other agents for frontend testing
+- **NEVER** write Playwright E2E tests without `playwright-e2e-tester` agent
+- **NEVER** write frontend unit tests without `frontend-tester` agent
+- **NEVER** use main Claude or other agents for testing
 - **NEVER** manually edit seed files - use `seed-data-manager` ONLY
 
 ### Agent Evolution Rules
@@ -445,14 +451,14 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 
 ### HTTP Request Commands
 ```bash
-# ✅ CORRECT - Always use curl MCP:
-"Use curl MCP tool to make HTTP requests"
-"Use mcp__curl__curl for API calls"
-"Use mcp__curl__curl_raw for complex curl commands"
+# ✅ CORRECT - Always use claudeCurl alias:
+"Use claudeCurl for HTTP requests"
+"claudeCurl -X POST http://..."
+"claudeCurl -H 'Content-Type: application/json' ..."
 
 # ❌ FORBIDDEN - Never do these:
-"curl -X POST http://..."               # PROHIBITED!
-"Use bash curl command"                 # PROHIBITED!
+"curl -X POST http://..."               # PROHIBITED! Use claudeCurl
+"Use mcp__curl tools"                   # PROHIBITED! MCP curl removed
 ```
 
 ### Seed Data Requirements
@@ -461,6 +467,44 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 - **Minimum Data**: 500+ students per branch
 - **Proper Relations**: Students ↔ Guardians ↔ Enrollments
 - **Data Isolation**: Each branch completely isolated via branchId
+
+## 📂 CRITICAL: Documentation Organization Rules
+
+### MANDATORY DOCUMENTATION PROTOCOL
+1. **NO ROOT CLUTTER**: NEVER create .md files in the root directory
+2. **ALWAYS USE docs/**: ALL documentation MUST go in appropriate docs/ subdirectories
+3. **ORGANIZED STRUCTURE**: Follow this hierarchy:
+   ```
+   docs/
+   ├── reports/        # All analysis, validation, and status reports
+   ├── setup/          # Setup guides, credentials, configurations
+   ├── testing/        # Test guides, test results, test documentation
+   ├── implementation/ # Implementation guides, evolution docs
+   ├── archive/        # Old/deprecated documentation
+   ├── API/            # API documentation
+   ├── Modules/        # Module-specific documentation
+   └── global/         # Global/cross-cutting documentation
+   ```
+
+### Documentation File Placement Rules
+```bash
+# ✅ CORRECT - Always create docs in subdirectories:
+"Create report at docs/reports/new-analysis.md"
+"Document setup at docs/setup/new-config.md"
+"Save test results at docs/testing/test-results.md"
+
+# ❌ FORBIDDEN - Never create docs in root:
+"Create REPORT.md"                      # PROHIBITED!
+"Save analysis to root directory"       # PROHIBITED!
+"Create summary.md in project root"     # PROHIBITED!
+```
+
+### When Creating New Documentation
+1. **Determine Category**: What type of doc is it? (report/setup/testing/etc.)
+2. **Use Correct Path**: Always prefix with `docs/[category]/`
+3. **Descriptive Names**: Use clear, descriptive filenames
+4. **Update Index**: If creating multiple related docs, create an index.md
+5. **Cross-Reference**: Link related docs using relative paths
 
 ## ⚠️ CRITICAL: Non-Negotiable Rules
 
@@ -472,7 +516,11 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 6. **NEVER** repeat a documented mistake
 7. **NEVER** manually edit seed files - use seed-data-manager
 8. **NEVER** use bash psql - use MCP PostgreSQL tools
-9. **ALWAYS** use curl MCP tool instead of bash curl commands
+9. **ALWAYS** use claudeCurl alias instead of plain curl commands
+10. **NEVER** create documentation files in root directory - use docs/
+11. **ALWAYS** organize documentation in appropriate docs/ subdirectories
+12. **NEVER** start servers - they run on ports 3001 (frontend) & 3005 (backend)
+13. **ALWAYS** use health checks instead of starting servers
 
 ## 🔄 Continuous Improvement Cycle
 
@@ -493,7 +541,43 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 - Success metric analysis
 - Create new specialized agents if needed
 
+## 🖥️ Server Configuration & Health Monitoring
+
+### MANDATORY SERVER PROTOCOL
+1. **Frontend Server**: ALWAYS running on port **3001**
+2. **Backend API Server**: ALWAYS running on port **3005**
+3. **NO AUTO-START**: NEVER attempt to start servers - they are always running
+4. **HEALTH CHECKS ONLY**: Use health commands to verify server status
+
+### Server Health Check Commands
+```bash
+# ✅ CORRECT - Check server health:
+# Backend API health check
+claudeCurl -s http://localhost:3005/health || echo "Backend API is down"
+
+# Frontend health check
+claudeCurl -s http://localhost:3001 || echo "Frontend is down"
+
+# Check if ports are listening
+lsof -i :3001  # Frontend port check
+lsof -i :3005  # Backend port check
+
+# ❌ FORBIDDEN - Never do these:
+"npm run dev"                    # PROHIBITED!
+"npm start"                      # PROHIBITED!
+"PORT=3001 npm run dev"         # PROHIBITED!
+"bun run start:dev"             # PROHIBITED!
+```
+
+### When Servers Appear Down
+1. **Check Health**: Run health check commands first
+2. **Request Logs**: Ask user for server logs if unhealthy
+3. **Verify Ports**: Ensure correct ports (3001/3005) are being used
+4. **NO RESTART**: NEVER attempt to restart - inform user of status
+
 ---
 
 **Remember**: Every task is a learning opportunity. The system gets smarter with each interaction. Document everything, learn from failures, apply patterns, and evolve continuously.
-- never start servers. They will always be running. Ask me for logs.
+- Servers are ALWAYS running on ports 3001 (frontend) and 3005 (backend)
+- NEVER start servers - only check their health status
+- Always use health check commands before assuming servers are down

@@ -509,10 +509,47 @@ export class AttendanceService extends BaseCrudService<any> {
     });
 
     // Calculate attendance percentage
+    let attendancePercentage = '0.00';
     const presentCount = statusCounts.present + statusCounts.late;
-    const attendancePercentage = totalStudents > 0 
-      ? ((presentCount / totalStudents) * 100).toFixed(2) 
-      : '0.00';
+    
+    if (totalStudents > 0) {
+      if (params.startDate && params.endDate) {
+        // For date ranges: Calculate average daily attendance percentage
+        // First, get unique dates from attendance records
+        const uniqueDates = [...new Set(attendanceRecords.map(r => r.date))];
+        
+        if (uniqueDates.length > 0) {
+          // Calculate daily attendance data
+          const dailyData = attendanceRecords.reduce((acc, record) => {
+            if (!acc[record.date]) {
+              acc[record.date] = {
+                present: 0,
+                late: 0,
+                total: 0
+              };
+            }
+            if (record.status === 'present' || record.status === 'late') {
+              acc[record.date][record.status]++;
+            }
+            acc[record.date].total++;
+            return acc;
+          }, {} as Record<string, any>);
+          
+          // Calculate average attendance percentage across all days
+          const dailyPercentages = uniqueDates.map(date => {
+            const dayData = dailyData[date] || { present: 0, late: 0, total: 0 };
+            const dayPresentCount = dayData.present + dayData.late;
+            return dayData.total > 0 ? (dayPresentCount / dayData.total) * 100 : 0;
+          });
+          
+          const avgPercentage = dailyPercentages.reduce((sum, pct) => sum + pct, 0) / dailyPercentages.length;
+          attendancePercentage = avgPercentage.toFixed(2);
+        }
+      } else {
+        // For single day: Use original calculation
+        attendancePercentage = ((presentCount / totalStudents) * 100).toFixed(2);
+      }
+    }
 
     // Get trends if date range provided
     let trends = null;

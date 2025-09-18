@@ -372,26 +372,56 @@ export class StudentsShowPage extends BasePage {
 export class AuthHelper {
   constructor(private page: Page) {}
 
-  async login(username: string = 'admin@test.com', password: string = 'password') {
+  async login(username: string = 'admin', password: string = 'P@ramarsh#Admin2024$Secure') {
     // Check if already logged in
-    const isLoggedIn = await this.page.locator('text=Dashboard, text=Students').first().isVisible().catch(() => false);
-    
-    if (isLoggedIn) {
+    const currentUrl = this.page.url();
+    if (currentUrl.includes('/admin') && !currentUrl.includes('sign-in')) {
       return; // Already logged in
     }
 
-    // Go to login page
-    await this.page.goto('/login');
+    // Go to sign-in page (use the environment URL or default to 3001)
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    await this.page.goto(`${baseUrl}/sign-in`);
     
-    // Fill login form
-    await this.page.locator('input[name="email"], input[type="email"]').fill(username);
-    await this.page.locator('input[name="password"], input[type="password"]').fill(password);
+    // Wait for the form to be ready
+    await this.page.waitForSelector('form', { timeout: 10000 });
     
-    // Submit login
-    await this.page.locator('button:has-text("Login"), button[type="submit"]').click();
+    // The form pre-fills school and branch in dev mode, but let's make sure they're selected
+    // Select DPS school if not already selected
+    const schoolSelect = this.page.locator('button[role="combobox"]').first();
+    const schoolValue = await schoolSelect.textContent();
+    if (!schoolValue?.includes('Delhi Public School')) {
+      await schoolSelect.click();
+      await this.page.locator('text="Delhi Public School"').click();
+      await this.page.waitForTimeout(500);
+    }
+
+    // Select Main Campus branch if not already selected
+    const branchSelect = this.page.locator('button[role="combobox"]').nth(1);
+    const branchValue = await branchSelect.textContent();
+    if (!branchValue?.includes('Main Campus')) {
+      await branchSelect.click();
+      await this.page.locator('text="Main Campus"').click();
+      await this.page.waitForTimeout(500);
+    }
     
-    // Wait for redirect to dashboard
-    await this.page.waitForURL('**/dashboard', { timeout: 10000 });
+    // Fill the username field
+    const usernameInput = this.page.locator('input#username, input[placeholder*="username" i]').first();
+    await usernameInput.fill(username);
+    
+    // Fill the password field
+    const passwordInput = this.page.locator('input[type="password"], input[name="password"], input[placeholder*="password" i], input[placeholder*="Password" i]').first();
+    await passwordInput.fill(password);
+    
+    // Click the submit button
+    const submitButton = this.page.locator('button[type="submit"], button:has-text("Sign in"), button:has-text("Sign In"), button:has-text("Login")').first();
+    await submitButton.click();
+    
+    // Wait for navigation to admin
+    await this.page.waitForURL('**/admin**', { timeout: 10000 });
+    
+    // Wait a bit for the page to stabilize
+    await this.page.waitForTimeout(2000);
   }
 
   async logout() {

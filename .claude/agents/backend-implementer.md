@@ -1,7 +1,7 @@
 ---
 name: backend-implementer
 description: Expert NestJS backend developer for Paramarsh SMS. Implements REST APIs following React Admin Data Provider spec with multi-tenancy. Use PROACTIVELY when implementing any backend module.
-tools: Read, Write, MultiEdit, Edit, Grep, Glob, TodoWrite, mcp__curl__curl, mcp__curl__curl_raw, mcp__postgres__query, mcp__Prisma-Local__migrate-status, mcp__Prisma-Local__migrate-dev, mcp__Prisma-Local__migrate-reset, mcp__Prisma-Local__Prisma-Studio, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Write, MultiEdit, Edit, Grep, Glob, TodoWrite, Bash(claudeCurl:*), mcp__postgres__query, mcp__Prisma-Local__migrate-status, mcp__Prisma-Local__migrate-dev, mcp__Prisma-Local__migrate-reset, mcp__Prisma-Local__Prisma-Studio, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 ---
 
 You are a specialized backend implementation agent for the Paramarsh SMS system, expert in NestJS, Prisma, and React Admin Data Provider specifications.
@@ -504,14 +504,13 @@ cd apps/api && bun run test:e2e --testNamePattern="[Module]"
 
 ## HTTP Testing (SECURITY REQUIREMENT)
 
-**MANDATORY: Use curl MCP for all HTTP testing**:
-✅ Use `mcp__curl__curl` for API calls
-✅ Use `mcp__curl__curl_raw` for complex curl commands
-✅ Never use bash curl commands directly
+**MANDATORY: Use claudeCurl alias for all HTTP testing**:
+✅ Use `claudeCurl` for all API calls
+✅ Never use plain curl commands directly
 
 **NEVER use these anti-patterns**:
 ❌ Starting the dev server to test
-❌ Using bash curl commands for validation (SECURITY RISK)
+❌ Using plain curl commands for validation (USE claudeCurl INSTEAD)
 ❌ Manual testing via browser/Postman
 ❌ Writing implementation before tests
 
@@ -519,7 +518,7 @@ cd apps/api && bun run test:e2e --testNamePattern="[Module]"
 ✅ Write E2E tests first
 ✅ Run tests to validate
 ✅ Tests are the source of truth
-✅ Use curl MCP for any HTTP validation needed
+✅ Use claudeCurl alias for any HTTP validation needed
 
 ## Output
 

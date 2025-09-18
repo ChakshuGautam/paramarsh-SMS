@@ -1,6 +1,6 @@
 import { DEFAULT_BRANCH_ID } from '../../common/constants';
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, Headers } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Query, Body, Headers } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { StudentPeriodAttendanceService } from './student-period-attendance.service';
 import { CreateStudentPeriodAttendanceDto } from './dto/create-student-period-attendance.dto';
 import { UpdateStudentPeriodAttendanceDto } from './dto/update-student-period-attendance.dto';
@@ -90,6 +90,19 @@ export class StudentPeriodAttendanceController {
   @Put(':id')
   @ApiOperation({ summary: 'Update student period attendance record (full replacement)' })
   async update(
+    @Param('id') id: string,
+    @Body() data: UpdateStudentPeriodAttendanceDto,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    // Verify entity exists in this branch before updating
+    await this.studentPeriodAttendanceService.getOne(id, branchId);
+    return this.studentPeriodAttendanceService.update(id, data, branchId);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Partially update student period attendance record' })
+  @ApiParam({ name: 'id', description: 'Attendance record ID' })
+  async partialUpdate(
     @Param('id') id: string,
     @Body() data: UpdateStudentPeriodAttendanceDto,
     @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,

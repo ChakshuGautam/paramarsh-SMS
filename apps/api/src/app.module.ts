@@ -29,6 +29,7 @@ import { TeacherAttendanceModule } from './modules/teacher-attendance/teacher-at
 import { AcademicYearsModule } from './modules/academic-years/academic-years.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { StudentPeriodAttendanceModule } from './modules/student-period-attendance/student-period-attendance.module';
+import { BranchesModule } from './modules/branches/branches.module';
 import { ProblemJsonFilter } from './common/problem.filter';
 import { BranchGuard } from './common/guards/branch.guard';
 import { ClerkAuthGuard } from './auth/clerk-auth.guard';
@@ -67,6 +68,7 @@ import { RequestLoggingMiddleware } from './common/request-logging.middleware';
     AcademicYearsModule,
     AuditLogsModule,
     StudentPeriodAttendanceModule,
+    BranchesModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,0 +1,25 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+import { useTranslate } from './useTranslate';
+export var useResourceTranslation = function (params) {
+    var resourceI18nKey = params.resourceI18nKey, baseI18nKey = params.baseI18nKey, userText = params.userText, options = params.options;
+    var translate = useTranslate();
+    if (userText !== undefined) {
+        if (typeof userText !== 'string') {
+            return userText;
+        }
+        return translate(userText, __assign({ _: userText }, options));
+    }
+    var translatedText = translate(resourceI18nKey, __assign(__assign({}, options), { _: translate(baseI18nKey, options) }));
+    return translatedText;
+};
+//# sourceMappingURL=useResourceTranslation.js.map

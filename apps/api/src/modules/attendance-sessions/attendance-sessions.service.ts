@@ -639,4 +639,64 @@ export class AttendanceSessionsService {
       statistics: stats,
     };
   }
+
+  async updateSession(id: string, data: any, branchId?: string) {
+    const where: any = { id };
+    if (branchId) {
+      where.branchId = branchId;
+    }
+
+    // First check if the session exists
+    const existing = await this.prisma.attendanceSession.findFirst({
+      where,
+    });
+
+    if (!existing) {
+      throw new NotFoundException(`Attendance session with ID ${id} not found`);
+    }
+
+    // Update the session - only update provided fields
+    const updateData: any = {};
+    if (data.date !== undefined) updateData.date = new Date(data.date);
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.periodId !== undefined) updateData.periodId = data.periodId;
+    if (data.assignedTeacherId !== undefined) updateData.assignedTeacherId = data.assignedTeacherId;
+    if (data.actualTeacherId !== undefined) updateData.actualTeacherId = data.actualTeacherId;
+    if (data.sectionId !== undefined) updateData.sectionId = data.sectionId;
+    if (data.subjectId !== undefined) updateData.subjectId = data.subjectId;
+    if (data.startTime !== undefined) updateData.startTime = data.startTime ? new Date(data.startTime) : null;
+    if (data.endTime !== undefined) updateData.endTime = data.endTime ? new Date(data.endTime) : null;
+    if (data.lockedAt !== undefined) updateData.lockedAt = data.lockedAt ? new Date(data.lockedAt) : null;
+    
+    const updated = await this.prisma.attendanceSession.update({
+      where: { id },
+      data: updateData,
+      include: {
+        assignedTeacher: {
+          include: {
+            staff: true,
+          },
+        },
+        actualTeacher: {
+          include: {
+            staff: true,
+          },
+        },
+        section: {
+          include: {
+            class: true,
+          },
+        },
+        subject: true,
+        studentRecords: {
+          include: {
+            student: true,
+          },
+        },
+        period: true,
+      },
+    });
+
+    return { data: updated };
+  }
 }

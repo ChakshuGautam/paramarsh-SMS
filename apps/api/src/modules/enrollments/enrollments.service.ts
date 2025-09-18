@@ -21,8 +21,12 @@ export class EnrollmentsService {
 
     const where: any = {};
     
-    // For multi-tenancy, filter via section.branchId instead of direct branchId
-    // since Enrollment doesn't have a direct branchId column in all environments
+    // For multi-tenancy, filter via section.branchId
+    if (params.branchId) {
+      where.section = {
+        branchId: params.branchId
+      };
+    }
     
     // Legacy field filters
     if (params.sectionId) where.sectionId = params.sectionId;
@@ -115,11 +119,17 @@ export class EnrollmentsService {
   }
 
   async getOne(id: string, branchId?: string) {
+    const where: any = { id };
+    
+    // Add branch filtering if provided
+    if (branchId) {
+      where.section = {
+        branchId: branchId
+      };
+    }
+    
     const enrollment = await this.prisma.enrollment.findFirst({ 
-      where: { 
-        id
-        // Branch filtering handled via section relationship
-      },
+      where,
       include: {
         student: true,
         section: {
@@ -136,11 +146,17 @@ export class EnrollmentsService {
   }
 
   async getMany(ids: string[], branchId?: string) {
+    const where: any = { id: { in: ids } };
+    
+    // Add branch filtering if provided
+    if (branchId) {
+      where.section = {
+        branchId: branchId
+      };
+    }
+    
     const data = await this.prisma.enrollment.findMany({
-      where: { 
-        id: { in: ids }
-        // Branch filtering handled via section relationship
-      },
+      where,
       include: {
         student: true,
         section: {

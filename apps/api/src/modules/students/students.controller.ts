@@ -13,8 +13,56 @@ export class StudentsController extends BaseCrudController<any> {
     super(studentsService);
   }
 
-  // Use the base controller's getList method by default
-  // Only override if you need special handling
+  @Get()
+  async getList(
+    @Query('page') page?: string,
+    @Query('perPage') perPage?: string,
+    @Query('pageSize') pageSize?: string,
+    @Query('sort') sort?: string,
+    @Query('ids') ids?: string | string[],
+    @Query() query?: Record<string, any>,
+    @Headers('x-branch-id') branchId = DEFAULT_BRANCH_ID,
+  ) {
+    // Handle getMany case (when ids are provided)
+    if (ids) {
+      const idArray = Array.isArray(ids) ? ids : (typeof ids === 'string' ? ids.split(',') : [ids]);
+      return this.studentsService.getMany(idArray, branchId);
+    }
+    
+    // Extract known params from query to get filters
+    const { 
+      page: _p, 
+      perPage: _pp, 
+      pageSize: _ps, 
+      sort: _s, 
+      filter: filterStr, 
+      q, // Extract search query
+      ids: _ids, 
+      ...restQuery 
+    } = query || {};
+    
+    // Parse filter if it's a JSON string
+    let filter = {};
+    if (filterStr) {
+      try {
+        filter = typeof filterStr === 'string' ? JSON.parse(filterStr) : filterStr;
+      } catch (e) {
+        filter = {};
+      }
+    }
+    
+    // Merge any remaining query params as filters
+    filter = { ...filter, ...restQuery };
+    
+    return this.studentsService.getList({
+      page: page ? Number(page) : 1,
+      perPage: perPage ? Number(perPage) : (pageSize ? Number(pageSize) : 25),
+      sort,
+      filter,
+      q, // Pass search query separately
+      branchId,
+    });
+  }
 
   @Get(':id')
   async getOne(

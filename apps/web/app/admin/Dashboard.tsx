@@ -628,25 +628,28 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header with Global Date Filter */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">Welcome to Paramarsh SMS</p>
+    <div className="bg-background h-full overflow-y-auto">
+      <div className="p-4 sm:p-6 space-y-6">
+        {/* Header with Global Date Filter */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground mt-2">Welcome to Paramarsh SMS</p>
+          </div>
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <DateFilterSelector />
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <DateFilterSelector />
-        </div>
-      </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          <TabsTrigger value="academic">Academic</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto pb-2">
+          <TabsList className="inline-flex h-10 w-auto min-w-full sm:w-full">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="attendance">Attendance</TabsTrigger>
+            <TabsTrigger value="academic">Academic</TabsTrigger>
+            <TabsTrigger value="financial">Financial</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
@@ -1489,6 +1492,7 @@ export const Dashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 };

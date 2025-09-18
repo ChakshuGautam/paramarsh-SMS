@@ -60,29 +60,31 @@ export const ShowView = ({
   }
 
   return (
-    <>
-      <Breadcrumb>
-        {hasDashboard && (
+    <div className="bg-background h-full">
+      <div className="px-2 sm:px-4">
+        <Breadcrumb>
+          {hasDashboard && (
+            <BreadcrumbItem>
+              <Link to="/">
+                <Translate i18nKey="ra.page.dashboard">Home</Translate>
+              </Link>
+            </BreadcrumbItem>
+          )}
           <BreadcrumbItem>
-            <Link to="/">
-              <Translate i18nKey="ra.page.dashboard">Home</Translate>
-            </Link>
+            <Link to={listLink}>{listLabel}</Link>
           </BreadcrumbItem>
-        )}
-        <BreadcrumbItem>
-          <Link to={listLink}>{listLabel}</Link>
-        </BreadcrumbItem>
-        <BreadcrumbPage>{recordRepresentation}</BreadcrumbPage>
-      </Breadcrumb>
-      <div className="flex justify-between items-start flex-wrap gap-2 my-2">
-        <h2 className="text-2xl font-bold tracking-tight">
-          {title !== undefined ? title : context.defaultTitle}
-        </h2>
-        <div className="flex justify-end items-center">
-          {hasEdit ? <EditButton /> : null}
+          <BreadcrumbPage>{recordRepresentation}</BreadcrumbPage>
+        </Breadcrumb>
+        <div className="flex justify-between items-start flex-wrap gap-2 my-2">
+          <h2 className="text-2xl font-bold tracking-tight">
+            {title !== undefined ? title : recordRepresentation}
+          </h2>
+          <div className="flex justify-end items-center">
+            {hasEdit ? <EditButton /> : null}
+          </div>
         </div>
+        <div className="my-2">{children}</div>
       </div>
-      <div className="my-2">{children}</div>
-    </>
+    </div>
   );
 };

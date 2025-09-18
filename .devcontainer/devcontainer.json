@@ -1,0 +1,159 @@
+{
+  "name": "Paramarsh SMS Development",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  
+  // Features to add to the dev container
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": true
+    },
+    "ghcr.io/devcontainers-contrib/features/pnpm:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  // Container capabilities
+  "capAdd": ["SYS_PTRACE", "NET_ADMIN"],
+  "securityOpt": ["seccomp=unconfined"],
+  
+  // Use 'forwardPorts' to make a list of ports inside the container available locally
+  "forwardPorts": [
+    3000,  // Next.js frontend (dev)
+    3001,  // Next.js frontend (production)
+    3005,  // NestJS backend
+    5432,  // PostgreSQL
+    6379,  // Redis (if needed)
+    8080   // Alternative backend port
+  ],
+
+  // Port labels
+  "portsAttributes": {
+    "3000": { "label": "Frontend Dev", "onAutoForward": "notify" },
+    "3001": { "label": "Frontend", "onAutoForward": "notify" },
+    "3005": { "label": "Backend API", "onAutoForward": "notify" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" },
+    "6379": { "label": "Redis", "onAutoForward": "silent" },
+    "8080": { "label": "Alt Backend", "onAutoForward": "silent" }
+  },
+
+  // VS Code Extensions
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Core development
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        
+        // React/Next.js
+        "dsznajder.es7-react-js-snippets",
+        "bradlc.vscode-tailwindcss",
+        
+        // Database
+        "prisma.prisma",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        
+        // Testing
+        "ms-playwright.playwright",
+        "jest-community.vscode-jest",
+        
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        
+        // Docker
+        "ms-azuretools.vscode-docker",
+        
+        // AI/Copilot
+        "github.copilot",
+        "github.copilot-chat",
+        
+        // Utilities
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "mikestead.dotenv",
+        "yzhang.markdown-all-in-one",
+        "streetsidesoftware.code-spell-checker"
+      ],
+      
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/usr/bin/zsh"
+          }
+        },
+        
+        // Editor settings
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        },
+        
+        // TypeScript settings
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        "typescript.preferences.importModuleSpecifier": "shortest",
+        
+        // Tailwind CSS
+        "tailwindCSS.experimental.classRegex": [
+          ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+        ],
+        
+        // Files
+        "files.exclude": {
+          "**/node_modules": true,
+          "**/.next": true,
+          "**/dist": true,
+          "**/.turbo": true
+        }
+      }
+    }
+  },
+
+  // Environment variables
+  "containerEnv": {
+    "DATABASE_URL": "postgresql://paramarsh:paramarsh123@localhost:5432/paramarsh_sms",
+    "NODE_ENV": "development",
+    "NEXT_PUBLIC_API_URL": "http://localhost:3005/api/v1",
+    "PORT": "3005",
+    "FRONTEND_PORT": "3001"
+  },
+
+  // Run commands on container creation
+  "postCreateCommand": "chmod +x .devcontainer/post-create.sh && .devcontainer/post-create.sh",
+  
+  // Run commands when container starts
+  "postStartCommand": "chmod +x .devcontainer/post-start.sh && .devcontainer/post-start.sh",
+  
+  // Run commands when attaching to container
+  "postAttachCommand": "echo '🚀 Paramarsh SMS DevContainer Ready!'",
+
+  // Mount points for persistent data
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume",
+    "source=${localWorkspaceFolderBasename}-pnpm-store,target=/home/node/.pnpm-store,type=volume",
+    "source=${localWorkspaceFolderBasename}-postgres,target=/var/lib/postgresql/data,type=volume"
+  ],
+
+  // Run as node user instead of root
+  "remoteUser": "node",
+  
+  // Keep container running
+  "overrideCommand": false,
+  
+  // Workspace settings
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
+}

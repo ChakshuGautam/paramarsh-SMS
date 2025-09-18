@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load .env.test file
+dotenv.config({ path: path.resolve(__dirname, '.env.test') });
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -14,11 +19,14 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['./test/e2e/reporters/performance-reporter.ts']
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.FRONTEND_URL || 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -37,25 +45,27 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    // Commented out per user request - only focus on Chrome
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
     /* Test against mobile viewports. */
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
     },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
+    // Commented out per user request - only focus on Chrome
+    // {
+    //   name: 'Mobile Safari',
+    //   use: { ...devices['iPhone 12'] },
+    // },
 
     /* Test against branded browsers. */
     // {
@@ -69,24 +79,24 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: [
-    {
-      command: 'cd ../api && bun run start:dev',
-      port: 8080,
-      reuseExistingServer: !process.env.CI,
-      env: {
-        NODE_ENV: 'test',
-      },
-    },
-    {
-      command: 'bun run dev',
-      port: 3000,
-      reuseExistingServer: !process.env.CI,
-      env: {
-        NODE_ENV: 'test',
-      },
-    },
-  ],
+  // webServer: [
+  //   {
+  //     command: 'cd ../api && bun run start:dev',
+  //     port: 3005,
+  //     reuseExistingServer: !process.env.CI,
+  //     env: {
+  //       NODE_ENV: 'test',
+  //     },
+  //   },
+  //   {
+  //     command: 'bun run dev',
+  //     port: 3001,
+  //     reuseExistingServer: !process.env.CI,
+  //     env: {
+  //       NODE_ENV: 'test',
+  //     },
+  //   },
+  // ],
 
   /* Global setup and teardown */
   globalSetup: require.resolve('./test/e2e/global-setup.ts'),

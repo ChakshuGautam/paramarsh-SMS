@@ -17,8 +17,14 @@ bun run build
 # Start production server locally
 bun run start
 
-# Run tests
+# Run unit tests
 bun test
+
+# Run E2E tests (requires both frontend and backend running)
+bun run test:e2e
+
+# Run specific E2E test (Students List Data Accuracy)
+npx playwright test students-list-data-accuracy
 ```
 
 ## Deployment on Vercel

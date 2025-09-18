@@ -23,6 +23,7 @@ import { CreateButton } from "@/components/admin/create-button";
 import { ExportButton } from "@/components/admin/export-button";
 import { ListPagination } from "@/components/admin/list-pagination";
 import { BulkActionsToolbar } from "@/components/admin/bulk-actions-toolbar";
+import { cn } from "@/lib/utils";
 
 export const List = <RecordType extends RaRecord = RaRecord>(
   props: ListProps<RecordType>
@@ -96,46 +97,53 @@ export const ListView = <RecordType extends RaRecord = RaRecord>(
   const hasDashboard = useHasDashboard();
 
   return (
-    <>
-      <Breadcrumb>
-        {hasDashboard && (
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link to="/">
-                <Translate i18nKey="ra.page.dashboard">Home</Translate>
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        )}
-        <BreadcrumbPage>{resourceLabel}</BreadcrumbPage>
-      </Breadcrumb>
-      <div className="flex justify-between items-start flex-wrap gap-2 my-2">
-        <h2 className="text-2xl font-bold tracking-tight">{finalTitle}</h2>
-        {actions ?? (
-          <div className="flex items-center gap-2">
-            {hasCreate ? <CreateButton /> : null}
-            {<ExportButton />}
-          </div>
+    <div className="bg-background h-full flex flex-col">
+      <div className="px-2 sm:px-4">
+        <Breadcrumb>
+          {hasDashboard && (
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/">
+                  <Translate i18nKey="ra.page.dashboard">Home</Translate>
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          )}
+          <BreadcrumbPage>{resourceLabel}</BreadcrumbPage>
+        </Breadcrumb>
+        <div className="flex justify-between items-start flex-wrap gap-2 my-2">
+          <h2 className="text-2xl font-bold tracking-tight">{finalTitle}</h2>
+          {actions ?? (
+            <div className="flex items-center gap-2">
+              {hasCreate ? <CreateButton /> : null}
+              {<ExportButton />}
+            </div>
+          )}
+        </div>
+        {filters && filters.length ? (
+          <FilterLiveForm>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 pb-2">
+              {filters.map((filter) =>
+                cloneElement(filter, {
+                  key: filter.key ?? (filter.props as { source: string }).source,
+                  className: cn(
+                    "w-full sm:w-auto",
+                    filter.props?.className
+                  ),
+                })
+              )}
+            </div>
+          </FilterLiveForm>
+        ) : (
+          <span />
         )}
       </div>
-      {filters && filters.length ? (
-        <FilterLiveForm>
-          <div className="flex flex-row items-end gap-2 overflow-x-auto pb-2">
-            {filters.map((filter) =>
-              cloneElement(filter, {
-                key: filter.key ?? (filter.props as { source: string }).source,
-                className: "flex-shrink-0",
-              })
-            )}
-          </div>
-        </FilterLiveForm>
-      ) : (
-        <span />
-      )}
-      <div className="my-2">{children}</div>
-      {pagination}
-      {bulkActionsToolbar}
-    </>
+      <div className="flex-1 overflow-auto">{children}</div>
+      <div className="px-2 sm:px-4">
+        {pagination}
+        {bulkActionsToolbar}
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,81 @@
+PARAMARSH SMS SEED DATA VALIDATION REPORT
+Generated: 2025-09-17T04:32:05.066Z
+============================================================
+
+📊 OVERALL HEALTH SUMMARY
+==============================
+Total Tables Checked: 32
+✅ Tables with Data: 32
+❌ Empty Tables: 0
+
+🎉 ALL TABLES POPULATED - VALIDATION PASSED!
+
+📋 DETAILED TABLE STATUS
+==============================
+✅ tenants                  : 16 records
+✅ academicYears            : 16 records
+✅ classes                  : 148 records
+✅ sections                 : 481 records
+✅ subjects                 : 239 records
+✅ students                 : 15,126 records
+✅ guardians                : 27,756 records
+✅ staff                    : 568 records
+✅ teachers                 : 298 records
+✅ classSubjectTeachers     : 1,138 records
+✅ enrollments              : 15,126 records
+✅ studentGuardian          : 27,927 records
+✅ timeSlots                : 1,280 records
+✅ timetablePeriods         : 9,620 records
+✅ rooms                    : 351 records
+✅ attendanceSessions       : 26,936 records
+✅ studentPeriodAttendance  : 268,184 records
+✅ teacherAttendance        : 114,134 records
+✅ exams                    : 694 records
+✅ examSessions             : 5,202 records
+✅ marks                    : 353,341 records
+✅ feeStructures            : 148 records
+✅ feeComponents            : 1,036 records
+✅ feeSchedules             : 148 records
+✅ invoices                 : 990 records
+✅ payments                 : 843 records
+✅ templates                : 112 records
+✅ campaigns                : 80 records
+✅ messages                 : 1,200 records
+✅ preferences              : 1,600 records
+✅ tickets                  : 96 records
+✅ applications             : 400 records
+
+🏫 BRANCH-WISE DATA DISTRIBUTION
+========================================
+Branch ID           Students  Classes  Teachers  Status
+--------------------------------------------------
+dps-main           2020     15      32       ✅ HEALTHY
+dps-north          1188     13      25       ✅ HEALTHY
+dps-south          855      10      23       ✅ HEALTHY
+dps-east           431      8       20       ✅ HEALTHY
+dps-west           591      7       13       ✅ HEALTHY
+kvs-central        1848     12      28       ✅ HEALTHY
+kvs-cantonment     1086     10      21       ✅ HEALTHY
+kvs-airport        536      8       16       ✅ HEALTHY
+sps-primary        578      8       16       ✅ HEALTHY
+sps-secondary      407      5       12       ✅ HEALTHY
+sps-senior         111      2       6        ✅ HEALTHY
+ris-main           1593     13      24       ✅ HEALTHY
+ris-extension      550      7       13       ✅ HEALTHY
+svps-main          2001     15      22       ✅ HEALTHY
+svps-senior        385      4       8        ✅ HEALTHY
+svps-junior        946      11      19       ✅ HEALTHY
+
+📈 DATA QUALITY METRICS
+==============================
+Total Students: 15,126
+Total Teachers: 298
+Total Classes: 148
+Student-Teacher Ratio: 1:51
+Average Students per Branch: 945
+
+🔧 RECOMMENDATIONS
+====================
+✅ All tables populated successfully
+✅ Ready for production use
+✅ All 16 branches have data

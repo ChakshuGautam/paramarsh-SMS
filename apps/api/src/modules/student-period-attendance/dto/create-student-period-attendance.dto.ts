@@ -23,11 +23,11 @@ export class CreateStudentPeriodAttendanceDto {
   @ApiProperty({
     description: 'Attendance status',
     example: 'present',
-    enum: ['present', 'absent', 'late', 'excused'],
+    enum: ['present', 'absent', 'late', 'excused', 'medical'],
     default: 'present'
   })
   @IsString()
-  @IsIn(['present', 'absent', 'late', 'excused'])
+  @IsIn(['present', 'absent', 'late', 'excused', 'medical'])
   status!: string;
 
   @ApiPropertyOptional({

@@ -41,16 +41,28 @@ const getGradeLevelFilter = (level: string) => {
   }
 };
 
-// Standardized filters using filter components
+// Standardized filters using filter components with responsive classes
 const sectionFilters = [
-  <TextInput source="q" placeholder="Search sections..." label="" alwaysOn />,
+  <TextInput 
+    source="q" 
+    placeholder="Search sections..." 
+    label="" 
+    alwaysOn 
+    className="w-full sm:w-auto min-w-0 sm:min-w-[200px]"
+  />,
   <SelectInput 
     source="classId" 
     placeholder="Filter by class" 
     label="" 
     choices={[]} // Would need to be populated with class data
+    className="w-full sm:w-auto min-w-0 sm:min-w-[180px]"
   />,
-  <NumberInput source="capacity_gte" placeholder="Min capacity" label="" />,
+  <NumberInput 
+    source="capacity_gte" 
+    placeholder="Min capacity" 
+    label="" 
+    className="w-full sm:w-auto min-w-0 sm:min-w-[150px]"
+  />,
 ];
 
 const ViewTimetableButton = ({ record }: { record?: any }) => {
@@ -107,32 +119,37 @@ const TabbedDataTable = () => {
   
   return (
     <Tabs value={getCurrentTab()}>
-      <TabsList>
-        <TabsTrigger value="primary" onClick={handleChange("primary")}>
-          Primary (1-5)
-          <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getGradeLevelFilter("primary") }} />
-          </Badge>
-        </TabsTrigger>
-        <TabsTrigger value="middle" onClick={handleChange("middle")}>
-          Middle (6-8)
-          <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getGradeLevelFilter("middle") }} />
-          </Badge>
-        </TabsTrigger>
-        <TabsTrigger value="high" onClick={handleChange("high")}>
-          High (9-12)
-          <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getGradeLevelFilter("high") }} />
-          </Badge>
-        </TabsTrigger>
-        <TabsTrigger value="all" onClick={handleChange("all")}>
-          All Sections
-          <Badge variant="outline" className="ml-2">
-            <Count filter={{ ...filterValues, ...getGradeLevelFilter("all") }} />
-          </Badge>
-        </TabsTrigger>
-      </TabsList>
+      <div className="w-full overflow-x-auto pb-2">
+        <TabsList className="inline-flex h-10 w-auto min-w-full sm:w-full">
+          <TabsTrigger value="primary" onClick={handleChange("primary")} className="whitespace-nowrap">
+            <span className="hidden sm:inline">Primary (1-5)</span>
+            <span className="sm:hidden">1-5</span>
+            <Badge variant="outline" className="ml-2">
+              <Count filter={{ ...filterValues, ...getGradeLevelFilter("primary") }} />
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="middle" onClick={handleChange("middle")} className="whitespace-nowrap">
+            <span className="hidden sm:inline">Middle (6-8)</span>
+            <span className="sm:hidden">6-8</span>
+            <Badge variant="outline" className="ml-2">
+              <Count filter={{ ...filterValues, ...getGradeLevelFilter("middle") }} />
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="high" onClick={handleChange("high")} className="whitespace-nowrap">
+            <span className="hidden sm:inline">High (9-12)</span>
+            <span className="sm:hidden">9-12</span>
+            <Badge variant="outline" className="ml-2">
+              <Count filter={{ ...filterValues, ...getGradeLevelFilter("high") }} />
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="all" onClick={handleChange("all")} className="whitespace-nowrap">
+            All
+            <Badge variant="outline" className="ml-2">
+              <Count filter={{ ...filterValues, ...getGradeLevelFilter("all") }} />
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+      </div>
       <TabsContent value="primary">
         <SectionsTable storeKey={storeKeyByLevel.primary} />
         <ListPagination className="justify-start mt-2" />
