@@ -13,43 +13,7 @@ import { Loader2, School, MapPin } from "lucide-react"
 
 // School data with their branches
 const schools = [
-  {
-    id: 'dps',
-    name: 'Delhi Public School',
-    branches: [
-      { id: 'main', name: 'Main Campus' },
-      { id: 'north', name: 'North Campus' },
-      { id: 'south', name: 'South Campus' },
-      { id: 'east', name: 'East Campus' },
-      { id: 'west', name: 'West Campus' },
-    ]
-  },
-  {
-    id: 'kvs',
-    name: 'Kendriya Vidyalaya',
-    branches: [
-      { id: 'central', name: 'Central Branch' },
-      { id: 'cantonment', name: 'Cantonment Branch' },
-      { id: 'airport', name: 'Airport Branch' },
-    ]
-  },
-  {
-    id: 'sps',
-    name: 'St. Paul\'s School',
-    branches: [
-      { id: 'primary', name: 'Primary Wing' },
-      { id: 'secondary', name: 'Secondary Wing' },
-      { id: 'senior', name: 'Senior Wing' },
-    ]
-  },
-  {
-    id: 'ris',
-    name: 'Ryan International School',
-    branches: [
-      { id: 'main', name: 'Main Branch' },
-      { id: 'extension', name: 'Extension Branch' },
-    ]
-  },
+  // Temporarily showing only SVPS for focused testing/demo
   {
     id: 'svps',
     name: 'Swami Vivekanad Public School',
@@ -59,6 +23,44 @@ const schools = [
       { id: 'junior', name: 'Junior Wing' },
     ]
   },
+  // Other schools temporarily hidden
+  // {
+  //   id: 'dps',
+  //   name: 'Delhi Public School',
+  //   branches: [
+  //     { id: 'main', name: 'Main Campus' },
+  //     { id: 'north', name: 'North Campus' },
+  //     { id: 'south', name: 'South Campus' },
+  //     { id: 'east', name: 'East Campus' },
+  //     { id: 'west', name: 'West Campus' },
+  //   ]
+  // },
+  // {
+  //   id: 'kvs',
+  //   name: 'Kendriya Vidyalaya',
+  //   branches: [
+  //     { id: 'central', name: 'Central Branch' },
+  //     { id: 'cantonment', name: 'Cantonment Branch' },
+  //     { id: 'airport', name: 'Airport Branch' },
+  //   ]
+  // },
+  // {
+  //   id: 'sps',
+  //   name: 'St. Paul\'s School',
+  //   branches: [
+  //     { id: 'primary', name: 'Primary Wing' },
+  //     { id: 'secondary', name: 'Secondary Wing' },
+  //     { id: 'senior', name: 'Senior Wing' },
+  //   ]
+  // },
+  // {
+  //   id: 'ris',
+  //   name: 'Ryan International School',
+  //   branches: [
+  //     { id: 'main', name: 'Main Branch' },
+  //     { id: 'extension', name: 'Extension Branch' },
+  //   ]
+  // },
 ]
 
 export default function SignInPage() {
