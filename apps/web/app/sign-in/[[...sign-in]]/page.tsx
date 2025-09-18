@@ -50,6 +50,15 @@ const schools = [
       { id: 'extension', name: 'Extension Branch' },
     ]
   },
+  {
+    id: 'svps',
+    name: 'Swami Vivekanad Public School',
+    branches: [
+      { id: 'main', name: 'Main Campus' },
+      { id: 'senior', name: 'Senior Secondary Wing' },
+      { id: 'junior', name: 'Junior Wing' },
+    ]
+  },
 ]
 
 export default function SignInPage() {
@@ -77,8 +86,7 @@ export default function SignInPage() {
     const school = schools.find(s => s.id === selectedSchool)
     if (school) {
       setAvailableBranches(school.branches)
-      // Reset branch selection when school changes
-      setSelectedBranch('')
+      setSelectedBranch('') // Reset branch selection when school changes
     } else {
       setAvailableBranches([])
     }
@@ -246,34 +254,6 @@ export default function SignInPage() {
           </form>
         </Card>
 
-        {/* Test Credentials Info for Development */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <p className="text-sm font-medium text-blue-900 mb-2">Test Credentials:</p>
-            <div className="space-y-2 text-xs">
-              <div className="text-blue-800">
-                <strong className="text-blue-900">Admin:</strong>
-                <div className="ml-4">Username: admin</div>
-                <div className="ml-4">Password: P@ramarsh#Admin2024$Secure</div>
-              </div>
-              <div className="text-blue-800">
-                <strong className="text-blue-900">Teacher:</strong>
-                <div className="ml-4">Username: teacher</div>
-                <div className="ml-4">Password: Teach@Paramarsh#2024$Safe</div>
-              </div>
-              <div className="text-blue-800">
-                <strong className="text-blue-900">Student:</strong>
-                <div className="ml-4">Username: student</div>
-                <div className="ml-4">Password: Stud3nt@SMS#2024$Strong</div>
-              </div>
-              <div className="text-blue-800">
-                <strong className="text-blue-900">Parent:</strong>
-                <div className="ml-4">Username: parent</div>
-                <div className="ml-4">Password: Par3nt@School#2024$Protect</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
