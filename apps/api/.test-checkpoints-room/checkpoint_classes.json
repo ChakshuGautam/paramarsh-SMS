@@ -1,0 +1,389 @@
+{
+  "tenants": [
+    {
+      "id": "test-checkpoint-branch",
+      "branchId": "test-checkpoint-branch",
+      "name": "Test Checkpoint Branch School",
+      "subdomain": "test-checkpoint-branch"
+    }
+  ],
+  "academicYears": [
+    {
+      "id": "test-checkpoint-branch-ay-2022-23",
+      "branchId": "test-checkpoint-branch",
+      "name": "2022-23",
+      "startDate": "2022-04-01",
+      "endDate": "2023-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:36:13.473Z",
+      "updatedAt": "2025-09-18T20:36:13.473Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2023-24",
+      "branchId": "test-checkpoint-branch",
+      "name": "2023-24",
+      "startDate": "2023-04-01",
+      "endDate": "2024-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:36:13.473Z",
+      "updatedAt": "2025-09-18T20:36:13.473Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2024-25",
+      "branchId": "test-checkpoint-branch",
+      "name": "2024-25",
+      "startDate": "2024-04-01",
+      "endDate": "2025-03-31",
+      "terms": null,
+      "isActive": true,
+      "createdAt": "2025-09-18T20:36:13.473Z",
+      "updatedAt": "2025-09-18T20:36:13.473Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2025-26",
+      "branchId": "test-checkpoint-branch",
+      "name": "2025-26",
+      "startDate": "2025-04-01",
+      "endDate": "2026-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:36:13.473Z",
+      "updatedAt": "2025-09-18T20:36:13.473Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2026-27",
+      "branchId": "test-checkpoint-branch",
+      "name": "2026-27",
+      "startDate": "2026-04-01",
+      "endDate": "2027-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:36:13.473Z",
+      "updatedAt": "2025-09-18T20:36:13.473Z"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "59fb00d1-0ebe-44f3-8ca2-0f724eeb0822",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-ENG",
+      "name": "English",
+      "description": "English language",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "2113f1de-3a8a-4294-a891-6e7b6accd16b",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-MATH",
+      "name": "Mathematics",
+      "description": "Mathematics",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "d58466bd-b64c-4a20-bc60-b0922c46e8ee",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-SCI",
+      "name": "Science",
+      "description": "General Science",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "7d28ec89-1ae0-4d78-b11d-d34c5d3af113",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-SST",
+      "name": "Social Studies",
+      "description": "Social Studies",
+      "credits": 3,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "0e8ba45f-7b0d-457d-997b-293f6f55b092",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-HIN",
+      "name": "Hindi",
+      "description": "Hindi language",
+      "credits": 3,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "e96d06fb-c0d9-4c3a-9135-96698e72fe15",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-CS",
+      "name": "Computer Science",
+      "description": "Computer Science",
+      "credits": 2,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "42ed0745-f366-4ad6-95d1-5e2f63e370ad",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-PE",
+      "name": "Physical Education",
+      "description": "Physical Education",
+      "credits": 1,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    },
+    {
+      "id": "cda6a796-8148-48b4-b352-0d250615002a",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-ART",
+      "name": "Art & Craft",
+      "description": "Art and Craft",
+      "credits": 1,
+      "isElective": true,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:36:13.479Z",
+      "updatedAt": "2025-09-18T20:36:13.479Z"
+    }
+  ],
+  "classes": [
+    {
+      "id": "fdc1390c-18bf-4f41-8e70-75bd2dbb74f5",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 1",
+      "gradeLevel": 1
+    },
+    {
+      "id": "6bd01818-5060-4309-b6d8-d7919ff74e08",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 2",
+      "gradeLevel": 2
+    },
+    {
+      "id": "27edf926-e09d-4a6f-bc0d-229ca2b60fe8",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 3",
+      "gradeLevel": 3
+    },
+    {
+      "id": "19987252-cc01-4bed-8bfe-b67c1be6af80",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 4",
+      "gradeLevel": 4
+    },
+    {
+      "id": "47e895d7-4646-475f-9fe2-f2e7e0ab3c44",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 5",
+      "gradeLevel": 5
+    },
+    {
+      "id": "dc46a6bb-5a1b-497a-a733-7cf7ccae5328",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 6",
+      "gradeLevel": 6
+    },
+    {
+      "id": "79ab4d83-ca12-49c5-aff8-2cf2d9990c3c",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 7",
+      "gradeLevel": 7
+    },
+    {
+      "id": "03e7d6dd-2920-48cc-917e-f551a82974e2",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 8",
+      "gradeLevel": 8
+    },
+    {
+      "id": "09f0cda4-f8af-423c-9cbe-b717b489ac17",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 9",
+      "gradeLevel": 9
+    },
+    {
+      "id": "edb7e4e8-b398-4d41-b6bd-67821c5e7661",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 10",
+      "gradeLevel": 10
+    }
+  ],
+  "sections": [
+    {
+      "id": "3a81e634-9b53-4860-a65f-07d48503c3e5",
+      "branchId": "test-checkpoint-branch",
+      "classId": "fdc1390c-18bf-4f41-8e70-75bd2dbb74f5",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "af447761-5c20-496e-9b82-570e7bbdcf89",
+      "branchId": "test-checkpoint-branch",
+      "classId": "fdc1390c-18bf-4f41-8e70-75bd2dbb74f5",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "3839bd1f-6c4b-4b83-8ad6-dc628a434a32",
+      "branchId": "test-checkpoint-branch",
+      "classId": "6bd01818-5060-4309-b6d8-d7919ff74e08",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "c5918217-c1df-476a-987a-c4d7dec5312e",
+      "branchId": "test-checkpoint-branch",
+      "classId": "6bd01818-5060-4309-b6d8-d7919ff74e08",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "9bffe6b8-0703-403c-b40c-b89c1951677b",
+      "branchId": "test-checkpoint-branch",
+      "classId": "27edf926-e09d-4a6f-bc0d-229ca2b60fe8",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "cf5b4013-db11-48b2-aae1-9fbadeaa73a7",
+      "branchId": "test-checkpoint-branch",
+      "classId": "27edf926-e09d-4a6f-bc0d-229ca2b60fe8",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "899d2a90-ad65-4dc3-b33c-0b7a12eb399f",
+      "branchId": "test-checkpoint-branch",
+      "classId": "19987252-cc01-4bed-8bfe-b67c1be6af80",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "364630b1-7f99-4f61-ad74-a3d2dfbf6903",
+      "branchId": "test-checkpoint-branch",
+      "classId": "19987252-cc01-4bed-8bfe-b67c1be6af80",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "256771c1-d08a-4095-9020-a75548706e59",
+      "branchId": "test-checkpoint-branch",
+      "classId": "47e895d7-4646-475f-9fe2-f2e7e0ab3c44",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "5e1a926e-8296-4b7d-95a5-ef4299883d60",
+      "branchId": "test-checkpoint-branch",
+      "classId": "47e895d7-4646-475f-9fe2-f2e7e0ab3c44",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "1783aa40-1a3b-4ed4-ae93-ee9927999a7a",
+      "branchId": "test-checkpoint-branch",
+      "classId": "dc46a6bb-5a1b-497a-a733-7cf7ccae5328",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "8b29ea3d-45f6-4f7a-82c1-acc47f397c4a",
+      "branchId": "test-checkpoint-branch",
+      "classId": "dc46a6bb-5a1b-497a-a733-7cf7ccae5328",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "b8fe5224-b174-405f-b27e-6919089b4744",
+      "branchId": "test-checkpoint-branch",
+      "classId": "79ab4d83-ca12-49c5-aff8-2cf2d9990c3c",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "cec49be4-2edd-4dcc-9977-6ed9a9020709",
+      "branchId": "test-checkpoint-branch",
+      "classId": "79ab4d83-ca12-49c5-aff8-2cf2d9990c3c",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "5cea95ae-844e-41ec-baaf-7577278bf8a8",
+      "branchId": "test-checkpoint-branch",
+      "classId": "03e7d6dd-2920-48cc-917e-f551a82974e2",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "8407e824-b942-46c1-a21c-cf8659a0330f",
+      "branchId": "test-checkpoint-branch",
+      "classId": "03e7d6dd-2920-48cc-917e-f551a82974e2",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "63357237-a8db-4f8e-8d3a-7c847c47bfa0",
+      "branchId": "test-checkpoint-branch",
+      "classId": "09f0cda4-f8af-423c-9cbe-b717b489ac17",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "876447ea-dc8f-4867-bd56-fd725b6a6ae5",
+      "branchId": "test-checkpoint-branch",
+      "classId": "09f0cda4-f8af-423c-9cbe-b717b489ac17",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "6c1944e6-2248-47a9-945f-1974dcdf09a6",
+      "branchId": "test-checkpoint-branch",
+      "classId": "edb7e4e8-b398-4d41-b6bd-67821c5e7661",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "ab6011e9-4cdb-4cfa-9c33-f09158ec419b",
+      "branchId": "test-checkpoint-branch",
+      "classId": "edb7e4e8-b398-4d41-b6bd-67821c5e7661",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "tenants": [
+    {
+      "id": "test-checkpoint-branch",
+      "branchId": "test-checkpoint-branch",
+      "name": "Test Checkpoint Branch School",
+      "subdomain": "test-checkpoint-branch"
+    }
+  ],
+  "academicYears": [
+    {
+      "id": "test-checkpoint-branch-ay-2022-23",
+      "branchId": "test-checkpoint-branch",
+      "name": "2022-23",
+      "startDate": "2022-04-01",
+      "endDate": "2023-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:16:10.531Z",
+      "updatedAt": "2025-09-18T20:16:10.531Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2023-24",
+      "branchId": "test-checkpoint-branch",
+      "name": "2023-24",
+      "startDate": "2023-04-01",
+      "endDate": "2024-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:16:10.531Z",
+      "updatedAt": "2025-09-18T20:16:10.531Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2024-25",
+      "branchId": "test-checkpoint-branch",
+      "name": "2024-25",
+      "startDate": "2024-04-01",
+      "endDate": "2025-03-31",
+      "terms": null,
+      "isActive": true,
+      "createdAt": "2025-09-18T20:16:10.531Z",
+      "updatedAt": "2025-09-18T20:16:10.531Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2025-26",
+      "branchId": "test-checkpoint-branch",
+      "name": "2025-26",
+      "startDate": "2025-04-01",
+      "endDate": "2026-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:16:10.531Z",
+      "updatedAt": "2025-09-18T20:16:10.531Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2026-27",
+      "branchId": "test-checkpoint-branch",
+      "name": "2026-27",
+      "startDate": "2026-04-01",
+      "endDate": "2027-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:16:10.531Z",
+      "updatedAt": "2025-09-18T20:16:10.531Z"
+    }
+  ]
+}

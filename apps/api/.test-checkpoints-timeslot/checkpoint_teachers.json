@@ -1,0 +1,691 @@
+{
+  "tenants": [
+    {
+      "id": "test-checkpoint-branch",
+      "branchId": "test-checkpoint-branch",
+      "name": "Test Checkpoint Branch School",
+      "subdomain": "test-checkpoint-branch"
+    }
+  ],
+  "academicYears": [
+    {
+      "id": "test-checkpoint-branch-ay-2022-23",
+      "branchId": "test-checkpoint-branch",
+      "name": "2022-23",
+      "startDate": "2022-04-01",
+      "endDate": "2023-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:39:27.070Z",
+      "updatedAt": "2025-09-18T20:39:27.070Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2023-24",
+      "branchId": "test-checkpoint-branch",
+      "name": "2023-24",
+      "startDate": "2023-04-01",
+      "endDate": "2024-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:39:27.070Z",
+      "updatedAt": "2025-09-18T20:39:27.070Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2024-25",
+      "branchId": "test-checkpoint-branch",
+      "name": "2024-25",
+      "startDate": "2024-04-01",
+      "endDate": "2025-03-31",
+      "terms": null,
+      "isActive": true,
+      "createdAt": "2025-09-18T20:39:27.070Z",
+      "updatedAt": "2025-09-18T20:39:27.070Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2025-26",
+      "branchId": "test-checkpoint-branch",
+      "name": "2025-26",
+      "startDate": "2025-04-01",
+      "endDate": "2026-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:39:27.070Z",
+      "updatedAt": "2025-09-18T20:39:27.070Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2026-27",
+      "branchId": "test-checkpoint-branch",
+      "name": "2026-27",
+      "startDate": "2026-04-01",
+      "endDate": "2027-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:39:27.070Z",
+      "updatedAt": "2025-09-18T20:39:27.070Z"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "108dbb62-2fa6-4e6d-8535-4f5acf7fb53d",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-ENG",
+      "name": "English",
+      "description": "English language",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "bbc4e72b-849e-4c03-84f2-dc294a448869",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-MATH",
+      "name": "Mathematics",
+      "description": "Mathematics",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "015b12dc-89a9-4c6c-9ac4-fcd351e625c4",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-SCI",
+      "name": "Science",
+      "description": "General Science",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "15f464f6-a6f6-42dd-aea4-ebf2b05c77e5",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-SST",
+      "name": "Social Studies",
+      "description": "Social Studies",
+      "credits": 3,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "6fb85edd-11c4-4cf9-941c-d8483a9ba6ea",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-HIN",
+      "name": "Hindi",
+      "description": "Hindi language",
+      "credits": 3,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "a3c7fb90-3179-42b4-b1cc-93b4493f118d",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-CS",
+      "name": "Computer Science",
+      "description": "Computer Science",
+      "credits": 2,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "e0c52634-5840-460b-a3c5-30281dded220",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-PE",
+      "name": "Physical Education",
+      "description": "Physical Education",
+      "credits": 1,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    },
+    {
+      "id": "fc421983-691e-4d9f-bf93-20ebfcf49e5b",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-ART",
+      "name": "Art & Craft",
+      "description": "Art and Craft",
+      "credits": 1,
+      "isElective": true,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:39:27.079Z",
+      "updatedAt": "2025-09-18T20:39:27.079Z"
+    }
+  ],
+  "classes": [
+    {
+      "id": "fb61f344-a512-4683-9573-a6dceb3e4cbe",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 1",
+      "gradeLevel": 1
+    },
+    {
+      "id": "0926fde4-fe7c-4856-a2b2-6273e4f222ec",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 2",
+      "gradeLevel": 2
+    },
+    {
+      "id": "807889aa-2601-4641-be18-83d3e2f474f8",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 3",
+      "gradeLevel": 3
+    },
+    {
+      "id": "be53e18b-9e13-4eea-b0b9-f0d7955caab5",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 4",
+      "gradeLevel": 4
+    },
+    {
+      "id": "ada76e5e-cbb7-4cfe-95a9-ab6021baf3ba",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 5",
+      "gradeLevel": 5
+    },
+    {
+      "id": "81d3c0eb-3955-4bbd-848e-8fab546052e9",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 6",
+      "gradeLevel": 6
+    },
+    {
+      "id": "7bb86dea-1d0d-480a-bca1-2c4f6da790d1",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 7",
+      "gradeLevel": 7
+    },
+    {
+      "id": "42d33a5d-5d09-49d8-93ea-03d792618308",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 8",
+      "gradeLevel": 8
+    },
+    {
+      "id": "5f5b0cb3-dd78-49c8-a092-ad7eb1bab570",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 9",
+      "gradeLevel": 9
+    },
+    {
+      "id": "d02495ee-26c6-48ef-8d7b-5015f016ac0e",
+      "branchId": "test-checkpoint-branch",
+      "name": "Class 10",
+      "gradeLevel": 10
+    }
+  ],
+  "sections": [
+    {
+      "id": "aa9cf9d2-a1a5-4bf1-b4e7-90949656f713",
+      "branchId": "test-checkpoint-branch",
+      "classId": "fb61f344-a512-4683-9573-a6dceb3e4cbe",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "15413231-a80a-45c7-8b05-a0e5afe65c94",
+      "branchId": "test-checkpoint-branch",
+      "classId": "fb61f344-a512-4683-9573-a6dceb3e4cbe",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "8622827e-8d6f-4801-8d3a-73e35379d552",
+      "branchId": "test-checkpoint-branch",
+      "classId": "0926fde4-fe7c-4856-a2b2-6273e4f222ec",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "0b2a0fde-de45-413f-a1fb-2fe988eb2235",
+      "branchId": "test-checkpoint-branch",
+      "classId": "0926fde4-fe7c-4856-a2b2-6273e4f222ec",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "93669835-b38c-4652-8080-9521f6c6a3c8",
+      "branchId": "test-checkpoint-branch",
+      "classId": "807889aa-2601-4641-be18-83d3e2f474f8",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "5500ec21-fb26-4efa-a13c-6562e609812d",
+      "branchId": "test-checkpoint-branch",
+      "classId": "807889aa-2601-4641-be18-83d3e2f474f8",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "fda4f98e-225f-46bd-a14e-54131ae10a23",
+      "branchId": "test-checkpoint-branch",
+      "classId": "be53e18b-9e13-4eea-b0b9-f0d7955caab5",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "251a0b79-c7f0-40ed-8295-e3cfbe8006bd",
+      "branchId": "test-checkpoint-branch",
+      "classId": "be53e18b-9e13-4eea-b0b9-f0d7955caab5",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "9762e3cb-fdbf-4b2f-a7d6-7f443c3daa40",
+      "branchId": "test-checkpoint-branch",
+      "classId": "ada76e5e-cbb7-4cfe-95a9-ab6021baf3ba",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "fa353f49-7d33-4983-8689-44ac55fd01dd",
+      "branchId": "test-checkpoint-branch",
+      "classId": "ada76e5e-cbb7-4cfe-95a9-ab6021baf3ba",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "f102c6bf-7fad-4b62-98b7-61dba564d5bb",
+      "branchId": "test-checkpoint-branch",
+      "classId": "81d3c0eb-3955-4bbd-848e-8fab546052e9",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "af50f151-40f9-4b50-b86c-96504cbf2fa9",
+      "branchId": "test-checkpoint-branch",
+      "classId": "81d3c0eb-3955-4bbd-848e-8fab546052e9",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "afd11cfc-6ef9-4660-bd04-946c0e9c21b2",
+      "branchId": "test-checkpoint-branch",
+      "classId": "7bb86dea-1d0d-480a-bca1-2c4f6da790d1",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "c4536e48-e65e-4a19-8019-b37cb634fd06",
+      "branchId": "test-checkpoint-branch",
+      "classId": "7bb86dea-1d0d-480a-bca1-2c4f6da790d1",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "361c53a5-9445-464e-9497-2334b452a8b1",
+      "branchId": "test-checkpoint-branch",
+      "classId": "42d33a5d-5d09-49d8-93ea-03d792618308",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "8f4d518b-b2d6-4db8-a4db-717fdec28af6",
+      "branchId": "test-checkpoint-branch",
+      "classId": "42d33a5d-5d09-49d8-93ea-03d792618308",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "115de439-8606-4235-baae-d9e1f980c790",
+      "branchId": "test-checkpoint-branch",
+      "classId": "5f5b0cb3-dd78-49c8-a092-ad7eb1bab570",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "aca87b97-a962-46e4-9704-a520b5735346",
+      "branchId": "test-checkpoint-branch",
+      "classId": "5f5b0cb3-dd78-49c8-a092-ad7eb1bab570",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "b4867d45-f8ff-4f5f-8849-62efb2b8658d",
+      "branchId": "test-checkpoint-branch",
+      "classId": "d02495ee-26c6-48ef-8d7b-5015f016ac0e",
+      "name": "A",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    },
+    {
+      "id": "60eb9885-f366-4b65-b34e-6061bcf602d6",
+      "branchId": "test-checkpoint-branch",
+      "classId": "d02495ee-26c6-48ef-8d7b-5015f016ac0e",
+      "name": "B",
+      "capacity": 30,
+      "homeroomTeacherId": null
+    }
+  ],
+  "teachers": [
+    {
+      "id": "test-checkpoint-branch-teacher-1-ja14",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-1-ja14",
+      "subjects": "English",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 0,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-2-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-2-ja15",
+      "subjects": "Mathematics",
+      "qualifications": "B.Sc B.Ed",
+      "experienceYears": 0,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-3-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-3-ja15",
+      "subjects": "Science",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 0,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-4-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-4-ja15",
+      "subjects": "Social Studies",
+      "qualifications": "M.Ed",
+      "experienceYears": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-5-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-5-ja15",
+      "subjects": "Hindi",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-6-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-6-ja15",
+      "subjects": "Computer Science",
+      "qualifications": "M.Tech",
+      "experienceYears": 1,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-7-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-7-ja15",
+      "subjects": "Physical Education",
+      "qualifications": "B.P.Ed",
+      "experienceYears": 2,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-8-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-8-ja15",
+      "subjects": "Art & Craft",
+      "qualifications": "B.Ed",
+      "experienceYears": 2,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-9-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-9-ja15",
+      "subjects": "English",
+      "qualifications": "M.Ed",
+      "experienceYears": 2,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-10-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-10-ja15",
+      "subjects": "Mathematics",
+      "qualifications": "M.Sc B.Ed",
+      "experienceYears": 3,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-11-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-11-ja15",
+      "subjects": "Science",
+      "qualifications": "M.Ed",
+      "experienceYears": 3,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-12-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-12-ja15",
+      "subjects": "Social Studies",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 3,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-13-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-13-ja15",
+      "subjects": "Hindi",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 4,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-14-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-14-ja15",
+      "subjects": "Computer Science",
+      "qualifications": "M.Tech",
+      "experienceYears": 4,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-15-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-15-ja15",
+      "subjects": "Physical Education",
+      "qualifications": "M.Ed",
+      "experienceYears": 4,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-16-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-16-ja15",
+      "subjects": "Art & Craft",
+      "qualifications": "B.Ed",
+      "experienceYears": 5,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-17-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-17-ja15",
+      "subjects": "English",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 5,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-18-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-18-ja15",
+      "subjects": "Mathematics",
+      "qualifications": "M.Sc B.Ed",
+      "experienceYears": 5,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-19-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-19-ja15",
+      "subjects": "Science",
+      "qualifications": "B.Sc B.Ed",
+      "experienceYears": 6,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-20-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-20-ja15",
+      "subjects": "Social Studies",
+      "qualifications": "B.Ed",
+      "experienceYears": 6,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-21-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-21-ja15",
+      "subjects": "Hindi",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 6,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-22-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-22-ja15",
+      "subjects": "Computer Science",
+      "qualifications": "MCA B.Ed",
+      "experienceYears": 7,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-23-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-23-ja15",
+      "subjects": "Physical Education",
+      "qualifications": "B.P.Ed",
+      "experienceYears": 7,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-24-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-24-ja15",
+      "subjects": "Art & Craft",
+      "qualifications": "B.Ed",
+      "experienceYears": 7,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-25-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-25-ja15",
+      "subjects": "English",
+      "qualifications": "MA B.Ed",
+      "experienceYears": 8,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-26-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-26-ja15",
+      "subjects": "Mathematics",
+      "qualifications": "B.Sc B.Ed",
+      "experienceYears": 8,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-27-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-27-ja15",
+      "subjects": "Science",
+      "qualifications": "B.Ed",
+      "experienceYears": 8,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-28-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-28-ja15",
+      "subjects": "Social Studies",
+      "qualifications": "B.Ed",
+      "experienceYears": 9,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-29-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-29-ja15",
+      "subjects": "Hindi",
+      "qualifications": "BA B.Ed",
+      "experienceYears": 9,
+      "deletedAt": null,
+      "deletedBy": null
+    },
+    {
+      "id": "test-checkpoint-branch-teacher-30-ja15",
+      "branchId": "test-checkpoint-branch",
+      "staffId": "test-checkpoint-branch-staff-30-ja15",
+      "subjects": "Computer Science",
+      "qualifications": "M.Tech",
+      "experienceYears": 9,
+      "deletedAt": null,
+      "deletedBy": null
+    }
+  ]
+}

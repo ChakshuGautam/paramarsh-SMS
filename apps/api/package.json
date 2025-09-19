@@ -23,6 +23,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "seed": "tsx prisma/seed.ts",
+    "seed:cli": "tsx src/seed/cli/seed.ts",
+    "seed:interactive": "tsx src/seed/cli/seed.ts",
     "seed:reset": "prisma migrate reset --force && tsx prisma/seed.ts",
     "seed:validate": "tsx scripts/validate-seed-data.ts",
     "seed:validate:mcp": "tsx scripts/validate-seed-data-mcp-full.ts",
@@ -55,6 +57,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.708.0",
     "@aws-sdk/s3-request-presigner": "^3.708.0",
+    "@clack/core": "^0.5.0",
+    "@clack/prompts": "^0.11.0",
     "@clerk/backend": "^2.9.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -68,6 +72,7 @@
     "date-fns": "^4.1.0",
     "helmet": "^8.1.0",
     "pdfmake": "^0.2.12",
+    "picocolors": "^1.1.1",
     "prisma": "^5.17.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -81,6 +86,7 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@testcontainers/postgresql": "^11.6.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
@@ -94,6 +100,7 @@
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
+    "testcontainers": "^11.6.0",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
@@ -112,7 +119,7 @@
       "ts"
     ],
     "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": ".*\\.(spec|test)\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

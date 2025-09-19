@@ -1,0 +1,636 @@
+{
+  "timestamp": "2025-09-19T03:16:28.663Z",
+  "version": "v3.0.0",
+  "result": {
+    "success": true,
+    "totalSeeded": 73,
+    "branchId": "test-dps-main",
+    "entityResults": {
+      "tenants": {
+        "success": true,
+        "entityName": "tenants",
+        "metrics": {
+          "totalRecords": 0,
+          "successCount": 0,
+          "errorCount": 0,
+          "duration": 0
+        }
+      },
+      "academicYears": {
+        "entityName": "academicYears",
+        "success": true,
+        "metrics": {
+          "totalRecords": 5,
+          "successCount": 5,
+          "errorCount": 0,
+          "startTime": "2025-09-19T03:16:28.159Z",
+          "endTime": "2025-09-19T03:16:28.333Z",
+          "duration": 174,
+          "memoryUsage": {
+            "rss": 227491840,
+            "heapTotal": 131268608,
+            "heapUsed": 116609000,
+            "external": 95463961,
+            "arrayBuffers": 8020041
+          }
+        },
+        "errors": [],
+        "warnings": [],
+        "data": [
+          {
+            "id": "test-dps-main-ay-2022-23",
+            "name": "2022-23",
+            "startDate": "2022-04-01",
+            "endDate": "2023-03-31",
+            "isActive": false,
+            "branchId": "test-dps-main",
+            "createdAt": "2025-09-19T03:16:28.157Z",
+            "updatedAt": "2025-09-19T03:16:28.157Z"
+          },
+          {
+            "id": "test-dps-main-ay-2023-24",
+            "name": "2023-24",
+            "startDate": "2023-04-01",
+            "endDate": "2024-03-31",
+            "isActive": false,
+            "branchId": "test-dps-main",
+            "createdAt": "2025-09-19T03:16:28.157Z",
+            "updatedAt": "2025-09-19T03:16:28.157Z"
+          },
+          {
+            "id": "test-dps-main-ay-2024-25",
+            "name": "2024-25",
+            "startDate": "2024-04-01",
+            "endDate": "2025-03-31",
+            "isActive": true,
+            "branchId": "test-dps-main",
+            "createdAt": "2025-09-19T03:16:28.157Z",
+            "updatedAt": "2025-09-19T03:16:28.157Z"
+          },
+          {
+            "id": "test-dps-main-ay-2025-26",
+            "name": "2025-26",
+            "startDate": "2025-04-01",
+            "endDate": "2026-03-31",
+            "isActive": false,
+            "branchId": "test-dps-main",
+            "createdAt": "2025-09-19T03:16:28.157Z",
+            "updatedAt": "2025-09-19T03:16:28.157Z"
+          },
+          {
+            "id": "test-dps-main-ay-2026-27",
+            "name": "2026-27",
+            "startDate": "2026-04-01",
+            "endDate": "2027-03-31",
+            "isActive": false,
+            "branchId": "test-dps-main",
+            "createdAt": "2025-09-19T03:16:28.157Z",
+            "updatedAt": "2025-09-19T03:16:28.157Z"
+          }
+        ]
+      },
+      "subjects": {
+        "entityName": "subjects",
+        "success": true,
+        "metrics": {
+          "totalRecords": 8,
+          "successCount": 8,
+          "errorCount": 0,
+          "startTime": "2025-09-19T03:16:28.333Z",
+          "endTime": "2025-09-19T03:16:28.561Z",
+          "duration": 228,
+          "memoryUsage": {
+            "rss": 227524608,
+            "heapTotal": 131268608,
+            "heapUsed": 116832264,
+            "external": 95463961,
+            "arrayBuffers": 8020041
+          }
+        },
+        "errors": [],
+        "warnings": [],
+        "data": [
+          {
+            "id": "69c0014a-774a-45ec-ba17-8efc99701b54",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-ENG",
+            "name": "English",
+            "description": "English language",
+            "credits": 4,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "7616b44c-b0d6-4ffb-9de2-fce17ae90064",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-MATH",
+            "name": "Mathematics",
+            "description": "Mathematics",
+            "credits": 4,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "ef3a4854-254a-4e6c-b680-cbc265c4cc25",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-SCI",
+            "name": "Science",
+            "description": "General Science",
+            "credits": 4,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "a3588e9c-b964-4e83-aa33-9c5cbb64c682",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-SST",
+            "name": "Social Studies",
+            "description": "Social Studies",
+            "credits": 3,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "78d9e94c-3ed2-4fbc-ba12-e0ce7ccdccc3",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-HIN",
+            "name": "Hindi",
+            "description": "Hindi language",
+            "credits": 3,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "5c8a3e32-6c5c-4c5f-abc7-144e26e48452",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-CS",
+            "name": "Computer Science",
+            "description": "Computer Science",
+            "credits": 2,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "bfbe5060-d7d0-43ff-aa4a-a386d54dacf3",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-PE",
+            "name": "Physical Education",
+            "description": "Physical Education",
+            "credits": 1,
+            "isElective": false,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          },
+          {
+            "id": "a050ac2a-3bb2-4bdd-91b3-0d65af5a8b27",
+            "branchId": "test-dps-main",
+            "code": "TESTDPSMAIN-ART",
+            "name": "Art & Craft",
+            "description": "Art and Craft",
+            "credits": 1,
+            "isElective": true,
+            "prerequisites": null,
+            "createdAt": "2025-09-19T03:16:28.333Z",
+            "updatedAt": "2025-09-19T03:16:28.333Z"
+          }
+        ]
+      },
+      "classes": {
+        "entityName": "classes",
+        "success": true,
+        "metrics": {
+          "totalRecords": 30,
+          "successCount": 30,
+          "errorCount": 0,
+          "startTime": "2025-09-19T03:16:28.561Z",
+          "endTime": "2025-09-19T03:16:28.577Z",
+          "duration": 16,
+          "memoryUsage": {
+            "rss": 227524608,
+            "heapTotal": 131268608,
+            "heapUsed": 117032464,
+            "external": 95463961,
+            "arrayBuffers": 8020041
+          }
+        },
+        "errors": [],
+        "warnings": [],
+        "data": [
+          {
+            "id": "e4dce98b-53e8-4de8-af18-a01c6ab50e97",
+            "branchId": "test-dps-main",
+            "name": "Class 1",
+            "gradeLevel": 1
+          },
+          {
+            "id": "46035521-7ba6-41a6-8f91-098ad5af7b4f",
+            "branchId": "test-dps-main",
+            "name": "Class 2",
+            "gradeLevel": 2
+          },
+          {
+            "id": "b8f43bbd-ac8f-4dda-9183-1e69e05c1ea1",
+            "branchId": "test-dps-main",
+            "name": "Class 3",
+            "gradeLevel": 3
+          },
+          {
+            "id": "b5b196eb-af38-420c-bf9f-9cf4ae163d7f",
+            "branchId": "test-dps-main",
+            "name": "Class 4",
+            "gradeLevel": 4
+          },
+          {
+            "id": "1f511868-b69a-4e69-8d65-6a0cac15b0bc",
+            "branchId": "test-dps-main",
+            "name": "Class 5",
+            "gradeLevel": 5
+          },
+          {
+            "id": "d2d7cdc1-7cca-4225-bee4-11c81d4fea11",
+            "branchId": "test-dps-main",
+            "name": "Class 6",
+            "gradeLevel": 6
+          },
+          {
+            "id": "ccc0c9c7-384e-40ff-8bff-bd1b43f10cfc",
+            "branchId": "test-dps-main",
+            "name": "Class 7",
+            "gradeLevel": 7
+          },
+          {
+            "id": "0e5af27e-6ec4-47e6-aa54-8e53781f6a54",
+            "branchId": "test-dps-main",
+            "name": "Class 8",
+            "gradeLevel": 8
+          },
+          {
+            "id": "fe5b7c51-8e20-4eeb-a000-a5aa27b9e6a6",
+            "branchId": "test-dps-main",
+            "name": "Class 9",
+            "gradeLevel": 9
+          },
+          {
+            "id": "a0dc48b1-f0b9-4699-a738-4a9c7d72cf00",
+            "branchId": "test-dps-main",
+            "name": "Class 10",
+            "gradeLevel": 10
+          }
+        ]
+      },
+      "teachers": {
+        "entityName": "teachers",
+        "success": true,
+        "metrics": {
+          "totalRecords": 30,
+          "successCount": 30,
+          "errorCount": 0,
+          "startTime": "2025-09-19T03:16:28.596Z",
+          "endTime": "2025-09-19T03:16:28.657Z",
+          "duration": 61,
+          "memoryUsage": {
+            "rss": 227524608,
+            "heapTotal": 131268608,
+            "heapUsed": 118942688,
+            "external": 95463961,
+            "arrayBuffers": 8020041
+          }
+        },
+        "errors": [],
+        "warnings": [],
+        "data": [
+          {
+            "id": "test-dps-main-teacher-1-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-1-put0",
+            "subjects": "English",
+            "qualifications": "MA B.Ed",
+            "experienceYears": 0,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-2-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-2-put0",
+            "subjects": "Mathematics",
+            "qualifications": "M.Tech",
+            "experienceYears": 0,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-3-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-3-put0",
+            "subjects": "Science",
+            "qualifications": "M.Ed",
+            "experienceYears": 0,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-4-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-4-put0",
+            "subjects": "Social Studies",
+            "qualifications": "B.Ed",
+            "experienceYears": 1,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-5-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-5-put0",
+            "subjects": "Hindi",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 1,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-6-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-6-put0",
+            "subjects": "Computer Science",
+            "qualifications": "MCA B.Ed",
+            "experienceYears": 1,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-7-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-7-put0",
+            "subjects": "Physical Education",
+            "qualifications": "B.Ed",
+            "experienceYears": 2,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-8-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-8-put0",
+            "subjects": "Art & Craft",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 2,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-9-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-9-put0",
+            "subjects": "English",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 2,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-10-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-10-put0",
+            "subjects": "Mathematics",
+            "qualifications": "M.Tech",
+            "experienceYears": 3,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-11-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-11-put0",
+            "subjects": "Science",
+            "qualifications": "B.Ed",
+            "experienceYears": 3,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-12-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-12-put0",
+            "subjects": "Social Studies",
+            "qualifications": "M.Ed",
+            "experienceYears": 3,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-13-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-13-put0",
+            "subjects": "Hindi",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 4,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-14-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-14-put0",
+            "subjects": "Computer Science",
+            "qualifications": "B.Tech B.Ed",
+            "experienceYears": 4,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-15-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-15-put0",
+            "subjects": "Physical Education",
+            "qualifications": "B.P.Ed",
+            "experienceYears": 4,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-16-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-16-put0",
+            "subjects": "Art & Craft",
+            "qualifications": "M.Ed",
+            "experienceYears": 5,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-17-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-17-put0",
+            "subjects": "English",
+            "qualifications": "MA B.Ed",
+            "experienceYears": 5,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-18-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-18-put0",
+            "subjects": "Mathematics",
+            "qualifications": "M.Sc B.Ed",
+            "experienceYears": 5,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-19-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-19-put0",
+            "subjects": "Science",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 6,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-20-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-20-put0",
+            "subjects": "Social Studies",
+            "qualifications": "M.Ed",
+            "experienceYears": 6,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-21-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-21-put0",
+            "subjects": "Hindi",
+            "qualifications": "M.Ed",
+            "experienceYears": 6,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-22-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-22-put0",
+            "subjects": "Computer Science",
+            "qualifications": "M.Tech",
+            "experienceYears": 7,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-23-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-23-put0",
+            "subjects": "Physical Education",
+            "qualifications": "B.Ed",
+            "experienceYears": 7,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-24-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-24-put0",
+            "subjects": "Art & Craft",
+            "qualifications": "B.Ed",
+            "experienceYears": 7,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-25-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-25-put0",
+            "subjects": "English",
+            "qualifications": "MA B.Ed",
+            "experienceYears": 8,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-26-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-26-put0",
+            "subjects": "Mathematics",
+            "qualifications": "M.Tech",
+            "experienceYears": 8,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-27-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-27-put0",
+            "subjects": "Science",
+            "qualifications": "B.Sc B.Ed",
+            "experienceYears": 8,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-28-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-28-put0",
+            "subjects": "Social Studies",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 9,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-29-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-29-put0",
+            "subjects": "Hindi",
+            "qualifications": "BA B.Ed",
+            "experienceYears": 9,
+            "deletedAt": null,
+            "deletedBy": null
+          },
+          {
+            "id": "test-dps-main-teacher-30-put0",
+            "branchId": "test-dps-main",
+            "staffId": "test-dps-main-staff-30-put0",
+            "subjects": "Computer Science",
+            "qualifications": "M.Tech",
+            "experienceYears": 9,
+            "deletedAt": null,
+            "deletedBy": null
+          }
+        ]
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "metrics": {
+      "totalRecords": 73,
+      "successCount": 5,
+      "errorCount": 0,
+      "startTime": "2025-09-19T03:16:28.141Z",
+      "endTime": "2025-09-19T03:16:28.663Z",
+      "duration": 522,
+      "memoryUsage": {
+        "rss": 557056,
+        "heapTotal": 0,
+        "heapUsed": -723992,
+        "external": 0,
+        "arrayBuffers": 0
+      }
+    }
+  }
+}

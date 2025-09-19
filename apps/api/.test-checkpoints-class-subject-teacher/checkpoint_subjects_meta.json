@@ -1,0 +1,15 @@
+{
+  "name": "subjects",
+  "createdAt": "2025-09-18T20:45:30.626Z",
+  "branchId": "test-checkpoint-branch",
+  "entities": [
+    "tenants",
+    "academicYears",
+    "subjects"
+  ],
+  "counts": {
+    "tenants": 1,
+    "academicYears": 5,
+    "subjects": 8
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "tenants": [
+    {
+      "id": "test-checkpoint-branch",
+      "branchId": "test-checkpoint-branch",
+      "name": "Test Checkpoint Branch School",
+      "subdomain": "test-checkpoint-branch"
+    }
+  ],
+  "academicYears": [
+    {
+      "id": "test-checkpoint-branch-ay-2022-23",
+      "branchId": "test-checkpoint-branch",
+      "name": "2022-23",
+      "startDate": "2022-04-01",
+      "endDate": "2023-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:08:51.322Z",
+      "updatedAt": "2025-09-18T20:08:51.322Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2023-24",
+      "branchId": "test-checkpoint-branch",
+      "name": "2023-24",
+      "startDate": "2023-04-01",
+      "endDate": "2024-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:08:51.322Z",
+      "updatedAt": "2025-09-18T20:08:51.322Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2024-25",
+      "branchId": "test-checkpoint-branch",
+      "name": "2024-25",
+      "startDate": "2024-04-01",
+      "endDate": "2025-03-31",
+      "terms": null,
+      "isActive": true,
+      "createdAt": "2025-09-18T20:08:51.322Z",
+      "updatedAt": "2025-09-18T20:08:51.322Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2025-26",
+      "branchId": "test-checkpoint-branch",
+      "name": "2025-26",
+      "startDate": "2025-04-01",
+      "endDate": "2026-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:08:51.322Z",
+      "updatedAt": "2025-09-18T20:08:51.322Z"
+    },
+    {
+      "id": "test-checkpoint-branch-ay-2026-27",
+      "branchId": "test-checkpoint-branch",
+      "name": "2026-27",
+      "startDate": "2026-04-01",
+      "endDate": "2027-03-31",
+      "terms": null,
+      "isActive": false,
+      "createdAt": "2025-09-18T20:08:51.322Z",
+      "updatedAt": "2025-09-18T20:08:51.322Z"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "b2fa99bf-91e9-4de3-bf39-a324b7957283",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-ENG",
+      "name": "English",
+      "description": "English language",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "d4f16449-588e-4f4a-999e-4c64ef28102d",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-MATH",
+      "name": "Mathematics",
+      "description": "Mathematics",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "85d3486c-9aec-431b-a292-eb63d1b5c039",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-SCI",
+      "name": "Science",
+      "description": "General Science",
+      "credits": 4,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "b6a29905-135c-4b80-963c-be53c27e6021",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-SST",
+      "name": "Social Studies",
+      "description": "Social Studies",
+      "credits": 3,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "a3f428d5-05b8-4404-a1be-82182cfcba2b",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-HIN",
+      "name": "Hindi",
+      "description": "Hindi language",
+      "credits": 3,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "7d084a6c-3968-48f7-a94a-9b3bda722a4d",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-CS",
+      "name": "Computer Science",
+      "description": "Computer Science",
+      "credits": 2,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "8c9ae3d7-549c-4d31-8e0b-d328afdb0169",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-PE",
+      "name": "Physical Education",
+      "description": "Physical Education",
+      "credits": 1,
+      "isElective": false,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    },
+    {
+      "id": "120395a2-47b1-4e07-98c5-f03e2bf7eb95",
+      "branchId": "test-checkpoint-branch",
+      "code": "TESTCHECKPOINTBRANCH-ART",
+      "name": "Art & Craft",
+      "description": "Art and Craft",
+      "credits": 1,
+      "isElective": true,
+      "prerequisites": null,
+      "createdAt": "2025-09-18T20:08:51.328Z",
+      "updatedAt": "2025-09-18T20:08:51.328Z"
+    }
+  ]
+}
