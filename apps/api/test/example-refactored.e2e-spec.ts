@@ -1,4 +1,4 @@
-import * as request from 'supertest';
+import request from 'supertest';
 import { setupTestApp, TestAppFactory } from './test-utils/test-app-factory';
 import { DEFAULT_BRANCH_ID } from '../src/common/constants';
 

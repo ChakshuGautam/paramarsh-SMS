@@ -17,7 +17,7 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { ListDocs, CreateDocs, UpdateDocs, DeleteDocs } from '../../common/swagger.decorators';
 
 @ApiTags('Tickets')
-@Controller('tickets')
+@Controller('comms/tickets')
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 

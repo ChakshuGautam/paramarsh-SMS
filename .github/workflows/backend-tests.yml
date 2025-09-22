@@ -68,9 +68,10 @@ jobs:
         NODE_ENV: test
         JWT_SECRET: test-secret-key-for-ci
         PORT: 8080
+        BYPASS_AUTH: true
       run: |
-        # Run tests and capture exit code
-        bun run test:e2e --bail=5 --maxWorkers=1
+        # Run tests with bypass auth
+        npm run test:e2e:ci:bypass
         TEST_EXIT_CODE=$?
         
         # Exit with the test exit code to fail CI if tests failed

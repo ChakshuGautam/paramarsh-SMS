@@ -40,7 +40,7 @@ describe('Grade Validation Demo (E2E)', () => {
     // Create Nursery class (grade 0)
     const nurseryClass = await prisma.class.create({
       data: {
-        branchId: 'test-branch',
+        branchId: 'dps-main',
         name: 'Nursery',
         gradeLevel: 0,
       },
@@ -50,7 +50,7 @@ describe('Grade Validation Demo (E2E)', () => {
     // Create Class 9 (grade 11)
     const class9 = await prisma.class.create({
       data: {
-        branchId: 'test-branch',
+        branchId: 'dps-main',
         name: 'Class 9',
         gradeLevel: 11,
       },
@@ -60,7 +60,7 @@ describe('Grade Validation Demo (E2E)', () => {
     // Create Mathematics subject (appropriate for all grades)
     const mathSubject = await prisma.subject.create({
       data: {
-        branchId: 'test-branch',
+        branchId: 'dps-main',
         code: 'TEST_MATH',
         name: 'Mathematics',
         credits: 4,
@@ -72,7 +72,7 @@ describe('Grade Validation Demo (E2E)', () => {
     // Create Physics subject (appropriate only for grade 9+)
     const physicsSubject = await prisma.subject.create({
       data: {
-        branchId: 'test-branch',
+        branchId: 'dps-main',
         code: 'TEST_PHY',
         name: 'Physics',
         credits: 4,
@@ -84,10 +84,10 @@ describe('Grade Validation Demo (E2E)', () => {
 
   async function cleanupTestData() {
     await prisma.subject.deleteMany({
-      where: { branchId: 'test-branch' },
+      where: { branchId: 'dps-main' },
     });
     await prisma.class.deleteMany({
-      where: { branchId: 'test-branch' },
+      where: { branchId: 'dps-main' },
     });
   }
 
@@ -95,7 +95,7 @@ describe('Grade Validation Demo (E2E)', () => {
     it('should validate appropriate assignment (Math for Nursery)', async () => {
       const response = await request(app.getHttpServer())
         .get(`/subjects/validate-assignment/${mathSubjectId}/${nurseryClassId}`)
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('isValid', true);
@@ -104,7 +104,7 @@ describe('Grade Validation Demo (E2E)', () => {
     it('should reject inappropriate assignment (Physics for Nursery)', async () => {
       const response = await request(app.getHttpServer())
         .get(`/subjects/validate-assignment/${physicsSubjectId}/${nurseryClassId}`)
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('isValid', false);
@@ -116,7 +116,7 @@ describe('Grade Validation Demo (E2E)', () => {
     it('should validate appropriate assignment (Physics for Class 9)', async () => {
       const response = await request(app.getHttpServer())
         .get(`/subjects/validate-assignment/${physicsSubjectId}/${class9Id}`)
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('isValid', true);
@@ -125,7 +125,7 @@ describe('Grade Validation Demo (E2E)', () => {
     it('should return appropriate subjects for Nursery class', async () => {
       const response = await request(app.getHttpServer())
         .get(`/subjects/appropriate-for-class/${nurseryClassId}`)
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -140,7 +140,7 @@ describe('Grade Validation Demo (E2E)', () => {
     it('should return both subjects for Class 9', async () => {
       const response = await request(app.getHttpServer())
         .get(`/subjects/appropriate-for-class/${class9Id}`)
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -158,7 +158,7 @@ describe('Grade Validation Demo (E2E)', () => {
       const response = await request(app.getHttpServer())
         .get('/subjects/with-grade-filter')
         .query({ gradeLevel: '0' })
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -174,7 +174,7 @@ describe('Grade Validation Demo (E2E)', () => {
       const response = await request(app.getHttpServer())
         .get('/subjects/with-grade-filter')
         .query({ gradeLevel: '11' })
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -190,7 +190,7 @@ describe('Grade Validation Demo (E2E)', () => {
       const response = await request(app.getHttpServer())
         .get('/subjects/with-grade-filter')
         .query({ className: 'Nursery' })
-        .set('x-branch-id', 'test-branch')
+        .set('x-branch-id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('gradeLevel', 0);

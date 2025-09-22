@@ -369,7 +369,7 @@ describe('All Modules API (e2e)', () => {
 
   // Test Communications Module
   describe('Communications Module', () => {
-    testModuleCRUD('templates', {
+    testModuleCRUD('comms/templates', {
       name: 'Test Template',
       subject: 'Test Subject',
       content: 'Test content {{name}}',
@@ -381,7 +381,7 @@ describe('All Modules API (e2e)', () => {
       content: 'Updated test content {{name}}'
     });
 
-    testModuleCRUD('campaigns', {
+    testModuleCRUD('comms/campaigns', {
       name: 'Test Campaign',
       templateId: '1',
       targetAudience: 'students',
@@ -392,7 +392,7 @@ describe('All Modules API (e2e)', () => {
       scheduledAt: '2024-08-27T10:00:00Z'
     }, { skipCreate: true }); // Skip create due to foreign key constraints
 
-    testModuleCRUD('messages', {
+    testModuleCRUD('comms/messages', {
       campaignId: '1',
       recipientId: '1',
       recipientType: 'student',
@@ -404,7 +404,7 @@ describe('All Modules API (e2e)', () => {
       status: 'sent'
     }, { skipCreate: true }); // Skip create due to foreign key constraints
 
-    testModuleCRUD('tickets', {
+    testModuleCRUD('comms/tickets', {
       title: 'Test Ticket',
       description: 'Test ticket description',
       category: 'technical',
@@ -443,7 +443,7 @@ describe('All Modules API (e2e)', () => {
       type: 'laboratory'
     });
 
-    testModuleCRUD('periods', {
+    testModuleCRUD('timetable/periods', {
       sectionId: '1',
       subjectId: '1',
       teacherId: '1',

@@ -18,7 +18,7 @@ import { UpdateTemplateDto } from './dto/update-template.dto';
 import { ListDocs, CreateDocs, UpdateDocs, DeleteDocs } from '../../common/swagger.decorators';
 
 @ApiTags('Templates')
-@Controller('templates')
+@Controller('comms/templates')
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 

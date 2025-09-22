@@ -25,7 +25,9 @@ describe('Timetable API (e2e)', () => {
       const response = await request(app.getHttpServer()).get('/api/v1/timetable').set('X-Branch-Id', 'branch1');
       expect([200, 404, 500]).toContain(response.status);
       if (response.status === 200) {
-        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toHaveProperty('data');
+        expect(response.body).toHaveProperty('total');
+        expect(Array.isArray(response.body.data)).toBe(true);
       }
     });
   });
