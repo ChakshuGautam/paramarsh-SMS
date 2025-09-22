@@ -452,17 +452,27 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 ### NPM Scripts vs Bash Commands (CRITICAL)
 ```bash
 # ✅ CORRECT - Always create/use npm scripts:
-"npm run test:seed:units"               # Run seed unit tests
-"npm run test:seed:quick"              # Quick test with timeout
-"npm run test:seed:list"               # List all test files
-"npm run db:health"                    # Check database health
-"npm run seed:validate"                # Validate seed data
+# Local Testing (with hardcoded DATABASE_URL)
+"npm run local:test:seed"               # Test seed locally
+"npm run local:test:backend"            # Test backend E2E locally
+"npm run local:test:all"                # Run all tests locally
+"npm run test:seed:units:local"         # Run seed unit tests locally
+"npm run test:e2e:local"                # Run E2E tests locally
+"npm run db:push:local"                 # Setup database locally
+
+# CI Testing (uses environment DATABASE_URL)
+"npm run ci:test:seed"                  # CI seed tests
+"npm run ci:test:backend"               # CI backend tests
+"npm run ci:test:all"                   # CI all tests
+"npm run test:seed:units"               # CI seed unit tests
+"npm run test:e2e:ci"                   # CI E2E tests
 
 # ❌ FORBIDDEN - Never use raw bash commands:
 "jest src/seed --maxWorkers=2"         # PROHIBITED! Use npm script
 "DATABASE_URL=... jest ..."            # PROHIBITED! Use npm script
 "tsx scripts/validate-seed.ts"         # PROHIBITED! Use npm script
 "./scripts/test-something.sh"          # PROHIBITED! Use npm script
+"npx prisma db push"                   # PROHIBITED! Use npm script
 ```
 
 **WHY NPM SCRIPTS**: 
