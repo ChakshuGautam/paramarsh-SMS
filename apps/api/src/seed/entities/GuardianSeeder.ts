@@ -61,8 +61,13 @@ export class GuardianSeeder extends BaseSeeder {
             totalRecords: existingGuardians.length,
             successCount: existingGuardians.length,
             errorCount: 0,
+            startTime: new Date(startTime),
+            endTime: new Date(),
             duration: Date.now() - startTime
-          }
+          },
+          data: existingGuardians,
+          errors: [],
+          warnings: []
         };
       }
 
@@ -77,9 +82,13 @@ export class GuardianSeeder extends BaseSeeder {
             totalRecords: 0,
             successCount: 0,
             errorCount: 1,
+            startTime: new Date(startTime),
+            endTime: new Date(),
             duration: Date.now() - startTime
           },
-          errors: ['Missing dependency: students']
+          data: [],
+          errors: [new Error('Missing dependency: students')],
+          warnings: []
         };
       }
 
@@ -133,10 +142,13 @@ export class GuardianSeeder extends BaseSeeder {
           totalRecords: guardians.length + studentGuardians.length,
           successCount: guardians.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: guardians,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => new Error(e)) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -147,9 +159,13 @@ export class GuardianSeeder extends BaseSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in GuardianSeeder: ${error}`)]
+        data: [],
+        errors: [new Error(`Critical error in GuardianSeeder: ${error}`)],
+        warnings: []
       };
     }
   }

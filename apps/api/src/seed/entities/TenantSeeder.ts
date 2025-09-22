@@ -16,6 +16,7 @@ export class TenantSeeder extends PrismaSeeder {
   }
 
   async seed(context: SeedContext): Promise<SeedResult> {
+    const startTime = Date.now();
     const tenant = this.generateTenantData(context.branchId);
     
     context.logger.info(`Starting tenant seeding for ${context.branchId}`, {
@@ -34,11 +35,16 @@ export class TenantSeeder extends PrismaSeeder {
         success: true,
         entityName: this.entityName,
         metrics: {
+          startTime: new Date(startTime),
+          endTime: new Date(),
           totalRecords: 0,
           successCount: 0,
           errorCount: 0,
-          duration: 0
-        }
+          duration: Date.now() - startTime
+        },
+        data: [],
+        errors: [],
+        warnings: []
       };
     }
 

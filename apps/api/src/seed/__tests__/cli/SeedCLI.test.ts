@@ -5,7 +5,7 @@
 
 import { SeedCLI } from '../../cli/SeedCLI';
 import { ModularSeedOrchestrator } from '../../core/ModularSeedOrchestrator';
-import { AcademicYearSeeder } from '../../entities/AcademicYearSeeder';
+import { BaseSeeder } from '../../core/BaseSeeder';
 import { getTestPrisma } from '../setup';
 import '../setup'; // Import setup to ensure lifecycle hooks run
 
@@ -211,7 +211,7 @@ describe('SeedCLI', () => {
       // Create CLI with a failing seeder
       const failingOrchestrator = new ModularSeedOrchestrator();
       
-      class FailingSeeder extends AcademicYearSeeder {
+      class FailingSeeder extends BaseSeeder {
         readonly entityName = 'failing';
         
         async seed(): Promise<any> {

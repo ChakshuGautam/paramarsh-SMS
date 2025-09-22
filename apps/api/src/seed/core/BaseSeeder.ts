@@ -14,19 +14,26 @@ export abstract class BaseSeeder {
    * Main seed method that wraps entity-specific logic
    */
   async seed(context: SeedContext): Promise<SeedResult> {
+    const startTime = Date.now();
+    
     // Check dependencies
     for (const dep of this.dependencies) {
       if (!context.createdEntities.has(dep)) {
+        const endTime = new Date();
         return {
           success: false,
           entityName: this.entityName,
+          data: [],
           metrics: {
             totalRecords: 0,
             successCount: 0,
             errorCount: 1,
-            duration: 0
+            startTime: new Date(startTime),
+            endTime,
+            duration: endTime.getTime() - startTime
           },
-          errors: [`Missing dependency: ${dep}`]
+          errors: [new Error(`Missing dependency: ${dep}`)],
+          warnings: []
         };
       }
     }

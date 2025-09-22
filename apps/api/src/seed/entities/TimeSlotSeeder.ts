@@ -53,8 +53,13 @@ export class TimeSlotSeeder extends BaseSeeder {
             totalRecords: 0,  // No new records created
             successCount: 0,  // No new successes
             errorCount: 0,
+            startTime: new Date(startTime),
+            endTime: new Date(),
             duration: Date.now() - startTime
-          }
+          },
+          data: existingSlots,
+          errors: [],
+          warnings: []
         };
       }
 
@@ -83,10 +88,13 @@ export class TimeSlotSeeder extends BaseSeeder {
           totalRecords: timeSlots.length,
           successCount: timeSlots.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: timeSlots,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => new Error(e)) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -97,9 +105,13 @@ export class TimeSlotSeeder extends BaseSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in TimeSlotSeeder: ${error}`)]
+        data: [],
+        errors: [new Error(`Critical error in TimeSlotSeeder: ${error}`)],
+        warnings: []
       };
     }
   }

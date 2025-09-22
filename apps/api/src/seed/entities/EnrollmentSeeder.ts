@@ -85,10 +85,13 @@ export class EnrollmentSeeder extends BaseSeeder {
           totalRecords: enrollments.length,
           successCount: enrollments.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: enrollments,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => new Error(e)) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -131,9 +134,13 @@ export class EnrollmentSeeder extends BaseSeeder {
         totalRecords: 0,
         successCount: 0,
         errorCount: 1,
+        startTime: new Date(startTime),
+        endTime: new Date(),
         duration: Date.now() - startTime
       },
-      errors: [error]
+      data: [],
+      errors: [new Error(error)],
+      warnings: []
     };
   }
 }

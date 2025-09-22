@@ -449,6 +449,29 @@ Pattern saved as: patterns/[category]-patterns.md#[pattern-name]
 "Run psql to check data"                # PROHIBITED!
 ```
 
+### NPM Scripts vs Bash Commands (CRITICAL)
+```bash
+# ✅ CORRECT - Always create/use npm scripts:
+"npm run test:seed:units"               # Run seed unit tests
+"npm run test:seed:quick"              # Quick test with timeout
+"npm run test:seed:list"               # List all test files
+"npm run db:health"                    # Check database health
+"npm run seed:validate"                # Validate seed data
+
+# ❌ FORBIDDEN - Never use raw bash commands:
+"jest src/seed --maxWorkers=2"         # PROHIBITED! Use npm script
+"DATABASE_URL=... jest ..."            # PROHIBITED! Use npm script
+"tsx scripts/validate-seed.ts"         # PROHIBITED! Use npm script
+"./scripts/test-something.sh"          # PROHIBITED! Use npm script
+```
+
+**WHY NPM SCRIPTS**: 
+- Reproducible across environments
+- Build a knowledge base in package.json
+- Easier to discover and maintain  
+- Have hardcoded test DB credentials
+- Self-documenting
+
 ### HTTP Request Commands
 ```bash
 # ✅ CORRECT - Always use claudeCurl alias:

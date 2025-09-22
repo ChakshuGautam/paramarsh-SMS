@@ -76,15 +76,13 @@ export class CheckpointTestHelper {
     const context: SeedContext = {
       branchId: this.branchId,
       prisma: this.prisma,
+      schoolId: 'test',
       logger: {
-        logProgress: () => {},
-        logResult: () => {},
-        logError: () => {},
+        progress: () => {},
         info: () => {},
         warn: () => {},
         error: () => {},
         debug: () => {},
-        progress: () => {},
         metrics: () => {}
       },
       options: {
@@ -140,15 +138,13 @@ export class CheckpointTestHelper {
     const context: SeedContext = {
       branchId: this.branchId,
       prisma: this.prisma,
+      schoolId: 'test',
       logger: {
-        logProgress: () => {},
-        logResult: () => {},
-        logError: () => {},
+        progress: () => {},
         info: () => {},
         warn: () => {},
         error: () => {},
         debug: () => {},
-        progress: () => {},
         metrics: () => {}
       },
       options: {

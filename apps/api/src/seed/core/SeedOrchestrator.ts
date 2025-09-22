@@ -65,6 +65,7 @@ export class SeedOrchestrator {
 
     // Initialize context
     this.context = {
+      schoolId: options.schoolId || 'default',
       branchId: options.branchId,
       prisma: options.prisma || new PrismaClient(),
       logger: this.logger,
@@ -72,7 +73,9 @@ export class SeedOrchestrator {
         verbose: options.verbose || false,
         dryRun: options.dryRun || false,
         batchSize: options.batchSize || 100,
-        parallel: options.parallel || false
+        parallel: options.parallel || false,
+        skipValidation: false,
+        maxRetries: 3
       },
       createdEntities: new Map()
     };

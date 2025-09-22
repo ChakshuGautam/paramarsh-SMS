@@ -261,10 +261,14 @@ export abstract class PrismaSeeder implements ISeedEntity {
       'ris-extension': { studentCount: 550, teacherCount: 33, classCount: 11 }
     };
 
-    return baseSettings[branchId as keyof typeof baseSettings] || {
+    const setting = baseSettings[branchId as keyof typeof baseSettings] || {
       studentCount: 500,
       teacherCount: 30,
-      classCount: 10,
+      classCount: 10
+    };
+    
+    return {
+      ...setting,
       settings: {}
     };
   }

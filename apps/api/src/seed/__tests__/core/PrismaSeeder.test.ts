@@ -173,7 +173,8 @@ describe('PrismaSeeder', () => {
       
       class PartialErrorSeeder extends TestSeeder {
         constructor() {
-          super(1); // Set batch size to 1 to ensure multiple batches
+          super([]); // Pass empty array for mockData
+          this.batchSize = 1; // Set batch size to 1 to ensure multiple batches
         }
         
         async seed(context: SeedContext): Promise<SeedResult> {

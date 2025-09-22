@@ -32,8 +32,13 @@ export class AttendanceSessionSeeder extends BaseSeeder {
             totalRecords: 0,
             successCount: 0,
             errorCount: 0,
+            startTime: new Date(startTime),
+            endTime: new Date(),
             duration: Date.now() - startTime
-          }
+          },
+          data: existingSessions,
+          errors: [],
+          warnings: []
         };
       }
 
@@ -141,10 +146,13 @@ export class AttendanceSessionSeeder extends BaseSeeder {
           totalRecords: sessions.length,
           successCount: sessions.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: sessions,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => new Error(e)) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -155,9 +163,13 @@ export class AttendanceSessionSeeder extends BaseSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in AttendanceSessionSeeder: ${error}`)]
+        data: [],
+        errors: [new Error(`Critical error in AttendanceSessionSeeder: ${error}`)],
+        warnings: []
       };
     }
   }

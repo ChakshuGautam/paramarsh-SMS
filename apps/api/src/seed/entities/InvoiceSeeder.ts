@@ -192,10 +192,13 @@ export class InvoiceSeeder extends BaseSeeder {
           totalRecords: invoices.length,
           successCount: invoices.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: invoices,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => typeof e === "string" ? new Error(e) : e) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -206,9 +209,13 @@ export class InvoiceSeeder extends BaseSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in InvoiceSeeder: ${error}`)]
+        errors: [new Error(`Critical error in InvoiceSeeder: ${error}`)],
+        data: [],
+        warnings: []
       };
     }
   }

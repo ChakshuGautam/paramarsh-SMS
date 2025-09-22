@@ -4,8 +4,9 @@
  */
 
 import { ModularSeedOrchestrator } from '../../core/ModularSeedOrchestrator';
+import { BaseSeeder } from '../../core/BaseSeeder';
 import { AcademicYearSeeder } from '../../entities/AcademicYearSeeder';
-import { SeedContext, SeedOptions, SeederRegistry } from '../../core/interfaces';
+import { SeedContext, SeedOptions, SeederRegistry, SeedResult } from '../../core/interfaces';
 import { createTestSeedContext, TestLogger, assertEntitiesExist } from '../test-helpers';
 import { getTestPrisma } from '../setup';
 import '../setup'; // Import setup to ensure lifecycle hooks run
@@ -100,12 +101,12 @@ describe('ModularSeedOrchestrator', () => {
     });
 
     it('should detect circular dependencies', () => {
-      class CircularSeeder1 extends AcademicYearSeeder {
+      class CircularSeeder1 extends BaseSeeder {
         readonly entityName = 'circular1';
         readonly dependencies = ['circular2'];
       }
       
-      class CircularSeeder2 extends AcademicYearSeeder {
+      class CircularSeeder2 extends BaseSeeder {
         readonly entityName = 'circular2';
         readonly dependencies = ['circular1'];
       }
@@ -120,7 +121,7 @@ describe('ModularSeedOrchestrator', () => {
     });
 
     it('should resolve dependencies for missing seeders', () => {
-      class DependentSeeder extends AcademicYearSeeder {
+      class DependentSeeder extends BaseSeeder {
         readonly entityName = 'dependent';
         readonly dependencies = ['nonExistent'];
       }
@@ -195,7 +196,7 @@ describe('ModularSeedOrchestrator', () => {
     });
 
     it('should handle seeder failures gracefully', async () => {
-      class FailingSeeder extends AcademicYearSeeder {
+      class FailingSeeder extends BaseSeeder {
         readonly entityName = 'failing';
         
         async seed(): Promise<any> {
@@ -214,7 +215,7 @@ describe('ModularSeedOrchestrator', () => {
     });
 
     it('should continue execution when skipValidation is enabled', async () => {
-      class FailingSeeder extends AcademicYearSeeder {
+      class FailingSeeder extends BaseSeeder {
         readonly entityName = 'failing';
         
         async seed(): Promise<any> {
@@ -253,7 +254,7 @@ describe('ModularSeedOrchestrator', () => {
     });
 
     it('should detect validation failures', async () => {
-      class AlwaysFailsValidationSeeder extends AcademicYearSeeder {
+      class AlwaysFailsValidationSeeder extends BaseSeeder {
         readonly entityName = 'alwaysFails';
         
         async validate(): Promise<boolean> {

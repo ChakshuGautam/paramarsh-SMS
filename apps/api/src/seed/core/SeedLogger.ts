@@ -222,7 +222,7 @@ export class SeedLogger implements ISeedLogger {
   }
 
   // Compatibility methods for orchestrator
-  logProgress(entityName: string, stage: string, current: number, total: number): void {
+  logProgress(entityName: string, stage: 'preparing' | 'validating' | 'seeding' | 'completed' | 'error', current: number, total: number): void {
     const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
     this.progress({
       entityName,

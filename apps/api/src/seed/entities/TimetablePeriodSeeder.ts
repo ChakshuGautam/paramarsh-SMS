@@ -29,11 +29,16 @@ export class TimetablePeriodSeeder extends BaseSeeder {
           success: true,
           entityName: this.entityName,
           metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
             totalRecords: 0,  // No new records created
             successCount: 0,  // No new successes
             errorCount: 0,
             duration: Date.now() - startTime
-          }
+          },
+          data: existingPeriods,
+          errors: [],
+          warnings: []
         };
       }
 
@@ -171,10 +176,13 @@ export class TimetablePeriodSeeder extends BaseSeeder {
           totalRecords: periods.length,
           successCount: periods.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: periods,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => typeof e === "string" ? new Error(e) : e) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -185,9 +193,13 @@ export class TimetablePeriodSeeder extends BaseSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in TimetablePeriodSeeder: ${error}`)]
+        errors: [new Error(`Critical error in TimetablePeriodSeeder: ${error}`)],
+        data: [],
+        warnings: []
       };
     }
   }

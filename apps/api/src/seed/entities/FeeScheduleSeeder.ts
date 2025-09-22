@@ -30,11 +30,16 @@ export class FeeScheduleSeeder extends BaseSeeder {
           success: true,
           entityName: this.entityName,
           metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
             totalRecords: 0,
             successCount: 0,
             errorCount: 0,
             duration: Date.now() - startTime
-          }
+          },
+          data: existingSchedules,
+          errors: [],
+          warnings: []
         };
       }
 
@@ -119,13 +124,16 @@ export class FeeScheduleSeeder extends BaseSeeder {
         success: errors.length === 0,
         entityName: this.entityName,
         metrics: {
+          startTime: new Date(startTime),
+          endTime: new Date(),
           totalRecords: schedules.length,
           successCount: schedules.length,
           errorCount: errors.length,
           duration: Date.now() - startTime
         },
         data: schedules,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => new Error(e)) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -133,12 +141,16 @@ export class FeeScheduleSeeder extends BaseSeeder {
         success: false,
         entityName: this.entityName,
         metrics: {
+          startTime: new Date(startTime),
+          endTime: new Date(),
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in FeeScheduleSeeder: ${error}`)]
+        data: [],
+        errors: [new Error(`Critical error in FeeScheduleSeeder: ${error}`)],
+        warnings: []
       };
     }
   }

@@ -99,10 +99,13 @@ export class RoomSeeder extends BaseSeeder {
           totalRecords: rooms.length,
           successCount: rooms.length,
           errorCount: errors.length,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
         data: rooms,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => typeof e === "string" ? new Error(e) : e) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -113,9 +116,13 @@ export class RoomSeeder extends BaseSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
+          startTime: new Date(startTime),
+          endTime: new Date(),
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in RoomSeeder: ${error}`)]
+        errors: [new Error(`Critical error in RoomSeeder: ${error}`)],
+        data: [],
+        warnings: []
       };
     }
   }

@@ -41,11 +41,16 @@ export class ClassSubjectTeacherSeeder extends BaseSeeder {
           success: true,
           entityName: this.entityName,
           metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
             totalRecords: 0,  // No new records created
             successCount: 0,  // No new successes
             errorCount: 0,
             duration: Date.now() - startTime
-          }
+          },
+          data: existingAssignments,
+          errors: [],
+          warnings: []
         };
       }
 
@@ -140,13 +145,16 @@ export class ClassSubjectTeacherSeeder extends BaseSeeder {
         success: errors.length === 0,
         entityName: this.entityName,
         metrics: {
+          startTime: new Date(startTime),
+          endTime: new Date(),
           totalRecords: assignments.length,
           successCount: assignments.length,
           errorCount: errors.length,
           duration: Date.now() - startTime
         },
         data: assignments,
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors.map(e => new Error(e)) : [],
+        warnings: []
       };
 
     } catch (error) {
@@ -154,12 +162,16 @@ export class ClassSubjectTeacherSeeder extends BaseSeeder {
         success: false,
         entityName: this.entityName,
         metrics: {
+          startTime: new Date(startTime),
+          endTime: new Date(),
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,
           duration: Date.now() - startTime
         },
-        errors: [new Error(`Critical error in ClassSubjectTeacherSeeder: ${error}`)]
+        data: [],
+        errors: [new Error(`Critical error in ClassSubjectTeacherSeeder: ${error}`)],
+        warnings: []
       };
     }
   }

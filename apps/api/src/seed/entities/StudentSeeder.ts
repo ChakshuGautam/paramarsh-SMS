@@ -66,11 +66,16 @@ export class StudentSeeder extends BaseSeeder {
           success: true,
           entityName: this.entityName,
           metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
             totalRecords: existingStudents.length,
             successCount: existingStudents.length,
             errorCount: 0,
             duration: Date.now() - startTime
-          }
+          },
+          data: [],
+          errors: [],
+          warnings: []
         };
       }
 
@@ -96,6 +101,8 @@ export class StudentSeeder extends BaseSeeder {
           success: false,
           entityName: this.entityName,
           metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
             totalRecords: 0,
             successCount: 0,
             errorCount: 1,
@@ -135,6 +142,8 @@ export class StudentSeeder extends BaseSeeder {
         success: errors.length === 0,
         entityName: this.entityName,
         metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
           totalRecords: students.length,
           successCount: students.length,
           errorCount: errors.length,
@@ -148,6 +157,8 @@ export class StudentSeeder extends BaseSeeder {
         success: false,
         entityName: this.entityName,
         metrics: {
+            startTime: new Date(startTime),
+            endTime: new Date(),
           totalRecords: 0,
           successCount: 0,
           errorCount: 1,

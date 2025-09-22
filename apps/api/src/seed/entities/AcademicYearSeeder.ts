@@ -33,6 +33,7 @@ export class AcademicYearSeeder extends PrismaSeeder {
     
     if (newYears.length === 0) {
       // All academic years already exist
+      const endTime = Date.now();
       return {
         success: true,
         entityName: this.entityName,
@@ -40,8 +41,13 @@ export class AcademicYearSeeder extends PrismaSeeder {
           totalRecords: 0,
           successCount: 0,
           errorCount: 0,
-          duration: 0
-        }
+          startTime: new Date(startTime),
+          endTime: new Date(endTime),
+          duration: endTime - startTime
+        },
+        data: existingYears,
+        errors: [],
+        warnings: []
       };
     }
 
