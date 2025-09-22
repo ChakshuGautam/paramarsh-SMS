@@ -62,6 +62,9 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           NODE_ENV: test
         run: |
+          # Create test results directory
+          mkdir -p test-results
+          
           # Use npm scripts for consistency
           npm run test:seed:units -- --json --outputFile=test-results/unit-test-results.json || true
           
@@ -84,13 +87,13 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: seeder-test-results
           path: |
-            apps/api/test-results/seeder-test-report.txt
-            apps/api/test-results/seeder-test-report.json
-            apps/api/test-results/*.log
+            apps/api/test-results/
+            apps/api/reports/seed-validation-*.json
+            apps/api/reports/seed-validation-*.txt
 
       - name: Comment PR with results
         if: github.event_name == 'pull_request' && always()
