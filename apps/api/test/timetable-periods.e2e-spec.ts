@@ -29,7 +29,7 @@ describe('TimetablePeriod E2E', () => {
     it('should return paginated response with seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods?page=1&pageSize=10')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -42,7 +42,7 @@ describe('TimetablePeriod E2E', () => {
     it('should handle pagination correctly', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods?page=1&pageSize=2')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toHaveLength(0);
@@ -52,7 +52,7 @@ describe('TimetablePeriod E2E', () => {
     it('should handle filtering by dayOfWeek', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods?filter={"dayOfWeek":1}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
@@ -62,7 +62,7 @@ describe('TimetablePeriod E2E', () => {
     it('should handle filtering by sectionId', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods?filter={"sectionId":"section-1"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
@@ -72,7 +72,7 @@ describe('TimetablePeriod E2E', () => {
     it('should handle sorting by periodNumber', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods?sort=periodNumber')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
@@ -84,14 +84,14 @@ describe('TimetablePeriod E2E', () => {
     it('should return 404 for non-existent period', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/timetable/periods/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should return 404 for period from different branch', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/timetable/periods/any-id')
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -108,9 +108,9 @@ describe('TimetablePeriod E2E', () => {
     beforeAll(async () => {
       // Create minimal test data for creating periods
       const academicYear = await prisma.academicYear.upsert({
-        where: { branchId_name: { branchId: 'branch1', name: '2024-25' } },
+        where: { branchId_name: { branchId: 'dps-main', name: '2024-25' } },
         create: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           name: '2024-25',
           startDate: '2024-04-01',
           endDate: '2025-03-31',
@@ -123,7 +123,7 @@ describe('TimetablePeriod E2E', () => {
         where: { id: 'test-class-periods' },
         create: {
           id: 'test-class-periods',
-          branchId: 'branch1',
+          branchId: 'dps-main',
           name: 'Test Class',
           gradeLevel: 10,
         },
@@ -134,7 +134,7 @@ describe('TimetablePeriod E2E', () => {
         where: { id: 'test-section-periods' },
         create: {
           id: 'test-section-periods',
-          branchId: 'branch1',
+          branchId: 'dps-main',
           classId: 'test-class-periods',
           name: 'A',
           capacity: 30,
@@ -145,7 +145,7 @@ describe('TimetablePeriod E2E', () => {
       const testSubject = await prisma.subject.upsert({
         where: { code: 'TEST-MATH' },
         create: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           code: 'TEST-MATH',
           name: 'Test Mathematics',
           credits: 5,
@@ -157,7 +157,7 @@ describe('TimetablePeriod E2E', () => {
         where: { id: 'test-staff-periods' },
         create: {
           id: 'test-staff-periods',
-          branchId: 'branch1',
+          branchId: 'dps-main',
           firstName: 'Test',
           lastName: 'Teacher',
           email: 'test.teacher@school.com',
@@ -171,7 +171,7 @@ describe('TimetablePeriod E2E', () => {
       const testTeacher = await prisma.teacher.upsert({
         where: { staffId: 'test-staff-periods' },
         create: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           staffId: 'test-staff-periods',
           subjects: 'Mathematics',
           qualifications: 'B.Sc',
@@ -183,7 +183,7 @@ describe('TimetablePeriod E2E', () => {
       const testRoom = await prisma.room.upsert({
         where: { code: 'TEST-R01' },
         create: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           code: 'TEST-R01',
           name: 'Test Room 01',
           capacity: 30,
@@ -217,7 +217,7 @@ describe('TimetablePeriod E2E', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newPeriod)
         .expect(201);
 
@@ -225,7 +225,7 @@ describe('TimetablePeriod E2E', () => {
       expect(response.body.data.sectionId).toBe(newPeriod.sectionId);
       expect(response.body.data.dayOfWeek).toBe(newPeriod.dayOfWeek);
       expect(response.body.data.periodNumber).toBe(newPeriod.periodNumber);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
       expect(response.body.data.id).toBeDefined();
 
       // Store the created period ID for later tests
@@ -246,7 +246,7 @@ describe('TimetablePeriod E2E', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(breakPeriod)
         .expect(201);
 
@@ -268,7 +268,7 @@ describe('TimetablePeriod E2E', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidPeriod)
         .expect(400);
     });
@@ -287,7 +287,7 @@ describe('TimetablePeriod E2E', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicatePeriod)
         .expect(409);
     });
@@ -303,12 +303,12 @@ describe('TimetablePeriod E2E', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/timetable/periods/${periodId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data.id).toBe(periodId);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
       expect(response.body.data.dayOfWeek).toBe(1);
       expect(response.body.data.periodNumber).toBe(1);
     });
@@ -322,7 +322,7 @@ describe('TimetablePeriod E2E', () => {
 
       await request(app.getHttpServer())
         .get(`/api/v1/timetable/periods/${periodId}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -342,7 +342,7 @@ describe('TimetablePeriod E2E', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/timetable/periods/${periodId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updatedData)
         .expect(200);
 
@@ -360,7 +360,7 @@ describe('TimetablePeriod E2E', () => {
 
       await request(app.getHttpServer())
         .put('/api/v1/timetable/periods/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updatedData)
         .expect(404);
     });
@@ -379,7 +379,7 @@ describe('TimetablePeriod E2E', () => {
 
       await request(app.getHttpServer())
         .put(`/api/v1/timetable/periods/${periodId}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send(updatedData)
         .expect(404);
     });
@@ -395,7 +395,7 @@ describe('TimetablePeriod E2E', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/timetable/periods/${periodId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -404,14 +404,14 @@ describe('TimetablePeriod E2E', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/timetable/periods/${periodId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should return 404 when deleting non-existent period', async () => {
       await request(app.getHttpServer())
         .delete('/api/v1/timetable/periods/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -426,13 +426,13 @@ describe('TimetablePeriod E2E', () => {
       // Get branch1 periods
       const branch1Response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Get branch2 periods
       const branch2Response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(200);
 
       // branch1 may have seed data, branch2 should be empty
@@ -463,7 +463,7 @@ describe('TimetablePeriod E2E', () => {
     it('should return correct format for findAll', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -475,21 +475,21 @@ describe('TimetablePeriod E2E', () => {
     it('should return correct format for create', async () => {
       // Clean up any existing periods first
       await prisma.timetablePeriod.deleteMany({
-        where: { branchId: 'branch1' }
+        where: { branchId: 'dps-main' }
       });
 
       // Use existing test data
       const academicYear = await prisma.academicYear.findFirst({
-        where: { branchId: 'branch1', name: '2024-25' }
+        where: { branchId: 'dps-main', name: '2024-25' }
       });
       const section = await prisma.section.findFirst({
-        where: { branchId: 'branch1' }
+        where: { branchId: 'dps-main' }
       });
       const subject = await prisma.subject.findFirst({
-        where: { branchId: 'branch1' }
+        where: { branchId: 'dps-main' }
       });
       const teacher = await prisma.teacher.findFirst({
-        where: { branchId: 'branch1' }
+        where: { branchId: 'dps-main' }
       });
 
       if (!academicYear || !section || !subject || !teacher) {
@@ -510,7 +510,7 @@ describe('TimetablePeriod E2E', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/timetable/periods')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newPeriod)
         .expect(201);
 

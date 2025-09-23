@@ -21,7 +21,7 @@ describe('Example Refactored Test (E2E)', () => {
     });
 
     it('should filter by branch', () => {
-      const customBranch = 'branch2';
+      const customBranch = 'dps-north';
       return request(getHttpServer())
         .get('/api/v1/students')
         .set(TestAppFactory.getTestHeaders(customBranch))

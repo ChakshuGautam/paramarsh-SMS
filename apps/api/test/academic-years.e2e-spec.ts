@@ -81,7 +81,7 @@ describe('Academic Years API (e2e)', () => {
           .set('X-Branch-Id', 'test-branch'),
         request(app.getHttpServer())
           .get('/api/v1/academic-years')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
@@ -212,7 +212,7 @@ describe('Academic Years API (e2e)', () => {
       // Try to access from branch2
       await request(app.getHttpServer())
         .get(`/api/v1/academic-years/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -340,7 +340,7 @@ describe('Academic Years API (e2e)', () => {
       // Try to update from branch2
       await request(app.getHttpServer())
         .put(`/api/v1/academic-years/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ name: 'Hacked Academic Year' })
         .expect(404);
     });

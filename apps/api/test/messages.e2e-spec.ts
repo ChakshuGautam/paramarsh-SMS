@@ -46,7 +46,7 @@ describe('Messages API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(messageData);
 
       expect([200, 201, 500]).toContain(response.status);
@@ -63,7 +63,7 @@ describe('Messages API (e2e)', () => {
       // First get a template ID
       const templatesResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/templates')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       let templateId = null;
       if (templatesResponse.status === 200 && templatesResponse.body.data?.length > 0) {
@@ -82,7 +82,7 @@ describe('Messages API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(messageData);
 
       expect([200, 201, 400, 404, 500]).toContain(response.status);
@@ -102,7 +102,7 @@ describe('Messages API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidData);
 
       expect([400, 422, 500]).toContain(response.status);
@@ -116,7 +116,7 @@ describe('Messages API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidData);
 
       expect([400, 422, 500]).toContain(response.status);
@@ -135,7 +135,7 @@ describe('Messages API (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/v1/comms/messages')
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .send(messageData);
 
         expect([200, 201, 400, 500]).toContain(response.status);
@@ -152,7 +152,7 @@ describe('Messages API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/messages?skip=0&take=5')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 500]).toContain(response.status);
       
@@ -171,7 +171,7 @@ describe('Messages API (e2e)', () => {
     it('should support filtering by status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/messages?status=pending')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 500]).toContain(response.status);
       
@@ -188,7 +188,7 @@ describe('Messages API (e2e)', () => {
     it('should support filtering by channel', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/messages?channel=sms')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 500]).toContain(response.status);
       
@@ -205,7 +205,7 @@ describe('Messages API (e2e)', () => {
     it('should handle pagination parameters', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/messages?skip=0&take=3')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 500]).toContain(response.status);
       
@@ -221,7 +221,7 @@ describe('Messages API (e2e)', () => {
       // First create a message to get its ID
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           channel: 'sms',
           to: '+9876543210',
@@ -233,7 +233,7 @@ describe('Messages API (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .get(`/api/v1/comms/messages/${messageId}`)
-          .set('X-Branch-Id', 'branch1');
+          .set('X-Branch-Id', 'dps-main');
 
         expect([200, 404, 500]).toContain(response.status);
         
@@ -248,7 +248,7 @@ describe('Messages API (e2e)', () => {
     it('should return 404 for non-existent message', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/messages/non-existent-id')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 404, 500]).toContain(response.status);
     });
@@ -259,7 +259,7 @@ describe('Messages API (e2e)', () => {
       // First create a message
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           channel: 'sms',
           to: '+1111111111',
@@ -276,7 +276,7 @@ describe('Messages API (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .patch(`/api/v1/comms/messages/${messageId}/status`)
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .send(statusUpdate);
 
         expect([200, 404, 500]).toContain(response.status);
@@ -292,7 +292,7 @@ describe('Messages API (e2e)', () => {
       // First create a message
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           channel: 'sms',
           to: '+2222222222',
@@ -309,7 +309,7 @@ describe('Messages API (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .patch(`/api/v1/comms/messages/${messageId}/status`)
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .send(statusUpdate);
 
         expect([200, 404, 500]).toContain(response.status);
@@ -324,7 +324,7 @@ describe('Messages API (e2e)', () => {
     it('should validate required status field', async () => {
       const response = await request(app.getHttpServer())
         .patch('/api/v1/comms/messages/test-id/status')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({});
 
       expect([400, 404, 422, 500]).toContain(response.status);
@@ -336,7 +336,7 @@ describe('Messages API (e2e)', () => {
       // First create a message
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           channel: 'sms',
           to: '+3333333333',
@@ -348,7 +348,7 @@ describe('Messages API (e2e)', () => {
 
         const response = await request(app.getHttpServer())
           .post(`/api/v1/comms/messages/${messageId}/send`)
-          .set('X-Branch-Id', 'branch1');
+          .set('X-Branch-Id', 'dps-main');
 
         expect([200, 201, 404, 500]).toContain(response.status);
         
@@ -362,7 +362,7 @@ describe('Messages API (e2e)', () => {
     it('should handle sending non-existent message', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages/non-existent-id/send')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 201, 404, 500]).toContain(response.status);
     });
@@ -372,7 +372,7 @@ describe('Messages API (e2e)', () => {
     it('should retry failed messages', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages/retry-failed')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 201, 500]).toContain(response.status);
       
@@ -388,7 +388,7 @@ describe('Messages API (e2e)', () => {
       // Create messages in both tenants
       const message1 = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           channel: 'sms',
           to: '+1111111111',
@@ -397,7 +397,7 @@ describe('Messages API (e2e)', () => {
 
       const message2 = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({
           channel: 'sms',
           to: '+2222222222',
@@ -410,12 +410,12 @@ describe('Messages API (e2e)', () => {
         // Get messages for branch1
         const branch1Messages = await request(app.getHttpServer())
           .get('/api/v1/comms/messages')
-          .set('X-Branch-Id', 'branch1');
+          .set('X-Branch-Id', 'dps-main');
 
         // Get messages for branch2
         const branch2Messages = await request(app.getHttpServer())
           .get('/api/v1/comms/messages')
-          .set('X-Branch-Id', 'branch2');
+          .set('X-Branch-Id', 'dps-north');
 
         if (branch1Messages.status === 200 && branch2Messages.status === 200) {
           // Note: Multi-tenancy may not be working if PrismaService.getScope() is not set up properly
@@ -437,7 +437,7 @@ describe('Messages API (e2e)', () => {
     it('should handle malformed JSON in payload', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/messages')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .set('Content-Type', 'application/json')
         .send('{"channel":"sms","to":"+1234567890","payload":{"malformed":}');
 

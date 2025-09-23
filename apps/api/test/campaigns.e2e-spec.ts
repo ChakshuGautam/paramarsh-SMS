@@ -43,8 +43,8 @@ describe('Campaigns API (e2e)', () => {
   describe('GET /api/v1/comms/campaigns', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/comms/campaigns?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/comms/campaigns?page=1&pageSize=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -61,7 +61,7 @@ describe('Campaigns API (e2e)', () => {
         expect(campaign).toHaveProperty('audienceQuery');
         expect(campaign).toHaveProperty('schedule');
         expect(campaign).toHaveProperty('status');
-        expect(campaign).toHaveProperty('branchId', 'branch1');
+        expect(campaign).toHaveProperty('branchId', 'dps-main');
         expect(['draft', 'scheduled', 'active', 'completed', 'cancelled']).toContain(campaign.status);
       }
     });
@@ -70,10 +70,10 @@ describe('Campaigns API (e2e)', () => {
       const [branch1Response, branch2Response] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/comms/campaigns')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/comms/campaigns')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
@@ -88,14 +88,14 @@ describe('Campaigns API (e2e)', () => {
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns?sort=name')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -106,7 +106,7 @@ describe('Campaigns API (e2e)', () => {
     it('should support descending sorting by schedule', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns?sort=-schedule')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const schedules = response.body.data.map(item => new Date(item.schedule));
@@ -118,7 +118,7 @@ describe('Campaigns API (e2e)', () => {
       const filter = { status: 'active' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -130,7 +130,7 @@ describe('Campaigns API (e2e)', () => {
       // First get a template ID
       const templateResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/templates')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (templateResponse.body.data.length > 0) {
         const templateId = templateResponse.body.data[0].id;
@@ -138,7 +138,7 @@ describe('Campaigns API (e2e)', () => {
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(item => {
@@ -149,13 +149,13 @@ describe('Campaigns API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/comms/campaigns?page=1&perPage=2')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/comms/campaigns?page=1&pageSize=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/comms/campaigns?page=2&perPage=2')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/comms/campaigns?page=2&pageSize=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -172,34 +172,34 @@ describe('Campaigns API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('name');
       expect(response.body.data).toHaveProperty('status');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return campaign with template relationship', async () => {
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns/${testId}?include=template`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toHaveProperty('template');
@@ -212,7 +212,7 @@ describe('Campaigns API (e2e)', () => {
     it('should return 404 for non-existent campaign', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -220,7 +220,7 @@ describe('Campaigns API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
@@ -228,7 +228,7 @@ describe('Campaigns API (e2e)', () => {
       // Try to access from branch2
       await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -238,7 +238,7 @@ describe('Campaigns API (e2e)', () => {
       // First get a template ID
       const templateResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/templates')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (templateResponse.body.data.length === 0) {
         return; // Skip if no templates
@@ -254,7 +254,7 @@ describe('Campaigns API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newCampaign)
         .expect(201);
 
@@ -265,7 +265,7 @@ describe('Campaigns API (e2e)', () => {
         templateId: newCampaign.templateId,
         status: newCampaign.status
       });
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -276,7 +276,7 @@ describe('Campaigns API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidCampaign)
         .expect(400);
     });
@@ -284,7 +284,7 @@ describe('Campaigns API (e2e)', () => {
     it('should validate future schedule date', async () => {
       const templateResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/templates')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (templateResponse.body.data.length === 0) return;
 
@@ -298,7 +298,7 @@ describe('Campaigns API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidCampaign)
         .expect(400);
     });
@@ -309,13 +309,13 @@ describe('Campaigns API (e2e)', () => {
       // First create a campaign to update
       const templateResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/templates')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (templateResponse.body.data.length === 0) return;
 
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Original Campaign',
           templateId: templateResponse.body.data[0].id,
@@ -336,7 +336,7 @@ describe('Campaigns API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/comms/campaigns/${campaignId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -350,7 +350,7 @@ describe('Campaigns API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
@@ -358,7 +358,7 @@ describe('Campaigns API (e2e)', () => {
       // Try to update from branch2
       await request(app.getHttpServer())
         .put(`/api/v1/comms/campaigns/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ name: 'Hacked Campaign' })
         .expect(404);
     });
@@ -369,7 +369,7 @@ describe('Campaigns API (e2e)', () => {
       // First get an existing campaign
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const campaignId = listResponse.body.data[0]?.id;
       if (!campaignId) return;
@@ -380,7 +380,7 @@ describe('Campaigns API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/comms/campaigns/${campaignId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -395,13 +395,13 @@ describe('Campaigns API (e2e)', () => {
       // First create a campaign to delete
       const templateResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/templates')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (templateResponse.body.data.length === 0) return;
 
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Campaign to Delete',
           templateId: templateResponse.body.data[0].id,
@@ -414,7 +414,7 @@ describe('Campaigns API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/comms/campaigns/${campaignId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -423,7 +423,7 @@ describe('Campaigns API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns/${campaignId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -433,7 +433,7 @@ describe('Campaigns API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -443,7 +443,7 @@ describe('Campaigns API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -460,7 +460,7 @@ describe('Campaigns API (e2e)', () => {
     it('should find specific campaign names from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const campaignNames = response.body.data.map(c => c.name);
@@ -476,7 +476,7 @@ describe('Campaigns API (e2e)', () => {
     it('should find campaigns with different statuses from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const statuses = response.body.data.map(c => c.status);
@@ -492,7 +492,7 @@ describe('Campaigns API (e2e)', () => {
     it('should find campaigns with class-based audience queries', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/campaigns')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Find campaigns that specifically have class-based queries
@@ -522,7 +522,7 @@ describe('Campaigns API (e2e)', () => {
       const filter = { name: { "$contains": "Fee" } };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Filter should work even if no matching campaigns exist
@@ -537,7 +537,7 @@ describe('Campaigns API (e2e)', () => {
       const filter = { name: { "$contains": "Welcome" } };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -551,7 +551,7 @@ describe('Campaigns API (e2e)', () => {
       const filter = { name: { "$contains": "Exam" } };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -565,7 +565,7 @@ describe('Campaigns API (e2e)', () => {
       const filter = { name: { "$contains": "Attendance" } };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -579,7 +579,7 @@ describe('Campaigns API (e2e)', () => {
       const filter = { name: { "$contains": "Holiday" } };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/comms/campaigns?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {

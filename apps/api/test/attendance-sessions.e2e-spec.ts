@@ -582,7 +582,7 @@ describe('Attendance Sessions API (e2e)', () => {
           .set('X-Branch-Id', 'test-branch'),
         request(app.getHttpServer())
           .get('/api/v1/attendance/sessions')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);

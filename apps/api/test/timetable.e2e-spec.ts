@@ -22,7 +22,7 @@ describe('Timetable API (e2e)', () => {
 
   describe('GET /api/v1/timetable', () => {
     it('should return timetable', async () => {
-      const response = await request(app.getHttpServer()).get('/api/v1/timetable').set('X-Branch-Id', 'branch1');
+      const response = await request(app.getHttpServer()).get('/api/v1/timetable').set('X-Branch-Id', 'dps-main');
       expect([200, 404, 500]).toContain(response.status);
       if (response.status === 200) {
         expect(response.body).toHaveProperty('data');
@@ -35,7 +35,7 @@ describe('Timetable API (e2e)', () => {
   describe('POST /api/v1/timetable', () => {
     it('should create timetable entry', async () => {
       const entryData = { sectionId: 'test-section', subjectId: 'test-subject', teacherId: 'test-teacher', roomId: 'test-room', timeSlotId: 'test-slot' };
-      const response = await request(app.getHttpServer()).post('/api/v1/timetable').set('X-Branch-Id', 'branch1').send(entryData);
+      const response = await request(app.getHttpServer()).post('/api/v1/timetable').set('X-Branch-Id', 'dps-main').send(entryData);
       expect([200, 201, 400, 404, 500]).toContain(response.status);
     });
   });

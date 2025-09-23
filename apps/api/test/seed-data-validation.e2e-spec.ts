@@ -6,7 +6,7 @@ import { AppModule } from './../src/app.module';
 
 describe('Comprehensive Seed Data Validation (e2e)', () => {
   let app: INestApplication;
-  const branchId = 'branch1'; // Use actual branch from seed
+  const branchId = 'dps-main'; // Use actual branch from seed
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -318,7 +318,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       
       // Should have variety of designations
       const designations = staff.map(s => s.designation).filter(Boolean);
-      const uniqueDesignations = [...new Set(designations)];
+      const uniqueDesignations = Array.from(new Set(designations));
       expect(uniqueDesignations.length).toBeGreaterThanOrEqual(5); // Principal, Teachers, Admin, etc.
       
       // Should include key positions (adjust based on actual seed data)

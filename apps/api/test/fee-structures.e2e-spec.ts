@@ -37,7 +37,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/structures?page=1&pageSize=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
       expect(response.body).toHaveProperty('data');
       expect(response.body).toHaveProperty('total');
@@ -50,10 +50,10 @@ describe('Fee Structures API (e2e)', () => {
       const [branch1Response, branch2Response] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/fees/structures')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/fees/structures')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       // Verify isolation
@@ -65,14 +65,14 @@ describe('Fee Structures API (e2e)', () => {
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/structures?sort=id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 1) {
@@ -85,7 +85,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should support descending sorting', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/structures?sort=-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 1) {
@@ -98,13 +98,13 @@ describe('Fee Structures API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/fees/structures?page=1&pageSize=2')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (page1.body.total > 2) {
         const page2 = await request(app.getHttpServer())
           .get('/api/v1/fees/structures?page=2&pageSize=2')
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         // Verify no overlap
@@ -119,7 +119,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should include components in the response', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -135,7 +135,7 @@ describe('Fee Structures API (e2e)', () => {
       // First get a class ID for the structure
       const classesResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const classId = classesResponse.body.data[0]?.id;
 
@@ -145,7 +145,7 @@ describe('Fee Structures API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newStructure)
         .expect(201);
 
@@ -159,7 +159,7 @@ describe('Fee Structures API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newStructure)
         .expect(201);
 
@@ -173,7 +173,7 @@ describe('Fee Structures API (e2e)', () => {
       // First create a structure
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({});
 
       const structureId = createResponse.body.data.id;
@@ -181,7 +181,7 @@ describe('Fee Structures API (e2e)', () => {
       // Get a class ID for the update
       const classesResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const classId = classesResponse.body.data[0]?.id;
 
@@ -191,7 +191,7 @@ describe('Fee Structures API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/fees/structures/${structureId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -203,7 +203,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should return 404 for non-existent structure', async () => {
       await request(app.getHttpServer())
         .patch('/api/v1/fees/structures/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({ gradeId: null })
         .expect(404);
     });
@@ -214,14 +214,14 @@ describe('Fee Structures API (e2e)', () => {
       // First create a structure
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({});
 
       const structureId = createResponse.body.data.id;
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/fees/structures/${structureId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('success');
@@ -231,7 +231,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should return 404 for non-existent structure', async () => {
       await request(app.getHttpServer())
         .delete('/api/v1/fees/structures/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -241,7 +241,7 @@ describe('Fee Structures API (e2e)', () => {
       // First create a structure
       const structureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({});
 
       const structureId = structureResponse.body.data.id;
@@ -255,7 +255,7 @@ describe('Fee Structures API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/fees/structures/components')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newComponent)
         .expect(201);
 
@@ -272,7 +272,7 @@ describe('Fee Structures API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/fees/structures/components')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidComponent)
         .expect(400);
     });
@@ -283,7 +283,7 @@ describe('Fee Structures API (e2e)', () => {
       // First create a structure
       const structureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({});
 
       const structureId = structureResponse.body.data.id;
@@ -291,7 +291,7 @@ describe('Fee Structures API (e2e)', () => {
       // Create a component
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures/components')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           feeStructureId: structureId,
           name: 'Original Component',
@@ -308,7 +308,7 @@ describe('Fee Structures API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/fees/structures/components/${componentId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -321,7 +321,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should return 404 for non-existent component', async () => {
       await request(app.getHttpServer())
         .patch('/api/v1/fees/structures/components/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Updated' })
         .expect(404);
     });
@@ -332,7 +332,7 @@ describe('Fee Structures API (e2e)', () => {
       // First create a structure
       const structureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({});
 
       const structureId = structureResponse.body.data.id;
@@ -340,7 +340,7 @@ describe('Fee Structures API (e2e)', () => {
       // Create a component
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures/components')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           feeStructureId: structureId,
           name: 'Component to Delete',
@@ -352,7 +352,7 @@ describe('Fee Structures API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/fees/structures/components/${componentId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('success');
@@ -362,7 +362,7 @@ describe('Fee Structures API (e2e)', () => {
     it('should return 404 for non-existent component', async () => {
       await request(app.getHttpServer())
         .delete('/api/v1/fees/structures/components/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });

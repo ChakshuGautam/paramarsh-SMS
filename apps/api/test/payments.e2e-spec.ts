@@ -23,8 +23,8 @@ describe('Payments API (e2e)', () => {
   describe('GET /api/v1/payments', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/payments?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/payments?page=1&pageSize=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -54,10 +54,10 @@ describe('Payments API (e2e)', () => {
       const [branch1Response, branch2Response] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/payments?include=invoice')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/payments?include=invoice')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
@@ -66,7 +66,7 @@ describe('Payments API (e2e)', () => {
       // Verify isolation through invoice branchId
       branch1Response.body.data.forEach(payment => {
         if (payment.invoice) {
-          expect(payment.invoice.student.branchId).toBe('branch1');
+          expect(payment.invoice.student.branchId).toBe('dps-main');
         }
       });
     });
@@ -74,7 +74,7 @@ describe('Payments API (e2e)', () => {
     it('should support ascending sorting by amount', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments?sort=amount')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const amounts = response.body.data.map(item => item.amount);
@@ -85,7 +85,7 @@ describe('Payments API (e2e)', () => {
     it('should support descending sorting by createdAt', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments?sort=-createdAt')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const dates = response.body.data.map(item => new Date(item.createdAt));
@@ -97,7 +97,7 @@ describe('Payments API (e2e)', () => {
       const filter = { status: 'COMPLETED' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -109,7 +109,7 @@ describe('Payments API (e2e)', () => {
       const filter = { gateway: 'RAZORPAY' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -121,7 +121,7 @@ describe('Payments API (e2e)', () => {
       const filter = { method: 'CARD' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -133,7 +133,7 @@ describe('Payments API (e2e)', () => {
       // Get all payments first to see what amounts exist
       const allResponse = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (allResponse.body.data.length > 0) {
@@ -146,13 +146,13 @@ describe('Payments API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/payments?page=1&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/payments?page=1&pageSize=3')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/payments?page=2&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/payments?page=2&pageSize=3')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -169,14 +169,14 @@ describe('Payments API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -189,14 +189,14 @@ describe('Payments API (e2e)', () => {
     it('should return payment with invoice relationship', async () => {
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments/${testId}?include=invoice`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toHaveProperty('invoice');
@@ -209,7 +209,7 @@ describe('Payments API (e2e)', () => {
     it('should return 404 for non-existent payment', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/payments/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -217,7 +217,7 @@ describe('Payments API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
@@ -225,7 +225,7 @@ describe('Payments API (e2e)', () => {
       // Try to access from branch2
       await request(app.getHttpServer())
         .get(`/api/v1/payments/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -235,7 +235,7 @@ describe('Payments API (e2e)', () => {
       // First get an invoice ID
       const invoiceResponse = await request(app.getHttpServer())
         .get('/api/v1/invoices?filter={"status":"PENDING"}')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (invoiceResponse.body.data.length === 0) {
         return; // Skip if no pending invoices
@@ -253,7 +253,7 @@ describe('Payments API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newPayment)
         .expect(201);
 
@@ -270,7 +270,7 @@ describe('Payments API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidPayment)
         .expect(500); // Internal Server Error for missing fields
     });
@@ -278,7 +278,7 @@ describe('Payments API (e2e)', () => {
     it('should validate payment amount matches invoice amount', async () => {
       const invoiceResponse = await request(app.getHttpServer())
         .get('/api/v1/invoices')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (invoiceResponse.body.data.length === 0) return;
 
@@ -295,7 +295,7 @@ describe('Payments API (e2e)', () => {
       // Currently no validation enforced, so payment is created
       await request(app.getHttpServer())
         .post('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidPayment)
         .expect(201);
     });
@@ -306,14 +306,14 @@ describe('Payments API (e2e)', () => {
       // First create a payment to update
       const invoiceResponse = await request(app.getHttpServer())
         .get('/api/v1/invoices')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (invoiceResponse.body.data.length === 0) return;
 
       const invoice = invoiceResponse.body.data[0];
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           invoiceId: invoice.id,
           amount: invoice.amount,
@@ -336,7 +336,7 @@ describe('Payments API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/payments/${paymentId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -351,7 +351,7 @@ describe('Payments API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
@@ -359,7 +359,7 @@ describe('Payments API (e2e)', () => {
       // Try to update from branch2
       await request(app.getHttpServer())
         .put(`/api/v1/payments/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ status: 'FAILED' })
         .expect(404);
     });
@@ -370,7 +370,7 @@ describe('Payments API (e2e)', () => {
       // First get an existing payment
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const paymentId = listResponse.body.data[0]?.id;
       if (!paymentId) return;
@@ -381,7 +381,7 @@ describe('Payments API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/payments/${paymentId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -396,14 +396,14 @@ describe('Payments API (e2e)', () => {
       // First create a payment to delete
       const invoiceResponse = await request(app.getHttpServer())
         .get('/api/v1/invoices')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (invoiceResponse.body.data.length === 0) return;
 
       const invoice = invoiceResponse.body.data[0];
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           invoiceId: invoice.id,
           amount: invoice.amount,
@@ -417,7 +417,7 @@ describe('Payments API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/payments/${paymentId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -426,7 +426,7 @@ describe('Payments API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/payments/${paymentId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -436,7 +436,7 @@ describe('Payments API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -446,7 +446,7 @@ describe('Payments API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -463,7 +463,7 @@ describe('Payments API (e2e)', () => {
     it('should find payments with correct reference format from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(payment => {
@@ -474,7 +474,7 @@ describe('Payments API (e2e)', () => {
     it('should find payments using different gateways from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const gateways = response.body.data.map(p => p.gateway);
@@ -486,7 +486,7 @@ describe('Payments API (e2e)', () => {
     it('should find payments using different methods from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const methods = response.body.data.map(p => p.method);
@@ -499,7 +499,7 @@ describe('Payments API (e2e)', () => {
       const filter = { status: 'COMPLETED' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/payments?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data.length).toBeGreaterThan(0);
@@ -511,7 +511,7 @@ describe('Payments API (e2e)', () => {
     it('should have payments with realistic amounts', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Check that we have some payments with amounts
@@ -529,7 +529,7 @@ describe('Payments API (e2e)', () => {
     it('should find payments linked to invoices', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments?include=invoice')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(payment => {
@@ -544,7 +544,7 @@ describe('Payments API (e2e)', () => {
     it('should calculate payment success rate', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const totalPayments = response.body.data.length;
@@ -559,7 +559,7 @@ describe('Payments API (e2e)', () => {
     it('should find payments from quarterly fee collections', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/payments?include=invoice')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const quarterlyPayments = response.body.data.filter(p => 

@@ -47,7 +47,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
     // Create academic year
     const academicYear = await prisma.academicYear.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: '2024-25',
         startDate: '2024-04-01',
         endDate: '2025-03-31',
@@ -59,7 +59,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
     // Create classes with different grade levels
     const nurseryClass = await prisma.class.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'Nursery',
         gradeLevel: 0,
       },
@@ -68,7 +68,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const class5 = await prisma.class.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'Class 5',
         gradeLevel: 7, // Using the mapping from grade-subject-mapping.ts
       },
@@ -77,7 +77,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const class9 = await prisma.class.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'Class 9',
         gradeLevel: 11, // Using the mapping from grade-subject-mapping.ts
       },
@@ -87,7 +87,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
     // Create sections
     const nurseryA = await prisma.section.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'A',
         classId: nurseryClassId,
         capacity: 30,
@@ -97,7 +97,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const class5A = await prisma.section.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'A',
         classId: class5Id,
         capacity: 35,
@@ -107,7 +107,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const class9A = await prisma.section.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'A',
         classId: class9Id,
         capacity: 40,
@@ -118,7 +118,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
     // Create subjects
     const mathSubject = await prisma.subject.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         code: 'MATH',
         name: 'Mathematics',
         credits: 4,
@@ -129,7 +129,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const physicsSubject = await prisma.subject.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         code: 'PHY',
         name: 'Physics',
         credits: 4,
@@ -140,7 +140,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const geographySubject = await prisma.subject.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         code: 'GEO',
         name: 'Geography',
         credits: 3,
@@ -151,7 +151,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
     const artSubject = await prisma.subject.create({
       data: {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         code: 'ART',
         name: 'Art & Craft',
         credits: 2,
@@ -164,19 +164,19 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
   async function cleanupTestData() {
     // Delete in reverse order of creation to handle foreign key constraints
     await prisma.timetablePeriod.deleteMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
     });
     await prisma.subject.deleteMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
     });
     await prisma.section.deleteMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
     });
     await prisma.class.deleteMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
     });
     await prisma.academicYear.deleteMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
     });
   }
 
@@ -371,7 +371,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
       // Create some timetable periods with inappropriate assignments for testing
       await prisma.timetablePeriod.create({
         data: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           sectionId: nurseryAId,
           subjectId: physicsSubjectId, // Inappropriate: Physics for Nursery
           dayOfWeek: 1,
@@ -384,7 +384,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
       await prisma.timetablePeriod.create({
         data: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           sectionId: nurseryAId,
           subjectId: geographySubjectId, // Inappropriate: Geography for Nursery
           dayOfWeek: 1,
@@ -397,7 +397,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
       await prisma.timetablePeriod.create({
         data: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           sectionId: class9AId,
           subjectId: mathSubjectId, // Appropriate: Math for Class 9
           dayOfWeek: 1,
@@ -412,7 +412,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
     afterEach(async () => {
       // Clean up test periods
       await prisma.timetablePeriod.deleteMany({
-        where: { branchId: 'branch1' },
+        where: { branchId: 'dps-main' },
       });
     });
 
@@ -461,7 +461,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
       // Create some timetable periods with mixed appropriate/inappropriate assignments
       await prisma.timetablePeriod.create({
         data: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           sectionId: nurseryAId,
           subjectId: mathSubjectId, // Appropriate: Math for Nursery
           dayOfWeek: 1,
@@ -474,7 +474,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
       await prisma.timetablePeriod.create({
         data: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           sectionId: nurseryAId,
           subjectId: physicsSubjectId, // Inappropriate: Physics for Nursery
           dayOfWeek: 1,
@@ -487,7 +487,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
 
       await prisma.timetablePeriod.create({
         data: {
-          branchId: 'branch1',
+          branchId: 'dps-main',
           sectionId: class9AId,
           subjectId: physicsSubjectId, // Appropriate: Physics for Class 9
           dayOfWeek: 1,
@@ -502,7 +502,7 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
     afterEach(async () => {
       // Clean up test periods
       await prisma.timetablePeriod.deleteMany({
-        where: { branchId: 'branch1' },
+        where: { branchId: 'dps-main' },
       });
     });
 

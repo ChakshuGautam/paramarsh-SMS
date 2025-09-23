@@ -68,7 +68,7 @@ describe('Marks API (e2e)', () => {
         const mark = response.body.data[0];
         
         expect(mark).toHaveProperty('id');
-        expect(mark).toHaveProperty('branchId', 'branch1');
+        expect(mark).toHaveProperty('branchId', 'dps-main');
         expect(mark).toHaveProperty('examId');
         expect(mark).toHaveProperty('subjectId');
         expect(mark).toHaveProperty('studentId');
@@ -92,7 +92,7 @@ describe('Marks API (e2e)', () => {
           .set('X-Branch-Id', 'test-branch'),
         request(app.getHttpServer())
           .get('/api/v1/marks')
-          .set('X-Branch-Id', 'test-branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       // Verify isolation
@@ -290,7 +290,7 @@ describe('Marks API (e2e)', () => {
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
       
       // Check included relations
       expect(response.body.data).toHaveProperty('exam');
@@ -317,7 +317,7 @@ describe('Marks API (e2e)', () => {
       // Try to access from branch2
       await request(app.getHttpServer())
         .get(`/api/v1/marks/${branch1Id}`)
-        .set('X-Branch-Id', 'test-branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -559,7 +559,7 @@ describe('Marks API (e2e)', () => {
       // Try to update from branch2
       await request(app.getHttpServer())
         .patch(`/api/v1/marks/${branch1Id}`)
-        .set('X-Branch-Id', 'test-branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ theoryMarks: 100 })
         .expect(404);
     });
@@ -611,7 +611,7 @@ describe('Marks API (e2e)', () => {
       // Try to delete from branch2
       await request(app.getHttpServer())
         .delete(`/api/v1/marks/${branch1Id}`)
-        .set('X-Branch-Id', 'test-branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -637,7 +637,7 @@ describe('Marks API (e2e)', () => {
 
       response.body.data.forEach(mark => {
         expect(mark.examId).toBe(examId);
-        expect(mark.branchId).toBe('branch1');
+        expect(mark.branchId).toBe('dps-main');
         expect(mark).toHaveProperty('subject');
         expect(mark).toHaveProperty('student');
         expect(mark.student).toHaveProperty('firstName');
@@ -667,7 +667,7 @@ describe('Marks API (e2e)', () => {
 
       response.body.data.forEach(mark => {
         expect(mark.studentId).toBe(studentId);
-        expect(mark.branchId).toBe('branch1');
+        expect(mark.branchId).toBe('dps-main');
         expect(mark).toHaveProperty('exam');
         expect(mark).toHaveProperty('subject');
         expect(mark.exam).toHaveProperty('name');

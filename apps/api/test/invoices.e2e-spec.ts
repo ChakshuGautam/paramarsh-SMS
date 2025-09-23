@@ -198,7 +198,7 @@ describe('Invoices (e2e)', () => {
 
     it('should work with pagination and case-insensitive status filtering', async () => {
       const response = await request(app.getHttpServer())
-        .get('/invoices?status=pending&page=1&perPage=5')
+        .get('/invoices?status=pending&page=1&pageSize=5')
         .set('x-branch-id', DEFAULT_BRANCH_ID)
         .expect(200);
 
@@ -217,7 +217,7 @@ describe('Invoices (e2e)', () => {
 
     it('should work with sorting and case-insensitive status filtering', async () => {
       const response = await request(app.getHttpServer())
-        .get('/invoices?status=pending&sort=amount&perPage=10')
+        .get('/invoices?status=pending&sort=amount&pageSize=10')
         .set('x-branch-id', DEFAULT_BRANCH_ID)
         .expect(200);
 
@@ -237,7 +237,7 @@ describe('Invoices (e2e)', () => {
   describe('Enhanced Calculated Fields', () => {
     it('should include calculated fields (isOverdue, daysPastDue) in response', async () => {
       const response = await request(app.getHttpServer())
-        .get('/invoices?perPage=5')
+        .get('/invoices&pageSize=5')
         .set('x-branch-id', DEFAULT_BRANCH_ID)
         .expect(200);
 
@@ -269,7 +269,7 @@ describe('Invoices (e2e)', () => {
     it('should get a single invoice', async () => {
       // First get a list to find an invoice ID
       const listResponse = await request(app.getHttpServer())
-        .get('/invoices?perPage=1')
+        .get('/invoices&pageSize=1')
         .set('x-branch-id', DEFAULT_BRANCH_ID);
 
       if (listResponse.body.data.length > 0) {
@@ -297,7 +297,7 @@ describe('Invoices (e2e)', () => {
 
     it('should support pagination', async () => {
       const response = await request(app.getHttpServer())
-        .get('/invoices?page=1&perPage=10')
+        .get('/invoices?page=1&pageSize=10')
         .set('x-branch-id', DEFAULT_BRANCH_ID)
         .expect(200);
 
@@ -309,7 +309,7 @@ describe('Invoices (e2e)', () => {
     it('should support getMany (ids parameter)', async () => {
       // First get some invoice IDs
       const listResponse = await request(app.getHttpServer())
-        .get('/invoices?perPage=3')
+        .get('/invoices&pageSize=3')
         .set('x-branch-id', DEFAULT_BRANCH_ID);
 
       if (listResponse.body.data.length >= 2) {

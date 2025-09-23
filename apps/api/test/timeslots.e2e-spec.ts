@@ -22,7 +22,7 @@ describe('TimeSlots API (e2e)', () => {
 
   describe('GET /api/v1/timeslots', () => {
     it('should return timeslots', async () => {
-      const response = await request(app.getHttpServer()).get('/api/v1/timeslots').set('X-Branch-Id', 'branch1');
+      const response = await request(app.getHttpServer()).get('/api/v1/timeslots').set('X-Branch-Id', 'dps-main');
       expect([200, 404, 500]).toContain(response.status);
       if (response.status === 200) {
         expect(response.body).toHaveProperty('data');
@@ -35,7 +35,7 @@ describe('TimeSlots API (e2e)', () => {
   describe('POST /api/v1/timeslots', () => {
     it('should create timeslot', async () => {
       const slotData = { dayOfWeek: 'MONDAY', startTime: '09:00', endTime: '10:00', period: 1 };
-      const response = await request(app.getHttpServer()).post('/api/v1/timeslots').set('X-Branch-Id', 'branch1').send(slotData);
+      const response = await request(app.getHttpServer()).post('/api/v1/timeslots').set('X-Branch-Id', 'dps-main').send(slotData);
       expect([200, 201, 400, 404, 500]).toContain(response.status);
     });
   });

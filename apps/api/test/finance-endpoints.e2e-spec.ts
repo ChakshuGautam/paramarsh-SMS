@@ -127,7 +127,7 @@ describe('Finance API Endpoints (E2E)', () => {
 
     it('should support pagination parameters', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/fees/schedules?page=1&perPage=10')
+        .get('/api/v1/fees/schedules?page=1&pageSize=10')
         .set('x-branch-id', 'branch1')
         .expect(200)
         .expect((res) => {

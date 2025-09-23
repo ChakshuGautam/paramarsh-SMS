@@ -65,7 +65,7 @@ describe('Exams API (e2e)', () => {
           .set('X-Branch-Id', 'test-branch'),
         request(app.getHttpServer())
           .get('/api/v1/exams')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
@@ -350,7 +350,7 @@ describe('Exams API (e2e)', () => {
       // Try to update from different branch
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ name: 'Hacked Name' });
 
       // Current implementation may allow cross-tenant updates
@@ -424,7 +424,7 @@ describe('Exams API (e2e)', () => {
       // Try to delete from different branch
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'branch2');
+        .set('X-Branch-Id', 'dps-north');
 
       expect([200, 404, 500]).toContain(response.status);
     });
