@@ -28,7 +28,7 @@ describe('TimetablePeriod E2E', () => {
   describe('GET /api/v1/timetable/periods', () => {
     it('should return paginated response with seed data', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/timetable/periods?page=1&pageSize=10')
+        .get('/api/v1/timetable/periods?page=1&perPage=10')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -41,7 +41,7 @@ describe('TimetablePeriod E2E', () => {
 
     it('should handle pagination correctly', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/timetable/periods?page=1&pageSize=2')
+        .get('/api/v1/timetable/periods?page=1&perPage=2')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -429,23 +429,23 @@ describe('TimetablePeriod E2E', () => {
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
-      // Get branch2 periods
-      const branch2Response = await request(app.getHttpServer())
+      // Get dps-north periods
+      const dpsNorthResponse = await request(app.getHttpServer())
         .get('/api/v1/timetable/periods')
         .set('X-Branch-Id', 'dps-north')
         .expect(200);
 
-      // branch1 may have seed data, branch2 should be empty
+      // branch1 may have seed data, dps-north should be empty
       // Verify that data is isolated between branches
       expect(Array.isArray(branch1Response.body.data)).toBe(true);
-      expect(Array.isArray(branch2Response.body.data)).toBe(true);
-      expect(branch2Response.body.data).toEqual([]); // branch2 should still be empty
-      expect(branch2Response.body.total).toBe(0);
+      expect(Array.isArray(dpsNorthResponse.body.data)).toBe(true);
+      expect(dpsNorthResponse.body.data).toEqual([]); // dps-north should still be empty
+      expect(dpsNorthResponse.body.total).toBe(0);
       
       // Verify no data leaks between branches
       const branch1Ids = branch1Response.body.data.map(p => p.id);
-      const branch2Ids = branch2Response.body.data.map(p => p.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(p => p.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       expect(intersection.length).toBe(0);
     });
 

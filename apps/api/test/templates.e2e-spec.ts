@@ -43,7 +43,7 @@ describe('Templates API (e2e)', () => {
   describe('GET /api/v1/templates', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/comms/templates?page=1&pageSize=5')
+        .get('/api/v1/comms/templates?page=1&perPage=5')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -67,7 +67,7 @@ describe('Templates API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/comms/templates')
           .set('X-Branch-Id', 'dps-main'),
@@ -77,12 +77,12 @@ describe('Templates API (e2e)', () => {
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
@@ -140,12 +140,12 @@ describe('Templates API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/comms/templates?page=1&pageSize=2')
+        .get('/api/v1/comms/templates?page=1&perPage=2')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/comms/templates?page=2&pageSize=2')
+        .get('/api/v1/comms/templates?page=2&perPage=2')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -212,7 +212,7 @@ describe('Templates API (e2e)', () => {
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/comms/templates/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -329,7 +329,7 @@ describe('Templates API (e2e)', () => {
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/comms/templates/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -431,7 +431,7 @@ describe('Templates API (e2e)', () => {
         .expect(200);
 
       const templateNames = response.body.data.map(t => t.name);
-      const expectedNames = ['Welcome Message', 'Fee Reminder', 'Exam Notification', 'Attendance Alert', 'Holiday Notification'];
+      const expectedNames = ['Fee Reminder Hindi', 'PTM Invitation', 'Exam Results', 'Attendance Alert', 'Holiday Notice'];
       const hasExpectedNames = expectedNames.some(name => templateNames.includes(name));
       expect(hasExpectedNames).toBe(true);
     });
@@ -518,7 +518,7 @@ describe('Templates API (e2e)', () => {
         expect(attendanceTemplate.content).toContain('{{student_name}}');
         expect(attendanceTemplate.content).toContain('{{status}}');
         expect(attendanceTemplate.content).toContain('{{date}}');
-        expect(attendanceTemplate.content).toContain('{{absent_count}}');
+        expect(attendanceTemplate.content).toContain('{{attendance_percent}}');
       }
     });
 

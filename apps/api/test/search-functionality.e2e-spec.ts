@@ -102,7 +102,7 @@ describe('Search Functionality (e2e)', () => {
 
     it('should support search with pagination', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/students?q=Kumar&page=1&pageSize=2')
+        .get('/api/v1/students?q=Kumar&page=1&perPage=2')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -369,17 +369,17 @@ describe('Search Functionality (e2e)', () => {
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
-      const branch2Response = await request(app.getHttpServer())
+      const dpsNorthResponse = await request(app.getHttpServer())
         .get('/api/v1/students?q=Raj')
         .set('X-Branch-Id', 'dps-north')
         .expect(200);
 
       expect(branch1Response.body).toHaveProperty('data');
-      expect(branch2Response.body).toHaveProperty('data');
+      expect(dpsNorthResponse.body).toHaveProperty('data');
       
       // The results should be different for different branches
-      if (branch1Response.body.data.length > 0 && branch2Response.body.data.length > 0) {
-        expect(branch1Response.body.data[0].id).not.toBe(branch2Response.body.data[0].id);
+      if (branch1Response.body.data.length > 0 && dpsNorthResponse.body.data.length > 0) {
+        expect(branch1Response.body.data[0].id).not.toBe(dpsNorthResponse.body.data[0].id);
       }
     });
 
@@ -411,7 +411,7 @@ describe('Search Functionality (e2e)', () => {
 
     it('should support search with pagination', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/guardians?q=gmail&page=1&pageSize=5')
+        .get('/api/v1/guardians?q=gmail&page=1&perPage=5')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -481,7 +481,7 @@ describe('Search Functionality (e2e)', () => {
 
       for (const endpoint of endpoints) {
         const response = await request(app.getHttpServer())
-          .get(`${endpoint}?q=test&page=1&pageSize=1`)
+          .get(`${endpoint}?q=test&page=1&perPage=1`)
           .set('X-Branch-Id', 'dps-main')
           .expect(200);
 

@@ -38,7 +38,7 @@ describe('All Modules API (e2e)', () => {
         if (options.skipAll) {
           // Just check if endpoint exists
           const response = await request(app.getHttpServer())
-            .get(`/api/v1/${moduleName}?page=1&pageSize=10`)
+            .get(`/api/v1/${moduleName}?page=1&perPage=10`)
             .set('X-Branch-Id', 'dps-main');
 
           expect([200, 404, 500]).toContain(response.status);
@@ -46,7 +46,7 @@ describe('All Modules API (e2e)', () => {
         }
 
         const response = await request(app.getHttpServer())
-          .get(`/api/v1/${moduleName}?page=1&pageSize=10`)
+          .get(`/api/v1/${moduleName}?page=1&perPage=10`)
           .set('X-Branch-Id', 'dps-main');
         
         // Accept 200 (success) or 404 (endpoint doesn't exist)
@@ -99,7 +99,7 @@ describe('All Modules API (e2e)', () => {
 
         // First get an existing item from the list
         const listResponse = await request(app.getHttpServer())
-          .get(`/api/v1/${moduleName}?page=1&pageSize=1`)
+          .get(`/api/v1/${moduleName}?page=1&perPage=1`)
           .set('X-Branch-Id', 'dps-main');
 
         if (listResponse.status === 200 && listResponse.body.data && listResponse.body.data.length > 0) {
@@ -127,7 +127,7 @@ describe('All Modules API (e2e)', () => {
           if (!createdItemId) {
             // Get an existing item to update
             const listResponse = await request(app.getHttpServer())
-              .get(`/api/v1/${moduleName}?page=1&pageSize=1`)
+              .get(`/api/v1/${moduleName}?page=1&perPage=1`)
               .set('X-Branch-Id', 'dps-main');
             
             if (listResponse.status === 200 && listResponse.body.data && listResponse.body.data.length > 0) {
@@ -558,7 +558,7 @@ describe('All Modules API (e2e)', () => {
     it('should maintain data consistency across related modules', async () => {
       // Test that related data exists and is consistent
       const studentsResponse = await request(app.getHttpServer())
-        .get('/api/v1/students?page=1&pageSize=1')
+        .get('/api/v1/students?page=1&perPage=1')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -579,7 +579,7 @@ describe('All Modules API (e2e)', () => {
         .get('/api/v1/students?filter=' + encodeURIComponent(JSON.stringify({
           status: 'active',
           gender: 'male'
-        })) + '&sort=firstName&page=1&pageSize=10')
+        })) + '&sort=firstName&page=1&perPage=10')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -606,7 +606,7 @@ describe('All Modules API (e2e)', () => {
     it('should handle concurrent requests efficiently', async () => {
       const promises = Array.from({ length: 10 }, () =>
         request(app.getHttpServer())
-          .get('/api/v1/students?page=1&pageSize=5')
+          .get('/api/v1/students?page=1&perPage=5')
           .set('X-Branch-Id', 'dps-main')
       );
 
@@ -620,7 +620,7 @@ describe('All Modules API (e2e)', () => {
 
     it('should handle large page sizes within limits', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/students?page=1&pageSize=100')
+        .get('/api/v1/students?page=1&perPage=100')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 

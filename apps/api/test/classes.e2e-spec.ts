@@ -52,7 +52,7 @@ describe('Classes API (e2e)', () => {
   describe('GET /api/v1/classes', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/classes?page=1&pageSize=5')
+        .get('/api/v1/classes?page=1&perPage=5')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -80,7 +80,7 @@ describe('Classes API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/classes')
           .set('X-Branch-Id', 'dps-main'),
@@ -90,11 +90,11 @@ describe('Classes API (e2e)', () => {
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
-      // Verify isolation - branch2 should have empty data
+      // Verify isolation - dps-north should have empty data
       expect(branch1Response.body.data.length).toBeGreaterThan(0);
-      expect(branch2Response.body.data.length).toBe(0);
+      expect(dpsNorthResponse.body.data.length).toBe(0);
       
       // Verify branchId', 'dps-main data
       branch1Response.body.data.forEach(item => {
@@ -152,12 +152,12 @@ describe('Classes API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/classes?page=1&pageSize=3')
+        .get('/api/v1/classes?page=1&perPage=3')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/classes?page=2&pageSize=3')
+        .get('/api/v1/classes?page=2&perPage=3')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -236,7 +236,7 @@ describe('Classes API (e2e)', () => {
       // When fixed, this should be 404
       expect([200, 404]).toContain(response.status);
       if (response.status === 200) {
-        // If returning data, it shouldn't be from branch2
+        // If returning data, it shouldn't be from dps-north
         expect(response.body.data.branchId).toBe('dps-main');
       }
     });

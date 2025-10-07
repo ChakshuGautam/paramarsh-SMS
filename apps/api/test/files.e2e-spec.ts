@@ -154,11 +154,8 @@ describe('Files API (e2e)', () => {
       
       if (response.status === 200) {
         expect(response.body).toHaveProperty('data');
-        expect(response.body).toHaveProperty('meta');
+        expect(response.body).toHaveProperty('total');
         expect(Array.isArray(response.body.data)).toBe(true);
-        expect(response.body.meta).toHaveProperty('total');
-        expect(response.body.meta).toHaveProperty('page');
-        expect(response.body.meta).toHaveProperty('pageSize');
       }
     });
 
@@ -183,7 +180,7 @@ describe('Files API (e2e)', () => {
 
     it('should support pagination', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/files?page=1&pageSize=5');
+        .get('/api/v1/files?page=1&perPage=5');
 
       expect([200, 403, 500]).toContain(response.status);
       

@@ -23,7 +23,7 @@ describe('Payments API (e2e)', () => {
   describe('GET /api/v1/payments', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/payments?page=1&pageSize=5')
+        .get('/api/v1/payments?page=1&perPage=5')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -51,7 +51,7 @@ describe('Payments API (e2e)', () => {
     });
 
     it('should isolate data between tenants through invoice relationship', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/payments?include=invoice')
           .set('X-Branch-Id', 'dps-main'),
@@ -61,7 +61,7 @@ describe('Payments API (e2e)', () => {
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation through invoice branchId
       branch1Response.body.data.forEach(payment => {
@@ -146,12 +146,12 @@ describe('Payments API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/payments?page=1&pageSize=3')
+        .get('/api/v1/payments?page=1&perPage=3')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/payments?page=2&pageSize=3')
+        .get('/api/v1/payments?page=2&perPage=3')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -222,7 +222,7 @@ describe('Payments API (e2e)', () => {
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/payments/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -356,7 +356,7 @@ describe('Payments API (e2e)', () => {
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/payments/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')

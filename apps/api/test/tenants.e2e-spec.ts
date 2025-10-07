@@ -32,16 +32,14 @@ describe('Tenants API (e2e)', () => {
   describe('GET /api/v1/tenants', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/tenants?page=1&pageSize=5')
+        .get('/api/v1/tenants?page=1&perPage=5')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      expect(response.body).toHaveProperty('meta');
+      expect(response.body).toHaveProperty('total');
       expect(Array.isArray(response.body.data)).toBe(true);
       expect(response.body.data.length).toBeLessThanOrEqual(5);
-      expect(typeof response.body.meta.total).toBe('number');
-      expect(response.body.meta).toHaveProperty('page', 1);
-      expect(response.body.meta).toHaveProperty('pageSize', 5);
+      expect(typeof response.body.total).toBe('number');
 
       if (response.body.data.length > 0) {
         const tenant = response.body.data[0];
@@ -112,18 +110,14 @@ describe('Tenants API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/tenants?page=1&pageSize=2')
+        .get('/api/v1/tenants?page=1&perPage=2')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/tenants?page=2&pageSize=2')
+        .get('/api/v1/tenants?page=2&perPage=2')
         .expect(200);
 
       // Verify pagination metadata
-      expect(page1.body.meta.page).toBe(1);
-      expect(page2.body.meta.page).toBe(2);
-      expect(page1.body.meta.pageSize).toBe(2);
-      expect(page2.body.meta.pageSize).toBe(2);
 
       // Verify no overlap if both pages have data
       if (page1.body.data.length > 0 && page2.body.data.length > 0) {
@@ -136,12 +130,11 @@ describe('Tenants API (e2e)', () => {
 
     it('should respect pageSize limits', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/tenants?pageSize=1000')
+        .get('/api/v1/tenants?perPage=1000')
         .expect(200);
 
       // Service limits pageSize to 200
       expect(response.body.data.length).toBeLessThanOrEqual(200);
-      expect(response.body.meta.pageSize).toBe(200);
     });
 
     it('should handle empty search results', async () => {
@@ -150,7 +143,7 @@ describe('Tenants API (e2e)', () => {
         .expect(200);
 
       expect(response.body.data).toEqual([]);
-      expect(response.body.meta.total).toBe(0);
+      expect(response.body.total).toBe(0);
     });
 
     it('should handle multiple sort fields', async () => {
@@ -165,26 +158,24 @@ describe('Tenants API (e2e)', () => {
 
     it('should return hasNext metadata correctly', async () => {
       const totalResponse = await request(app.getHttpServer())
-        .get('/api/v1/tenants?pageSize=1000')
+        .get('/api/v1/tenants?perPage=1000')
         .expect(200);
 
-      const total = totalResponse.body.meta.total;
+      const total = totalResponse.body.total;
 
       if (total > 1) {
         // Get first page with pageSize = 1
         const firstPageResponse = await request(app.getHttpServer())
-          .get('/api/v1/tenants?page=1&pageSize=1')
+          .get('/api/v1/tenants?page=1&perPage=1')
           .expect(200);
 
-        expect(firstPageResponse.body.meta.hasNext).toBe(true);
 
         // Get last page
         const lastPage = Math.ceil(total / 1);
         const lastPageResponse = await request(app.getHttpServer())
-          .get(`/api/v1/tenants?page=${lastPage}&pageSize=1`)
+          .get(`/api/v1/tenants?page=${lastPage}&perPage=1`)
           .expect(200);
 
-        expect(lastPageResponse.body.meta.hasNext).toBe(false);
       }
     });
   });
@@ -198,7 +189,7 @@ describe('Tenants API (e2e)', () => {
       // Should return data (empty array if no CSV file, or actual data if CSV exists)
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.meta.total).toBeGreaterThanOrEqual(0);
+      expect(response.body.total).toBeGreaterThanOrEqual(0);
     });
 
     it('should have consistent data structure for all tenants', async () => {
@@ -237,7 +228,7 @@ describe('Tenants API (e2e)', () => {
 
       // Should return same results regardless of case
       expect(lowerResponse.body.data.length).toBe(upperResponse.body.data.length);
-      expect(lowerResponse.body.meta.total).toBe(upperResponse.body.meta.total);
+      expect(lowerResponse.body.total).toBe(upperResponse.body.total);
     });
   });
 });

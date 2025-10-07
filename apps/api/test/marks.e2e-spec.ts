@@ -36,7 +36,7 @@ describe('Marks API (e2e)', () => {
     await app.init();
     
     // IMPORTANT: Tests rely on seed data from apps/api/prisma/seed.ts
-    // The seed script creates data for 'test-branch' tenant
+    // The seed script creates data for 'dps-main' tenant
     // Run: cd apps/api && npx prisma db seed
   });
 
@@ -47,8 +47,8 @@ describe('Marks API (e2e)', () => {
   describe('GET /api/v1/marks', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=5')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/marks?page=1&perPage=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -60,8 +60,8 @@ describe('Marks API (e2e)', () => {
 
     it('should include exam, subject, and student details', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -86,10 +86,10 @@ describe('Marks API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/marks')
-          .set('X-Branch-Id', 'test-branch'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/marks')
           .set('X-Branch-Id', 'dps-north')
@@ -97,25 +97,25 @@ describe('Marks API (e2e)', () => {
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('test-branch');
+        expect(item.branchId).toBe('dps-main');
       });
       
-      branch2Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('test-branch2');
+      dpsNorthResponse.body.data.forEach(item => {
+        expect(item.branchId).toBe('dps-north');
       });
     });
 
     it('should support ascending sorting by student name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/marks?sort=student')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 1) {
@@ -130,7 +130,7 @@ describe('Marks API (e2e)', () => {
     it('should support descending sorting by created date', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/marks?sort=-createdAt')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 1) {
@@ -144,15 +144,15 @@ describe('Marks API (e2e)', () => {
     it('should support filtering by examId', async () => {
       // First get an examId from the data
       const allMarks = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
       
       if (allMarks.body.data.length > 0) {
         const examId = allMarks.body.data[0].examId;
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/marks?examId=${examId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(mark => {
@@ -164,15 +164,15 @@ describe('Marks API (e2e)', () => {
     it('should support filtering by subjectId', async () => {
       // First get a subjectId from the data
       const allMarks = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
       
       if (allMarks.body.data.length > 0) {
         const subjectId = allMarks.body.data[0].subjectId;
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/marks?subjectId=${subjectId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(mark => {
@@ -184,15 +184,15 @@ describe('Marks API (e2e)', () => {
     it('should support filtering by studentId', async () => {
       // First get a studentId from the data
       const allMarks = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
       
       if (allMarks.body.data.length > 0) {
         const studentId = allMarks.body.data[0].studentId;
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/marks?studentId=${studentId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(mark => {
@@ -204,7 +204,7 @@ describe('Marks API (e2e)', () => {
     it('should support filtering by isAbsent status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/marks?isAbsent=false')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(mark => {
@@ -215,15 +215,15 @@ describe('Marks API (e2e)', () => {
     it('should support text search by student name', async () => {
       // Get a student name from existing data
       const allMarks = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
       
       if (allMarks.body.data.length > 0) {
         const firstName = allMarks.body.data[0].student.firstName;
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/marks?q=${firstName}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(mark => {
@@ -236,15 +236,15 @@ describe('Marks API (e2e)', () => {
     it('should support text search by subject name', async () => {
       // Get a subject name from existing data
       const allMarks = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
       
       if (allMarks.body.data.length > 0) {
         const subjectName = allMarks.body.data[0].subject.name;
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/marks?q=${subjectName}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(mark => {
@@ -255,13 +255,13 @@ describe('Marks API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=2')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/marks?page=1&perPage=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=2&pageSize=2')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/marks?page=2&perPage=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -278,14 +278,14 @@ describe('Marks API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/marks/${testId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -301,7 +301,7 @@ describe('Marks API (e2e)', () => {
     it('should return 404 for non-existent mark', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/marks/non-existent-id')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -309,12 +309,12 @@ describe('Marks API (e2e)', () => {
       // Get mark from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/marks/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -330,8 +330,8 @@ describe('Marks API (e2e)', () => {
     beforeAll(async () => {
       // Get test data from existing marks or create test dependencies
       const marksResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
         
       if (marksResponse.body.data.length > 0) {
         testExamId = marksResponse.body.data[0].examId;
@@ -345,8 +345,8 @@ describe('Marks API (e2e)', () => {
 
       // Use different student to avoid unique constraint
       const studentsResponse = await request(app.getHttpServer())
-        .get('/api/v1/students?page=1&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/students?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
 
       const differentStudent = studentsResponse.body.data.find(s => s.id !== testStudentId);
       if (!differentStudent) return;
@@ -365,13 +365,13 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(newMark)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
-      expect(response.body.data.branchId).toBe('test-branch');
+      expect(response.body.data.branchId).toBe('dps-main');
       expect(response.body.data.examId).toBe(newMark.examId);
       expect(response.body.data.subjectId).toBe(newMark.subjectId);
       expect(response.body.data.studentId).toBe(newMark.studentId);
@@ -388,8 +388,8 @@ describe('Marks API (e2e)', () => {
 
       // Use different student to avoid unique constraint
       const studentsResponse = await request(app.getHttpServer())
-        .get('/api/v1/students?page=2&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/students?page=2&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
 
       const differentStudent = studentsResponse.body.data.find(s => s.id !== testStudentId);
       if (!differentStudent) return;
@@ -409,7 +409,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(newMark)
         .expect(201);
 
@@ -421,8 +421,8 @@ describe('Marks API (e2e)', () => {
 
       // Use different student to avoid unique constraint
       const studentsResponse = await request(app.getHttpServer())
-        .get('/api/v1/students?page=3&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/students?page=3&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
 
       const differentStudent = studentsResponse.body.data.find(s => s.id !== testStudentId);
       if (!differentStudent) return;
@@ -437,7 +437,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(newMark)
         .expect(201);
 
@@ -454,7 +454,7 @@ describe('Marks API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidMark)
         .expect(400);
     });
@@ -472,7 +472,7 @@ describe('Marks API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicateMark)
         .expect(400);
     });
@@ -482,8 +482,8 @@ describe('Marks API (e2e)', () => {
     it('should update mark with correct format', async () => {
       // First create a mark to update
       const listResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
 
       if (listResponse.body.data.length === 0) return;
 
@@ -499,7 +499,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/marks/${markId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -514,8 +514,8 @@ describe('Marks API (e2e)', () => {
     it('should auto-recalculate totalMarks when component marks are updated', async () => {
       // First get a mark to update
       const listResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
 
       if (listResponse.body.data.length === 0) return;
 
@@ -530,7 +530,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/marks/${markId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -542,7 +542,7 @@ describe('Marks API (e2e)', () => {
 
       await request(app.getHttpServer())
         .patch('/api/v1/marks/non-existent-id')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(404);
     });
@@ -551,12 +551,12 @@ describe('Marks API (e2e)', () => {
       // Get mark from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .patch(`/api/v1/marks/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -569,8 +569,8 @@ describe('Marks API (e2e)', () => {
     it('should delete mark successfully', async () => {
       // First create a mark to delete
       const listResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=10')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-main');
 
       if (listResponse.body.data.length === 0) return;
 
@@ -579,7 +579,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/marks/${markId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -588,14 +588,14 @@ describe('Marks API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/marks/${markId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should return 404 for non-existent mark', async () => {
       await request(app.getHttpServer())
         .delete('/api/v1/marks/non-existent-id')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -603,12 +603,12 @@ describe('Marks API (e2e)', () => {
       // Get mark from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/marks')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to delete from branch2
+      // Try to delete from dps-north
       await request(app.getHttpServer())
         .delete(`/api/v1/marks/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -620,8 +620,8 @@ describe('Marks API (e2e)', () => {
     it('should return marks for specific exam', async () => {
       // First get an examId from existing data
       const marksResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
 
       if (marksResponse.body.data.length === 0) return;
 
@@ -629,7 +629,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/marks/exam/${examId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -650,8 +650,8 @@ describe('Marks API (e2e)', () => {
     it('should return marks for specific student', async () => {
       // First get a studentId from existing data
       const marksResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
 
       if (marksResponse.body.data.length === 0) return;
 
@@ -659,7 +659,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/marks/student/${studentId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -680,8 +680,8 @@ describe('Marks API (e2e)', () => {
     it('should bulk create/update marks for exam-subject combination', async () => {
       // Get test data
       const marksResponse = await request(app.getHttpServer())
-        .get('/api/v1/marks?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/marks?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
 
       if (marksResponse.body.data.length === 0) return;
 
@@ -689,8 +689,8 @@ describe('Marks API (e2e)', () => {
 
       // Get some students
       const studentsResponse = await request(app.getHttpServer())
-        .get('/api/v1/students?page=1&pageSize=3')
-        .set('X-Branch-Id', 'test-branch');
+        .get('/api/v1/students?page=1&perPage=3')
+        .set('X-Branch-Id', 'dps-main');
 
       if (studentsResponse.body.data.length < 2) return;
 
@@ -704,7 +704,7 @@ describe('Marks API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/v1/marks/bulk/${examId}/${subjectId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(bulkMarks)
         .expect(201);
 

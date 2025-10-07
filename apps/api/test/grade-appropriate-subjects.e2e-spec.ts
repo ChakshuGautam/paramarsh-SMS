@@ -551,39 +551,39 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
   });
 
   describe('Multi-tenancy (Branch Isolation)', () => {
-    let branch2ClassId: string;
-    let branch2SubjectId: string;
+    let dpsNorthClassId: string;
+    let dpsNorthSubjectId: string;
 
     beforeEach(async () => {
-      // Create test data for branch2
-      const branch2Class = await prisma.class.create({
+      // Create test data for dps-north
+      const dpsNorthClass = await prisma.class.create({
         data: {
-          branchId: 'branch2',
+          branchId: 'dps-north',
           name: 'Nursery',
           gradeLevel: 0,
         },
       });
-      branch2ClassId = branch2Class.id;
+      dpsNorthClassId = dpsNorthClass.id;
 
-      const branch2Subject = await prisma.subject.create({
+      const dpsNorthSubject = await prisma.subject.create({
         data: {
-          branchId: 'branch2',
+          branchId: 'dps-north',
           code: 'MATH_BR2',
           name: 'Mathematics',
           credits: 4,
           isElective: false,
         },
       });
-      branch2SubjectId = branch2Subject.id;
+      dpsNorthSubjectId = dpsNorthSubject.id;
     });
 
     afterEach(async () => {
-      // Clean up branch2 test data
+      // Clean up dps-north test data
       await prisma.subject.deleteMany({
-        where: { branchId: 'branch2' },
+        where: { branchId: 'dps-north' },
       });
       await prisma.class.deleteMany({
-        where: { branchId: 'branch2' },
+        where: { branchId: 'dps-north' },
       });
     });
 
@@ -594,20 +594,20 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
         .set('x-branch-id', 'branch1')
         .expect(200);
 
-      const branch2Response = await request(app.getHttpServer())
+      const dpsNorthResponse = await request(app.getHttpServer())
         .get('/subjects/with-grade-filter')
         .query({ gradeLevel: '0' })
-        .set('x-branch-id', 'branch2')
+        .set('x-branch-id', 'dps-north')
         .expect(200);
 
       const branch1SubjectCodes = branch1Response.body.data.map(s => s.code);
-      const branch2SubjectCodes = branch2Response.body.data.map(s => s.code);
+      const dpsNorthSubjectCodes = dpsNorthResponse.body.data.map(s => s.code);
 
       expect(branch1SubjectCodes).toContain('MATH');
       expect(branch1SubjectCodes).not.toContain('MATH_BR2');
 
-      expect(branch2SubjectCodes).toContain('MATH_BR2');
-      expect(branch2SubjectCodes).not.toContain('MATH');
+      expect(dpsNorthSubjectCodes).toContain('MATH_BR2');
+      expect(dpsNorthSubjectCodes).not.toContain('MATH');
     });
 
     it('should validate assignments only within the same branch', async () => {
@@ -617,9 +617,9 @@ describe('Grade-Appropriate Subject Filtering (E2E)', () => {
         .set('x-branch-id', 'branch1')
         .expect(200);
 
-      // Should fail for cross-branch validation (branch1 subject, branch2 class)
+      // Should fail for cross-branch validation (branch1 subject, dps-north class)
       const response = await request(app.getHttpServer())
-        .get(`/subjects/validate-assignment/${mathSubjectId}/${branch2ClassId}`)
+        .get(`/subjects/validate-assignment/${mathSubjectId}/${dpsNorthClassId}`)
         .set('x-branch-id', 'branch1')
         .expect(200);
 

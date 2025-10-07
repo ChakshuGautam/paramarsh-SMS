@@ -36,7 +36,7 @@ describe('Fee Structures API (e2e)', () => {
   describe('GET /api/v1/fees/structures', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/fees/structures?page=1&pageSize=5')
+        .get('/api/v1/fees/structures?page=1&perPage=5')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
       expect(response.body).toHaveProperty('data');
@@ -47,7 +47,7 @@ describe('Fee Structures API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/fees/structures')
           .set('X-Branch-Id', 'dps-main'),
@@ -58,8 +58,8 @@ describe('Fee Structures API (e2e)', () => {
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
@@ -97,13 +97,13 @@ describe('Fee Structures API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/fees/structures?page=1&pageSize=2')
+        .get('/api/v1/fees/structures?page=1&perPage=2')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (page1.body.total > 2) {
         const page2 = await request(app.getHttpServer())
-          .get('/api/v1/fees/structures?page=2&pageSize=2')
+          .get('/api/v1/fees/structures?page=2&perPage=2')
           .set('X-Branch-Id', 'dps-main')
           .expect(200);
 

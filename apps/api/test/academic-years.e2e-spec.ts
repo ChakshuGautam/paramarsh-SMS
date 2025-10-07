@@ -52,8 +52,8 @@ describe('Academic Years API (e2e)', () => {
   describe('GET /api/v1/academic-years', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/academic-years?page=1&pageSize=5')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/academic-years?page=1&perPage=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -69,41 +69,41 @@ describe('Academic Years API (e2e)', () => {
         expect(academicYear).toHaveProperty('startDate');
         expect(academicYear).toHaveProperty('endDate');
         expect(academicYear).toHaveProperty('isActive');
-        expect(academicYear).toHaveProperty('branchId', 'test-branch');
+        expect(academicYear).toHaveProperty('branchId', 'dps-main');
         expect(typeof academicYear.isActive).toBe('boolean');
       }
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/academic-years')
-          .set('X-Branch-Id', 'test-branch'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/academic-years')
           .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('test-branch');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by startDate', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years?sort=startDate')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const dates = response.body.data.map(item => new Date(item.startDate));
@@ -114,7 +114,7 @@ describe('Academic Years API (e2e)', () => {
     it('should support descending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years?sort=-name')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -126,7 +126,7 @@ describe('Academic Years API (e2e)', () => {
       const filter = { isActive: true };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/academic-years?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -138,7 +138,7 @@ describe('Academic Years API (e2e)', () => {
       // Use simple filtering without MongoDB operators
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have academic years with valid date formats and reasonable years
@@ -151,13 +151,13 @@ describe('Academic Years API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/academic-years?page=1&pageSize=1')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/academic-years?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/academic-years?page=2&pageSize=1')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/academic-years?page=2&perPage=1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // If there are multiple academic years, verify no overlap
@@ -175,14 +175,14 @@ describe('Academic Years API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/academic-years/${testId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -190,13 +190,13 @@ describe('Academic Years API (e2e)', () => {
       expect(response.body.data).toHaveProperty('name');
       expect(response.body.data).toHaveProperty('startDate');
       expect(response.body.data).toHaveProperty('endDate');
-      expect(response.body.data).toHaveProperty('branchId', 'test-branch');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return 404 for non-existent academic year', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/academic-years/non-existent-id')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -204,12 +204,12 @@ describe('Academic Years API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/academic-years/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -228,7 +228,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(newAcademicYear);
         
       // API implementation might have issues, so accept both success and error
@@ -238,7 +238,7 @@ describe('Academic Years API (e2e)', () => {
         expect(response.body).toHaveProperty('data');
         expect(response.body.data).toHaveProperty('id');
         expect(response.body.data).toMatchObject(newAcademicYear);
-        expect(response.body.data.branchId).toBe('test-branch');
+        expect(response.body.data.branchId).toBe('dps-main');
       }
     });
 
@@ -250,7 +250,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidAcademicYear);
         
       // Implementation might have validation issues, accept various error codes including success
@@ -267,7 +267,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidAcademicYear);
         
       // Implementation might have validation issues, accept various error codes including success
@@ -285,7 +285,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicateAcademicYear);
         
       // Implementation might not support uniqueness validation yet
@@ -298,7 +298,7 @@ describe('Academic Years API (e2e)', () => {
       // First get an existing academic year to update (since creation might fail)
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
         
       const academicYearId = listResponse.body.data[0]?.id;
       if (!academicYearId) {
@@ -315,7 +315,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/academic-years/${academicYearId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         
       // Implementation might have issues with PUT
@@ -332,12 +332,12 @@ describe('Academic Years API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/academic-years/${branch1Id}`)
         .set('X-Branch-Id', 'dps-north')
@@ -351,7 +351,7 @@ describe('Academic Years API (e2e)', () => {
       // First get an existing academic year
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const academicYearId = listResponse.body.data[0]?.id;
       if (!academicYearId) return;
@@ -363,7 +363,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/academic-years/${academicYearId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -378,7 +378,7 @@ describe('Academic Years API (e2e)', () => {
       // First create an academic year to delete
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'To Delete 2028-2029',
           startDate: '2028-04-01',
@@ -390,7 +390,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/academic-years/${academicYearId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -399,7 +399,7 @@ describe('Academic Years API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/academic-years/${academicYearId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -409,7 +409,7 @@ describe('Academic Years API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 1) // Usually only 1 academic year
@@ -419,7 +419,7 @@ describe('Academic Years API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/academic-years?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -436,7 +436,7 @@ describe('Academic Years API (e2e)', () => {
     it('should find the 2024-2025 academic year from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const academicYearNames = response.body.data.map(ay => ay.name);
@@ -446,7 +446,7 @@ describe('Academic Years API (e2e)', () => {
     it('should find academic years from data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have academic years (from tests or seed data)
@@ -462,7 +462,7 @@ describe('Academic Years API (e2e)', () => {
     it('should have correct date format from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -476,7 +476,7 @@ describe('Academic Years API (e2e)', () => {
     it('should validate academic year spans correctly', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(academicYear => {
@@ -501,7 +501,7 @@ describe('Academic Years API (e2e)', () => {
     it('should follow academic calendar patterns', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/academic-years')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(academicYear => {
@@ -527,7 +527,7 @@ describe('Academic Years API (e2e)', () => {
       const filter = { isActive: true };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/academic-years?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have at least some data (tests create academic years)

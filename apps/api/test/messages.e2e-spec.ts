@@ -412,22 +412,22 @@ describe('Messages API (e2e)', () => {
           .get('/api/v1/comms/messages')
           .set('X-Branch-Id', 'dps-main');
 
-        // Get messages for branch2
-        const branch2Messages = await request(app.getHttpServer())
+        // Get messages for dps-north
+        const dpsNorthMessages = await request(app.getHttpServer())
           .get('/api/v1/comms/messages')
           .set('X-Branch-Id', 'dps-north');
 
-        if (branch1Messages.status === 200 && branch2Messages.status === 200) {
+        if (branch1Messages.status === 200 && dpsNorthMessages.status === 200) {
           // Note: Multi-tenancy may not be working if PrismaService.getScope() is not set up properly
           // In that case, all messages will be returned regardless of branch
           const branch1Ids = branch1Messages.body.map(msg => msg.id);
-          const branch2Ids = branch2Messages.body.map(msg => msg.id);
-          const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+          const dpsNorthIds = dpsNorthMessages.body.map(msg => msg.id);
+          const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
           
           // If intersection is > 0, it means multi-tenancy is not working as expected
           // We'll just verify that the responses are valid arrays
           expect(Array.isArray(branch1Messages.body)).toBe(true);
-          expect(Array.isArray(branch2Messages.body)).toBe(true);
+          expect(Array.isArray(dpsNorthMessages.body)).toBe(true);
         }
       }
     });

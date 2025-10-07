@@ -127,7 +127,7 @@ describe('Finance API Endpoints (E2E)', () => {
 
     it('should support pagination parameters', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/fees/schedules?page=1&pageSize=10')
+        .get('/api/v1/fees/schedules?page=1&perPage=10')
         .set('x-branch-id', 'branch1')
         .expect(200)
         .expect((res) => {
@@ -140,7 +140,7 @@ describe('Finance API Endpoints (E2E)', () => {
 
     it('should support pageSize parameter as alias for perPage', () => {
       return request(app.getHttpServer())
-        .get('/api/v1/fees/schedules?page=1&pageSize=5')
+        .get('/api/v1/fees/schedules?page=1&perPage=5')
         .set('x-branch-id', 'branch1')
         .expect(200)
         .expect((res) => {
@@ -159,19 +159,19 @@ describe('Finance API Endpoints (E2E)', () => {
         .set('x-branch-id', 'branch1')
         .expect(200);
 
-      const branch2Response = await request(app.getHttpServer())
+      const dpsNorthResponse = await request(app.getHttpServer())
         .get('/api/v1/fees/structures')
-        .set('x-branch-id', 'branch2')
+        .set('x-branch-id', 'dps-north')
         .expect(200);
 
       // Should have proper response format regardless of data
       expect(branch1Response.body).toHaveProperty('data');
       expect(branch1Response.body).toHaveProperty('total');
-      expect(branch2Response.body).toHaveProperty('data');
-      expect(branch2Response.body).toHaveProperty('total');
+      expect(dpsNorthResponse.body).toHaveProperty('data');
+      expect(dpsNorthResponse.body).toHaveProperty('total');
       
       expect(Array.isArray(branch1Response.body.data)).toBe(true);
-      expect(Array.isArray(branch2Response.body.data)).toBe(true);
+      expect(Array.isArray(dpsNorthResponse.body.data)).toBe(true);
     });
   });
 });

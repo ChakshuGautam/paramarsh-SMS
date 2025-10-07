@@ -67,7 +67,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
   describe('GET /api/v1/attendance-records (getList)', () => {
     it('should return paginated attendance records with React Admin format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?page=1&pageSize=10')
+        .get('/api/v1/attendance-records?page=1&perPage=10')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -128,7 +128,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
     it('should respect branch isolation', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?page=1&pageSize=10')
+        .get('/api/v1/attendance-records?page=1&perPage=10')
         .set('X-Branch-Id', 'dps-north')
         .expect(200);
 
@@ -139,7 +139,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
     it('should handle sorting', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?sort=date&page=1&pageSize=5')
+        .get('/api/v1/attendance-records?sort=date&page=1&perPage=5')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -187,7 +187,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
         return;
       }
 
-      // Try to access branch1 attendance record with branch2 header
+      // Try to access branch1 attendance record with dps-north header
       await request(app.getHttpServer())
         .get(`/api/v1/attendance-records/${testAttendanceId}`)
         .set('X-Branch-Id', 'dps-north')
@@ -344,7 +344,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     });
 
     it('should handle cross-tenant update attempts', async () => {
-      // Get record from test-branch
+      // Get record from dps-main
       const testBranchList = await request(app.getHttpServer())
         .get('/api/v1/attendance-records')
         .set('X-Branch-Id', 'dps-main');
@@ -355,7 +355,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const testBranchId = testBranchList.body.data[0].id;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       const response = await request(app.getHttpServer())
         .put(`/api/v1/attendance-records/${testBranchId}`)
         .set('X-Branch-Id', 'dps-north')
@@ -417,7 +417,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should return multiple attendance records by IDs', async () => {
       // Get some attendance record IDs first
       const listResponse = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?page=1&pageSize=3')
+        .get('/api/v1/attendance-records?page=1&perPage=3')
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
