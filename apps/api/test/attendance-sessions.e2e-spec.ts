@@ -53,15 +53,22 @@ describe('Attendance Sessions API (e2e)', () => {
     });
 
     it('should support filtering by date', async () => {
-      const today = new Date().toISOString().split('T')[0];
+      // First get any session to use its date for filtering
+      const allResponse = await request(app.getHttpServer())
+        .get('/api/v1/attendance/sessions?page=1&perPage=1')
+        .set('X-Branch-Id', 'dps-main');
+
+      if (allResponse.body.data.length === 0) return; // Skip if no sessions
+
+      const testDate = new Date(allResponse.body.data[0].date).toISOString().split('T')[0];
       const response = await request(app.getHttpServer())
-        .get(`/api/v1/attendance/sessions?date=${today}`)
+        .get(`/api/v1/attendance/sessions?date=${testDate}`)
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(session => {
         const sessionDate = new Date(session.date).toISOString().split('T')[0];
-        expect(sessionDate).toBe(today);
+        expect(sessionDate).toBe(testDate);
       });
     });
 

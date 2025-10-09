@@ -220,7 +220,7 @@ describe('CRUD Endpoints (E2E)', () => {
       const response = await http
         .get('/api/v1/students')
         .set('X-Branch-Id', 'dps-main')
-        .query({ page: 1, pageSize: 10 })
+        .query({ page: 1, perPage: 10 })
         .expect(200);
       
       expect(response.body.data.length).toBeLessThanOrEqual(10);

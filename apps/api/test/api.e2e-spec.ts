@@ -71,14 +71,14 @@ describe('API E2E', () => {
     // Guardians should be present
     const guaList = await http
       .get('/api/v1/guardians')
-      .query({ studentId, pageSize: 10 })
+      .query({ studentId, perPage: 10 })
       .expect(200);
     expect(guaList.body.data.length).toBeGreaterThanOrEqual(2);
 
     // Enrollment should be present
     const enrList = await http
       .get('/api/v1/enrollments')
-      .query({ sectionId, pageSize: 10 })
+      .query({ sectionId, perPage: 10 })
       .expect(200);
     expect(
       enrList.body.data.find((e: any) => e.studentId === studentId),
@@ -89,13 +89,13 @@ describe('API E2E', () => {
 
     const guaListAfter = await http
       .get('/api/v1/guardians')
-      .query({ studentId, pageSize: 10 })
+      .query({ studentId, perPage: 10 })
       .expect(200);
     expect(guaListAfter.body.data.length).toBe(0);
 
     const enrListAfter = await http
       .get('/api/v1/enrollments')
-      .query({ sectionId, pageSize: 10 })
+      .query({ sectionId, perPage: 10 })
       .expect(200);
     expect(
       enrListAfter.body.data.find((e: any) => e.studentId === studentId),
@@ -163,7 +163,7 @@ describe('API E2E', () => {
 
     const list = await http
       .get('/api/v1/fees/structures')
-      .query({ pageSize: 5 })
+      .query({ perPage: 5 })
       .expect(200);
     expect(
       list.body.data.find((s: any) => s.id === feeStructureId),

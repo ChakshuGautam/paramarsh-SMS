@@ -17,13 +17,14 @@ export class ClerkAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    
+
     // Check if auth bypass is enabled for development
     const bypassAuth = this.configService?.get<string>('BYPASS_AUTH') === 'true';
     if (bypassAuth) {
-      // In bypass mode, create a mock user
+      // In bypass mode, use X-User-Id header or default to dev-user
+      const userId = request.headers['x-user-id'] || 'dev-user';
       request.user = {
-        id: 'dev-user',
+        id: userId,
         role: 'admin',
         branchId: request.headers['x-branch-id'] || 'dps-main',
       };

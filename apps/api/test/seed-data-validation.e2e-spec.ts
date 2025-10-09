@@ -29,7 +29,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/students')
         .set('X-Branch-Id', branchId)
-        .query({ pageSize: 1000 }) // Get all students for analysis
+        .query({ perPage: 1000 }) // Get all students for analysis
         .expect(200);
 
       const students = response.body.data;
@@ -62,7 +62,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       const studentsResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
         .set('X-Branch-Id', branchId)
-        .query({ pageSize: 1000, status: 'graduated' })
+        .query({ perPage: 1000, status: 'graduated' })
         .expect(200);
 
       const graduatedStudents = studentsResponse.body.data;
@@ -72,7 +72,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       const classesResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
         .set('X-Branch-Id', branchId)
-        .query({ pageSize: 100 })
+        .query({ perPage: 100 })
         .expect(200);
       
       const classes = classesResponse.body.data;

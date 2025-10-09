@@ -50,7 +50,7 @@ describe('TeacherAttendance (e2e)', () => {
     it('should return paginated teacher attendance records for branch1', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teacher-attendance')
-        .query({ page: 1, pageSize: 10 })
+        .query({ page: 1, perPage: 10 })
         .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
@@ -63,9 +63,9 @@ describe('TeacherAttendance (e2e)', () => {
     it('should return filtered teacher attendance records by teacherId', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teacher-attendance')
-        .query({ 
-          page: 1, 
-          pageSize: 10,
+        .query({
+          page: 1,
+          perPage: 10,
           filter: JSON.stringify({ teacherId })
         })
         .set('X-Branch-Id', 'dps-main')
@@ -79,9 +79,9 @@ describe('TeacherAttendance (e2e)', () => {
     it('should return sorted teacher attendance records', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teacher-attendance')
-        .query({ 
-          page: 1, 
-          pageSize: 10,
+        .query({
+          page: 1,
+          perPage: 10,
           sort: JSON.stringify({ field: 'date', order: 'DESC' })
         })
         .set('X-Branch-Id', 'dps-main')
@@ -179,7 +179,11 @@ describe('TeacherAttendance (e2e)', () => {
     });
 
     it('should enforce branch isolation on create', async () => {
-      const uniqueDate = new Date().toISOString().split('T')[0]; // Use today's date to avoid conflicts
+      // Use a future date to avoid conflicts with seed data
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 365); // One year from now
+      const uniqueDate = futureDate.toISOString().split('T')[0];
+
       const newRecord = {
         teacherId,
         date: uniqueDate,
@@ -190,7 +194,7 @@ describe('TeacherAttendance (e2e)', () => {
         .post('/api/v1/teacher-attendance')
         .set('X-Branch-Id', 'dps-north')
         .send(newRecord);
-      
+
       // Expect 201 if teacherId is valid, 404 if placeholder
       if (teacherId === 'placeholder-teacher-id') {
         expect(response.status).toBe(404);
