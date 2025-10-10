@@ -836,8 +836,8 @@ model OnboardingState {
   attendanceConfigured  Boolean   @default(false)
 
   // Step 7: Fee Management
-  feesConfigured        Boolean   @default(false)
-  feesData              String?   // JSON with fee structure
+  feeStructureConfigured Boolean   @default(false)
+  feeStructureData       String?   // JSON with fee structure
 
   // Step 8: Reports & Analytics
   reportsViewed         Boolean   @default(false)

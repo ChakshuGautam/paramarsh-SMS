@@ -372,8 +372,8 @@ export class OnboardingService {
     const updatedState = await this.prisma.onboardingState.update({
       where: { id: state.id },
       data: {
-        feesData: JSON.stringify(feeData),
-        feesConfigured: true,
+        feeStructureData: JSON.stringify(feeData),
+        feeStructureConfigured: true,
         currentStep: 8,
         completedSteps: JSON.stringify(completedSteps),
       },
