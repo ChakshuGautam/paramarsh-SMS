@@ -182,9 +182,10 @@ describe('Attendance Sessions API (e2e)', () => {
         .get('/api/v1/attendance/sessions/today')
         .set('X-Branch-Id', 'dps-main');
 
-      // Response might be empty array
+      // Response should be in React Admin format: {data: [...], total: number}
       if (response.status === 200) {
-        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toHaveProperty('data');
+        expect(Array.isArray(response.body.data)).toBe(true);
       }
     });
 
@@ -200,9 +201,10 @@ describe('Attendance Sessions API (e2e)', () => {
           .get(`/api/v1/attendance/sessions/today?teacherId=${teacherId}`)
           .set('X-Branch-Id', 'dps-main');
 
-        // Accept various responses
+        // Response should be in React Admin format: {data: [...], total: number}
         if (response.status === 200) {
-          expect(Array.isArray(response.body)).toBe(true);
+          expect(response.body).toHaveProperty('data');
+          expect(Array.isArray(response.body.data)).toBe(true);
         }
       }
     });

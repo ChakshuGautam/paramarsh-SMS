@@ -5,6 +5,8 @@ import {
   Body,
   UseGuards,
   UnauthorizedException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OnboardingService } from './onboarding.service';
@@ -39,6 +41,7 @@ export class OnboardingController {
   }
 
   @Post('school-setup')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Setup school information (Step 1)' })
   @ApiResponse({ status: 200, description: 'School setup completed' })
   @ApiResponse({ status: 400, description: 'Invalid data' })
@@ -56,6 +59,7 @@ export class OnboardingController {
   }
 
   @Post('dashboard-tour')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Complete dashboard tour and generate demo data (Step 2)' })
   @ApiResponse({ status: 200, description: 'Dashboard tour completed with demo data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -83,6 +87,7 @@ export class OnboardingController {
   }
 
   @Post('user-roles')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Configure user roles (Step 3)' })
   @ApiResponse({ status: 200, description: 'User roles configured' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -96,6 +101,7 @@ export class OnboardingController {
   }
 
   @Post('classes')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Configure classes and curriculum (Step 4)' })
   @ApiResponse({ status: 200, description: 'Classes configured' })
   @ApiResponse({ status: 400, description: 'Invalid data' })
@@ -113,6 +119,7 @@ export class OnboardingController {
   }
 
   @Post('timetable')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Generate timetable configuration (Step 5)' })
   @ApiResponse({ status: 200, description: 'Timetable configured' })
   @ApiResponse({ status: 400, description: 'Invalid data' })
@@ -130,6 +137,7 @@ export class OnboardingController {
   }
 
   @Post('attendance')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Configure attendance (Step 6)' })
   @ApiResponse({ status: 200, description: 'Attendance configured' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -143,6 +151,7 @@ export class OnboardingController {
   }
 
   @Post('fees')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Configure fee structures (Step 7)' })
   @ApiResponse({ status: 200, description: 'Fee structures configured' })
   @ApiResponse({ status: 400, description: 'Invalid data' })
@@ -160,6 +169,7 @@ export class OnboardingController {
   }
 
   @Post('reports')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'View reports (Step 8)' })
   @ApiResponse({ status: 200, description: 'Reports viewed' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -173,6 +183,7 @@ export class OnboardingController {
   }
 
   @Post('complete')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Complete onboarding (Step 9)' })
   @ApiResponse({ status: 200, description: 'Onboarding completed successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
