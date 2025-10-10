@@ -486,43 +486,58 @@ export class DemoDataService {
     }
 
     try {
-      // NOTE: This implementation uses demoOnboardingId field if it exists
-      // For now, uses ID prefix filtering as fallback
+      // Delete demo data using ID prefix pattern
+      // Demo entities have IDs starting with 'demo-' prefix that includes onboardingStateId
 
       // Delete in proper order (foreign key constraints)
       const paymentsDeleted = await this.prisma.payment.deleteMany({
         where: {
-          demoOnboardingId: onboardingStateId,
+          id: {
+            startsWith: `demo-payment-`,
+            contains: onboardingStateId,
+          },
         },
       });
 
       const invoicesDeleted = await this.prisma.invoice.deleteMany({
         where: {
-          demoOnboardingId: onboardingStateId,
+          id: {
+            startsWith: `demo-invoice-`,
+            contains: onboardingStateId,
+          },
         },
       });
 
       const attendanceDeleted = await this.prisma.attendanceRecord.deleteMany({
         where: {
-          demoOnboardingId: onboardingStateId,
+          id: {
+            startsWith: `demo-attendance-`,
+            contains: onboardingStateId,
+          },
         },
       });
 
       const studentsDeleted = await this.prisma.student.deleteMany({
         where: {
-          demoOnboardingId: onboardingStateId,
+          id: {
+            startsWith: `demo-student-${onboardingStateId}`,
+          },
         },
       });
 
       const teachersDeleted = await this.prisma.teacher.deleteMany({
         where: {
-          demoOnboardingId: onboardingStateId,
+          id: {
+            startsWith: `demo-teacher-${onboardingStateId}`,
+          },
         },
       });
 
       const staffDeleted = await this.prisma.staff.deleteMany({
         where: {
-          demoOnboardingId: onboardingStateId,
+          id: {
+            startsWith: `demo-staff-${onboardingStateId}`,
+          },
         },
       });
 
