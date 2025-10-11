@@ -73,9 +73,10 @@ export class GuardiansService {
       where.email = { contains: params.email, mode: 'insensitive' };
     }
 
+    // Add id as secondary sort for deterministic pagination
     const orderBy: any = params.sort
-      ? params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' }))
-      : [{ name: 'asc' }];
+      ? [...params.sort.split(',').map((f) => ({ [f.startsWith('-') ? f.slice(1) : f]: f.startsWith('-') ? 'desc' : 'asc' })), { id: 'asc' }]
+      : [{ name: 'asc' }, { id: 'asc' }];
 
     const [data, total] = await Promise.all([
       this.prisma.guardian.findMany({ 
