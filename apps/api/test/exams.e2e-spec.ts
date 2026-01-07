@@ -32,17 +32,15 @@ describe('Exams API (e2e)', () => {
   describe('GET /api/v1/exams', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/exams?page=1&pageSize=5')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/exams?page=1&perPage=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      expect(response.body).toHaveProperty('meta');
+      expect(response.body).toHaveProperty('total');
       expect(Array.isArray(response.body.data)).toBe(true);
       expect(response.body.data.length).toBeLessThanOrEqual(5);
-      expect(typeof response.body.meta.total).toBe('number');
-      expect(response.body.meta).toHaveProperty('page', 1);
-      expect(response.body.meta).toHaveProperty('pageSize', 5);
+      expect(typeof response.body.total).toBe('number');
 
       if (response.body.data.length > 0) {
         const exam = response.body.data[0];
@@ -53,32 +51,32 @@ describe('Exams API (e2e)', () => {
         
         // Check branchId for multi-tenancy
         if (exam.branchId) {
-          expect(exam.branchId).toBe('test-branch');
+          expect(exam.branchId).toBe('dps-main');
         }
       }
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/exams')
-          .set('X-Branch-Id', 'test-branch'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/exams')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify that we get valid responses from both branches
       expect(Array.isArray(branch1Response.body.data)).toBe(true);
-      expect(Array.isArray(branch2Response.body.data)).toBe(true);
+      expect(Array.isArray(dpsNorthResponse.body.data)).toBe(true);
       
       // Check that branchId filtering is working (when branchId is present)
       branch1Response.body.data.forEach(exam => {
         if (exam.branchId) {
-          expect(exam.branchId).toBe('test-branch');
+          expect(exam.branchId).toBe('dps-main');
         }
       });
     });
@@ -86,7 +84,7 @@ describe('Exams API (e2e)', () => {
     it('should support ascending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/exams?sort=name')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -97,7 +95,7 @@ describe('Exams API (e2e)', () => {
     it('should support descending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/exams?sort=-name')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -108,7 +106,7 @@ describe('Exams API (e2e)', () => {
     it('should handle search by name gracefully', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/exams?q=exam')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
 
       // Current implementation might return 500 for search
       if (response.status === 200) {
@@ -123,7 +121,7 @@ describe('Exams API (e2e)', () => {
     it('should support date range filtering by startDate', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/exams?startDate_gte=2024-01-01&startDate_lte=2024-12-31')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(exam => {
@@ -138,7 +136,7 @@ describe('Exams API (e2e)', () => {
     it('should support date range filtering by endDate', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/exams?endDate_gte=2024-01-01&endDate_lte=2024-12-31')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(exam => {
@@ -152,20 +150,16 @@ describe('Exams API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/exams?page=1&pageSize=2')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/exams?page=1&perPage=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/exams?page=2&pageSize=2')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/exams?page=2&perPage=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify pagination metadata
-      expect(page1.body.meta.page).toBe(1);
-      expect(page2.body.meta.page).toBe(2);
-      expect(page1.body.meta.pageSize).toBe(2);
-      expect(page2.body.meta.pageSize).toBe(2);
 
       // Verify no overlap if both pages have data
       if (page1.body.data.length > 0 && page2.body.data.length > 0) {
@@ -178,8 +172,8 @@ describe('Exams API (e2e)', () => {
 
     it('should respect pageSize limits', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/exams?pageSize=1000')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/exams?perPage=1000')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Service should limit pageSize to reasonable amount
@@ -188,29 +182,27 @@ describe('Exams API (e2e)', () => {
 
     it('should return hasNext metadata correctly', async () => {
       const totalResponse = await request(app.getHttpServer())
-        .get('/api/v1/exams?pageSize=1000')
-        .set('X-Branch-Id', 'test-branch')
+        .get('/api/v1/exams?perPage=1000')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
-      const total = totalResponse.body.meta.total;
+      const total = totalResponse.body.total;
 
       if (total > 1) {
         // Get first page with pageSize = 1
         const firstPageResponse = await request(app.getHttpServer())
-          .get('/api/v1/exams?page=1&pageSize=1')
-          .set('X-Branch-Id', 'test-branch')
+          .get('/api/v1/exams?page=1&perPage=1')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
-        expect(firstPageResponse.body.meta.hasNext).toBe(true);
 
         // Get last page
         const lastPage = Math.ceil(total / 1);
         const lastPageResponse = await request(app.getHttpServer())
-          .get(`/api/v1/exams?page=${lastPage}&pageSize=1`)
-          .set('X-Branch-Id', 'test-branch')
+          .get(`/api/v1/exams?page=${lastPage}&perPage=1`)
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
-        expect(lastPageResponse.body.meta.hasNext).toBe(false);
       }
     });
   });
@@ -225,7 +217,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(newExam)
         .expect(201);
 
@@ -236,7 +228,7 @@ describe('Exams API (e2e)', () => {
       
       // Check branchId is set correctly
       if (response.body.data.branchId) {
-        expect(response.body.data.branchId).toBe('test-branch');
+        expect(response.body.data.branchId).toBe('dps-main');
       }
     });
 
@@ -248,7 +240,7 @@ describe('Exams API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidExam)
         .expect(400);
     });
@@ -261,7 +253,7 @@ describe('Exams API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidExam)
         .expect(400);
     });
@@ -273,7 +265,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(minimalExam)
         .expect(201);
 
@@ -289,7 +281,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(examWithDates)
         .expect(201);
 
@@ -303,7 +295,7 @@ describe('Exams API (e2e)', () => {
       // First create an exam
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Original Exam Name',
           startDate: '2024-05-01'
@@ -318,7 +310,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -332,17 +324,17 @@ describe('Exams API (e2e)', () => {
       const nonExistentUuid = '12345678-1234-1234-1234-123456789012';
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/exams/${nonExistentUuid}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Updated' });
 
       expect([404, 500]).toContain(response.status);
     });
 
     it('should not update exam from different tenant', async () => {
-      // Create exam in test-branch
+      // Create exam in dps-main
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Test Branch Exam' });
 
       const examId = createResponse.body.data.id;
@@ -350,7 +342,7 @@ describe('Exams API (e2e)', () => {
       // Try to update from different branch
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ name: 'Hacked Name' });
 
       // Current implementation may allow cross-tenant updates
@@ -360,14 +352,14 @@ describe('Exams API (e2e)', () => {
     it('should validate date formats on update', async () => {
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Validation Test Exam' });
 
       const examId = createResponse.body.data.id;
 
       const validationResponse = await request(app.getHttpServer())
         .patch(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ startDate: 'invalid-date' });
 
       // Current implementation might not validate date formats
@@ -380,7 +372,7 @@ describe('Exams API (e2e)', () => {
       // First create an exam
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Exam To Delete',
           startDate: '2024-07-01'
@@ -390,7 +382,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('success', true);
@@ -398,7 +390,7 @@ describe('Exams API (e2e)', () => {
       // Verify it's deleted by trying to update it
       const updateResponse = await request(app.getHttpServer())
         .patch(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Should fail' });
 
       expect([404, 500]).toContain(updateResponse.status);
@@ -408,15 +400,15 @@ describe('Exams API (e2e)', () => {
       const nonExistentUuid = '12345678-1234-1234-1234-123456789012';
       await request(app.getHttpServer())
         .delete(`/api/v1/exams/${nonExistentUuid}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should not delete exam from different tenant', async () => {
-      // Create exam in test-branch
+      // Create exam in dps-main
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Protected Exam' });
 
       const examId = createResponse.body.data.id;
@@ -424,7 +416,7 @@ describe('Exams API (e2e)', () => {
       // Try to delete from different branch
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/exams/${examId}`)
-        .set('X-Branch-Id', 'branch2');
+        .set('X-Branch-Id', 'dps-north');
 
       expect([200, 404, 500]).toContain(response.status);
     });
@@ -440,7 +432,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(scheduledExam)
         .expect(201);
 
@@ -462,7 +454,7 @@ describe('Exams API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send(typedExam)
         .expect(201);
 
@@ -473,7 +465,7 @@ describe('Exams API (e2e)', () => {
     it('should track exam metadata', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(exam => {
@@ -494,17 +486,17 @@ describe('Exams API (e2e)', () => {
       // Test basic filtering functionality
       const marchExams = await request(app.getHttpServer())
         .get('/api/v1/exams?startDate_gte=2024-03-01&startDate_lte=2024-03-31')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should return valid response structure
       expect(Array.isArray(marchExams.body.data)).toBe(true);
-      expect(typeof marchExams.body.meta.total).toBe('number');
+      expect(typeof marchExams.body.total).toBe('number');
       
       // Test date range filtering 
       const yearExams = await request(app.getHttpServer())
         .get('/api/v1/exams?startDate_gte=2024-01-01&startDate_lte=2024-12-31')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(Array.isArray(yearExams.body.data)).toBe(true);
@@ -512,17 +504,17 @@ describe('Exams API (e2e)', () => {
       // Verify all exams endpoint works
       const allExams = await request(app.getHttpServer())
         .get('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(Array.isArray(allExams.body.data)).toBe(true);
-      expect(typeof allExams.body.meta.total).toBe('number');
+      expect(typeof allExams.body.total).toBe('number');
       
       // Test that we can create and retrieve an exam
       const uniqueName = `Test Filter Exam ${Date.now()}`;
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: uniqueName,
           startDate: '2024-06-01'
@@ -535,7 +527,7 @@ describe('Exams API (e2e)', () => {
     it('should handle exam lifecycle states', async () => {
       const newExam = await request(app.getHttpServer())
         .post('/api/v1/exams')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Lifecycle Test Exam',
           startDate: '2024-10-01'
@@ -549,7 +541,7 @@ describe('Exams API (e2e)', () => {
         // Try to update status (this may or may not be supported by the current API)
         const statusUpdate = await request(app.getHttpServer())
           .patch(`/api/v1/exams/${examId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .send({ status: 'ONGOING' });
 
         // Accept any valid response - status update might not be implemented

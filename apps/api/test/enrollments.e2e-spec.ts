@@ -53,7 +53,7 @@ describe('Enrollments API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/enrollments?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -69,34 +69,34 @@ describe('Enrollments API (e2e)', () => {
         expect(enrollment).toHaveProperty('sectionId');
         expect(enrollment).toHaveProperty('status');
         expect(enrollment).toHaveProperty('startDate');
-        expect(enrollment).toHaveProperty('branchId', 'branch1');
+        expect(enrollment).toHaveProperty('branchId', 'dps-main');
         expect(['enrolled', 'inactive', 'completed', 'withdrawn']).toContain(enrollment.status);
       }
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/enrollments')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/enrollments')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
@@ -104,7 +104,7 @@ describe('Enrollments API (e2e)', () => {
       const filter = { status: 'enrolled' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/enrollments?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -116,7 +116,7 @@ describe('Enrollments API (e2e)', () => {
       // Get a student ID first
       const studentResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (studentResponse.body.data.length > 0) {
         const studentId = studentResponse.body.data[0].id;
@@ -124,7 +124,7 @@ describe('Enrollments API (e2e)', () => {
         
         const response = await request(app.getHttpServer())
           .get(`/api/v1/enrollments?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
 
         response.body.data.forEach(item => {
@@ -136,12 +136,12 @@ describe('Enrollments API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/enrollments?page=1&perPage=10')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/enrollments?page=2&perPage=10')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -158,34 +158,34 @@ describe('Enrollments API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/enrollments/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('studentId');
       expect(response.body.data).toHaveProperty('sectionId');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return enrollment with student and section relationships', async () => {
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/enrollments/${testId}?include=student,section`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toHaveProperty('student');
@@ -195,7 +195,7 @@ describe('Enrollments API (e2e)', () => {
     it('should return 404 for non-existent enrollment', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/enrollments/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -205,11 +205,11 @@ describe('Enrollments API (e2e)', () => {
       // Get student and section IDs
       const studentResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const sectionResponse = await request(app.getHttpServer())
         .get('/api/v1/sections')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (studentResponse.body.data.length === 0 || sectionResponse.body.data.length === 0) {
         return; // Skip if no test data
@@ -224,14 +224,14 @@ describe('Enrollments API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newEnrollment)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toMatchObject(newEnrollment);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -242,7 +242,7 @@ describe('Enrollments API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidEnrollment)
         .expect(422);
     });
@@ -252,12 +252,12 @@ describe('Enrollments API (e2e)', () => {
     it('should find enrollments for students', async () => {
       const studentResponse = await request(app.getHttpServer())
         .get('/api/v1/students?filter={"status":"active"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
       
       const enrollmentResponse = await request(app.getHttpServer())
         .get('/api/v1/enrollments?filter={"status":"enrolled"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have both students and enrollments (but may not match 1:1 due to data structure)
@@ -268,7 +268,7 @@ describe('Enrollments API (e2e)', () => {
     it('should have enrollments with correct start date from academic year', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(enrollment => {
@@ -283,7 +283,7 @@ describe('Enrollments API (e2e)', () => {
     it('should find enrollments with different statuses based on student status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const statuses = response.body.data.map(e => e.status);
@@ -301,12 +301,12 @@ describe('Enrollments API (e2e)', () => {
     it('should have one-to-one relationship between active students and enrollments', async () => {
       const studentResponse = await request(app.getHttpServer())
         .get('/api/v1/students?filter={"status":"active"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
       
       const enrollmentResponse = await request(app.getHttpServer())
         .get('/api/v1/enrollments?filter={"status":"enrolled"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Each active student should have exactly one active enrollment
@@ -322,7 +322,7 @@ describe('Enrollments API (e2e)', () => {
     it('should link enrollments to valid sections', async () => {
       const enrollmentResponse = await request(app.getHttpServer())
         .get('/api/v1/enrollments?include=section')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       enrollmentResponse.body.data.forEach(enrollment => {
@@ -339,7 +339,7 @@ describe('Enrollments API (e2e)', () => {
     it('should have enrollments distributed across different sections', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/enrollments')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const sectionIds = new Set(response.body.data.map(e => e.sectionId));

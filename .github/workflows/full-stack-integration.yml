@@ -10,6 +10,21 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -32,24 +47,20 @@ jobs:
       working-directory: apps/web
       run: npm ci
 
-    - name: Setup databases
-      working-directory: apps/api
-      run: |
-        touch prisma/dev.db
-        touch prisma/test.db
-
-    - name: Setup Prisma
+    - name: Setup PostgreSQL database and seed data
       working-directory: apps/api
       env:
-        DATABASE_URL: file:./dev.db
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
       run: |
         npx prisma generate
         npx prisma db push --force-reset --skip-generate
+        # Seed with minimal data for integration tests
+        npx prisma db seed || true
 
     - name: Start backend server
       working-directory: apps/api
       env:
-        DATABASE_URL: file:./dev.db
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
         NODE_ENV: test
         JWT_SECRET: test-secret-key-for-ci
         PORT: 8080

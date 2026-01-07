@@ -1,0 +1,29 @@
+{
+  "name": "enrollments",
+  "createdAt": "2025-09-18T20:36:14.605Z",
+  "branchId": "test-checkpoint-branch",
+  "entities": [
+    "tenants",
+    "academicYears",
+    "subjects",
+    "classes",
+    "sections",
+    "teachers",
+    "students",
+    "guardians",
+    "studentGuardians",
+    "enrollments"
+  ],
+  "counts": {
+    "tenants": 1,
+    "academicYears": 5,
+    "subjects": 8,
+    "classes": 10,
+    "sections": 20,
+    "teachers": 30,
+    "students": 716,
+    "guardians": 82,
+    "studentGuardians": 1182,
+    "enrollments": 716
+  }
+}

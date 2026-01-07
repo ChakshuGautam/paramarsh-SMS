@@ -17,7 +17,7 @@ import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { ListDocs, CreateDocs, UpdateDocs, DeleteDocs } from '../../common/swagger.decorators';
 
 @ApiTags('Campaigns')
-@Controller('campaigns')
+@Controller('comms/campaigns')
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 

@@ -53,7 +53,7 @@ describe('Classes API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -67,7 +67,7 @@ describe('Classes API (e2e)', () => {
         expect(cls).toHaveProperty('id');
         expect(cls).toHaveProperty('name');
         expect(cls).toHaveProperty('gradeLevel');
-        expect(cls).toHaveProperty('branchId', 'branch1');
+        expect(cls).toHaveProperty('branchId', 'dps-main');
         // gradeLevel can be either a number, an object, or null
         if (cls.gradeLevel !== null && cls.gradeLevel !== undefined) {
           if (typeof cls.gradeLevel === 'number') {
@@ -80,32 +80,32 @@ describe('Classes API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/classes')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/classes')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
-      // Verify isolation - branch2 should have empty data
+      // Verify isolation - dps-north should have empty data
       expect(branch1Response.body.data.length).toBeGreaterThan(0);
-      expect(branch2Response.body.data.length).toBe(0);
+      expect(dpsNorthResponse.body.data.length).toBe(0);
       
-      // Verify branchId for branch1 data
+      // Verify branchId', 'dps-main data
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by gradeLevel', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes?sort=gradeLevel')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const gradeLevels = response.body.data.map(item => item.gradeLevel);
@@ -116,7 +116,7 @@ describe('Classes API (e2e)', () => {
     it('should support descending sorting by gradeLevel', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes?sort=-gradeLevel')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const gradeLevels = response.body.data.map(item => item.gradeLevel);
@@ -127,7 +127,7 @@ describe('Classes API (e2e)', () => {
     it('should support sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes?sort=name')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -141,7 +141,7 @@ describe('Classes API (e2e)', () => {
       const filter = { gradeLevel: 3 }; // Class 1
       const response = await request(app.getHttpServer())
         .get(`/api/v1/classes?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should only return Class 1 with gradeLevel 3
@@ -153,12 +153,12 @@ describe('Classes API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/classes?page=1&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/classes?page=2&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -175,34 +175,34 @@ describe('Classes API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/classes/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('name');
       expect(response.body.data).toHaveProperty('gradeLevel');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return class with sections when included', async () => {
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/classes/${testId}?include=sections`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // TODO: Implement include functionality in API
@@ -214,7 +214,7 @@ describe('Classes API (e2e)', () => {
     it('should return 404 for non-existent class', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/classes/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -222,7 +222,7 @@ describe('Classes API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
@@ -231,13 +231,13 @@ describe('Classes API (e2e)', () => {
       // Currently returns 200 with data from branch1, should return 404
       const response = await request(app.getHttpServer())
         .get(`/api/v1/classes/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2');
+        .set('X-Branch-Id', 'dps-north');
       
       // When fixed, this should be 404
       expect([200, 404]).toContain(response.status);
       if (response.status === 200) {
-        // If returning data, it shouldn't be from branch2
-        expect(response.body.data.branchId).toBe('branch1');
+        // If returning data, it shouldn't be from dps-north
+        expect(response.body.data.branchId).toBe('dps-main');
       }
     });
   });
@@ -251,14 +251,14 @@ describe('Classes API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newClass)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toMatchObject(newClass);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -271,7 +271,7 @@ describe('Classes API (e2e)', () => {
       // Currently allows missing required fields
       const response = await request(app.getHttpServer())
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidClass);
       
       // When validation is fixed, this should be 400
@@ -289,14 +289,14 @@ describe('Classes API (e2e)', () => {
       // Create first class
       const first = await request(app.getHttpServer())
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicateClass)
         .expect(201);
 
       // Try to create duplicate - should fail but currently succeeds
       const second = await request(app.getHttpServer())
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicateClass);
       
       // When unique validation is implemented, this should be 409
@@ -320,7 +320,7 @@ describe('Classes API (e2e)', () => {
       // First create a class to update
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Patch Test Class',
           gradeLevel: 7
@@ -334,7 +334,7 @@ describe('Classes API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/classes/${classId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -350,7 +350,7 @@ describe('Classes API (e2e)', () => {
       // First create a class to delete
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Delete Test Class',
           gradeLevel: 8
@@ -360,7 +360,7 @@ describe('Classes API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/classes/${classId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // API returns deleted object in {data: ...} format
@@ -370,7 +370,7 @@ describe('Classes API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/classes/${classId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -380,7 +380,7 @@ describe('Classes API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -390,7 +390,7 @@ describe('Classes API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/classes?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -412,7 +412,7 @@ describe('Classes API (e2e)', () => {
     it('should find specific classes from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const classNames = response.body.data.map(c => c.name);
@@ -430,7 +430,7 @@ describe('Classes API (e2e)', () => {
     it('should have classes with correct grade level progression', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes?sort=gradeLevel')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data.length).toBeGreaterThan(5);
@@ -457,7 +457,7 @@ describe('Classes API (e2e)', () => {
     it('should find pre-primary classes (Nursery, LKG, UKG)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have classes with lower grade levels (0-2 typically for pre-primary)
@@ -468,7 +468,7 @@ describe('Classes API (e2e)', () => {
     it('should find primary classes (1-5)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have classes with primary grade levels (3-7 typically for Class 1-5)
@@ -479,7 +479,7 @@ describe('Classes API (e2e)', () => {
     it('should find secondary classes (6-8)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have classes with secondary grade levels (8-10 typically for Class 6-8)
@@ -490,7 +490,7 @@ describe('Classes API (e2e)', () => {
     it('should find senior secondary classes (9-10)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/classes')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Should have classes with senior grade levels (11-12 typically for Class 9-10)

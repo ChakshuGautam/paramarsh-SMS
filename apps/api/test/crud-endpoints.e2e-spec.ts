@@ -59,7 +59,7 @@ describe('CRUD Endpoints (E2E)', () => {
       it(`should list ${entityName}`, async () => {
         const response = await http
           .get(`/api/v1/${entityName}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
         
         expect(response.body).toHaveProperty('data');
@@ -70,7 +70,7 @@ describe('CRUD Endpoints (E2E)', () => {
       it(`should create ${entityName}`, async () => {
         const response = await http
           .post(`/api/v1/${entityName}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .send(createData);
         
         // Some entities might have validation issues
@@ -92,7 +92,7 @@ describe('CRUD Endpoints (E2E)', () => {
         
         const response = await http
           .get(`/api/v1/${entityName}/${createdId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
         
         expect(response.body).toHaveProperty('data');
@@ -107,7 +107,7 @@ describe('CRUD Endpoints (E2E)', () => {
         
         const response = await http
           .patch(`/api/v1/${entityName}/${createdId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .send(updateData)
           .expect(200);
         
@@ -123,7 +123,7 @@ describe('CRUD Endpoints (E2E)', () => {
         
         await http
           .delete(`/api/v1/${entityName}/${createdId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(200);
       });
 
@@ -135,7 +135,7 @@ describe('CRUD Endpoints (E2E)', () => {
         
         await http
           .get(`/api/v1/${entityName}/${createdId}`)
-          .set('X-Branch-Id', 'test-branch')
+          .set('X-Branch-Id', 'dps-main')
           .expect(404);
       });
     });
@@ -219,8 +219,8 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should support pagination parameters', async () => {
       const response = await http
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'test-branch')
-        .query({ page: 1, pageSize: 10 })
+        .set('X-Branch-Id', 'dps-main')
+        .query({ page: 1, perPage: 10 })
         .expect(200);
       
       expect(response.body.data.length).toBeLessThanOrEqual(10);
@@ -229,7 +229,7 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should support sorting', async () => {
       const response = await http
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .query({ sort: 'firstName:asc' })
         .expect(200);
       
@@ -239,7 +239,7 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should support filtering', async () => {
       const response = await http
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .query({ gender: 'male' })
         .expect(200);
       
@@ -249,7 +249,7 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should support search', async () => {
       const response = await http
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .query({ q: 'Test' });
         
       // Search might not be implemented, allow 500 errors
@@ -268,7 +268,7 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should return list response in React Admin format', async () => {
       const response = await http
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
       
       expect(response.body).toHaveProperty('data');
@@ -280,7 +280,7 @@ describe('CRUD Endpoints (E2E)', () => {
       // First create an item
       const createResponse = await http
         .post('/api/v1/classes')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ name: 'Test Class for Format', gradeLevel: 5 })
         .expect(201);
       
@@ -289,14 +289,14 @@ describe('CRUD Endpoints (E2E)', () => {
       // Then get it
       const getResponse = await http
         .get(`/api/v1/classes/${id}`)
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
       
       expect(getResponse.body).toHaveProperty('data');
       expect(getResponse.body.data).toHaveProperty('id');
       
       // Clean up
-      await http.delete(`/api/v1/classes/${id}`).set('X-Branch-Id', 'test-branch');
+      await http.delete(`/api/v1/classes/${id}`).set('X-Branch-Id', 'dps-main');
     });
   });
 
@@ -305,14 +305,14 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should return 404 for non-existent resource', async () => {
       await http
         .get('/api/v1/students/non-existent-id')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should return 400 for invalid data', async () => {
       const response = await http
         .post('/api/v1/students')
-        .set('X-Branch-Id', 'test-branch')
+        .set('X-Branch-Id', 'dps-main')
         .send({ invalid: 'data' });
         
       // Implementation returns different error codes  
@@ -322,7 +322,7 @@ describe('CRUD Endpoints (E2E)', () => {
     it('should handle malformed IDs gracefully', async () => {
       const response = await http
         .get('/api/v1/students/not-a-uuid')
-        .set('X-Branch-Id', 'test-branch');
+        .set('X-Branch-Id', 'dps-main');
         
       // Implementation might return 404 instead of 400 for malformed UUIDs
       expect([400, 404]).toContain(response.status);

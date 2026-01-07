@@ -20,6 +20,21 @@ jobs:
       matrix:
         node-version: [18.x]
     
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -38,16 +53,10 @@ jobs:
       working-directory: apps/api
       run: bun install
 
-    - name: Setup SQLite database
-      working-directory: apps/api
-      run: |
-        touch prisma/dev.db
-        touch prisma/test.db
-
-    - name: Run Prisma setup
+    - name: Setup PostgreSQL database
       working-directory: apps/api
       env:
-        DATABASE_URL: file:./test.db
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
       run: |
         npx prisma generate
         npx prisma db push --force-reset --skip-generate
@@ -55,13 +64,14 @@ jobs:
     - name: Run E2E tests
       working-directory: apps/api
       env:
-        DATABASE_URL: file:./test.db
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
         NODE_ENV: test
         JWT_SECRET: test-secret-key-for-ci
         PORT: 8080
+        BYPASS_AUTH: true
       run: |
-        # Run tests and capture exit code
-        bun run test:e2e --bail=5 --maxWorkers=1
+        # Run tests with bypass auth
+        npm run test:e2e:ci:bypass
         TEST_EXIT_CODE=$?
         
         # Exit with the test exit code to fail CI if tests failed

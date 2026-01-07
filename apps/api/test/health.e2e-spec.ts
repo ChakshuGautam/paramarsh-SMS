@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
 describe('Health Check (e2e)', () => {
@@ -12,6 +12,7 @@ describe('Health Check (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api/v1');
     await app.init();
   });
 
@@ -21,8 +22,12 @@ describe('Health Check (e2e)', () => {
 
   it('/health (GET) should return OK', () => {
     return request(app.getHttpServer())
-      .get('/health')
+      .get('/api/v1/health')
       .expect(200)
-      .expect({ status: 'ok' });
+      .expect((res) => {
+        expect(res.body).toHaveProperty('status', 'ok');
+        expect(res.body).toHaveProperty('ts');
+        expect(res.body).toHaveProperty('database', 'connected');
+      });
   });
 });

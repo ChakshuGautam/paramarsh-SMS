@@ -23,8 +23,8 @@ describe('Guardians API (e2e)', () => {
   describe('GET /api/v1/guardians', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/guardians?page=1&pageSize=5')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/guardians?page=1&perPage=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -39,7 +39,7 @@ describe('Guardians API (e2e)', () => {
         expect(guardian).toHaveProperty('name');
         expect(guardian).toHaveProperty('email');
         expect(guardian).toHaveProperty('phoneNumber');
-        expect(guardian).toHaveProperty('branchId', 'branch1');
+        expect(guardian).toHaveProperty('branchId', 'dps-main');
         if (guardian.phoneNumber) {
           expect(guardian.phoneNumber).toMatch(/^\+\d{1,4}-\d{10}$/);
         }
@@ -47,35 +47,35 @@ describe('Guardians API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/guardians')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/guardians')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians?sort=name')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -86,7 +86,7 @@ describe('Guardians API (e2e)', () => {
     it('should support descending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians?sort=-name')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -98,7 +98,7 @@ describe('Guardians API (e2e)', () => {
       const filter = { occupation: 'Engineer' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/guardians?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Just verify that filtering by occupation works (don't expect specific values)
@@ -107,13 +107,13 @@ describe('Guardians API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/guardians?page=1&pageSize=2')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/guardians?page=1&perPage=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/guardians?page=2&pageSize=2')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/guardians?page=2&perPage=2')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -130,34 +130,34 @@ describe('Guardians API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/guardians/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('name');
       expect(response.body.data).toHaveProperty('email');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return guardian with student relationships', async () => {
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/guardians/${testId}?include=students`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toHaveProperty('students');
@@ -166,7 +166,7 @@ describe('Guardians API (e2e)', () => {
     it('should return 404 for non-existent guardian', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/guardians/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -174,15 +174,15 @@ describe('Guardians API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/guardians/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -199,14 +199,14 @@ describe('Guardians API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newGuardian)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toMatchObject(newGuardian);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -217,7 +217,7 @@ describe('Guardians API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidGuardian)
         .expect(201); // Validation not enforced
     });
@@ -233,7 +233,7 @@ describe('Guardians API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidGuardian)
         .expect(201); // Validation not enforced
     });
@@ -244,7 +244,7 @@ describe('Guardians API (e2e)', () => {
       // First get an existing guardian
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const guardianId = listResponse.body.data[0]?.id;
       if (!guardianId) return;
@@ -259,7 +259,7 @@ describe('Guardians API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/guardians/${guardianId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData);
 
       if (response.status === 200) {
@@ -277,15 +277,15 @@ describe('Guardians API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/guardians/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ name: 'Hacked Guardian' })
         .expect(404);
     });
@@ -296,7 +296,7 @@ describe('Guardians API (e2e)', () => {
       // First get an existing guardian
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const guardianId = listResponse.body.data[0]?.id;
       if (!guardianId) return;
@@ -307,7 +307,7 @@ describe('Guardians API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/guardians/${guardianId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -322,7 +322,7 @@ describe('Guardians API (e2e)', () => {
       // First create a guardian to delete
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Mr. To Delete',
           email: 'delete.me@example.com',
@@ -335,7 +335,7 @@ describe('Guardians API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/guardians/${guardianId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -344,7 +344,7 @@ describe('Guardians API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/guardians/${guardianId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -354,7 +354,7 @@ describe('Guardians API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -364,7 +364,7 @@ describe('Guardians API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/guardians?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -389,7 +389,7 @@ describe('Guardians API (e2e)', () => {
     it('should find guardians with Mr. and Mrs. titles from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(g => g.name);
@@ -400,7 +400,7 @@ describe('Guardians API (e2e)', () => {
     it('should find guardians with Indian email domains from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have guardian data and valid email formats
@@ -416,7 +416,7 @@ describe('Guardians API (e2e)', () => {
     it('should find guardians with professional occupations', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const occupations = response.body.data.map(g => g.occupation);
@@ -428,7 +428,7 @@ describe('Guardians API (e2e)', () => {
     it('should find guardians with Indian phone number format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have guardian data
@@ -444,7 +444,7 @@ describe('Guardians API (e2e)', () => {
     it('should find guardians with addresses containing Indian cities', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have guardian data
@@ -461,7 +461,7 @@ describe('Guardians API (e2e)', () => {
     it('should find guardians linked to multiple students (siblings)', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/guardians?include=students')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const guardiansWithStudents = response.body.data.filter(g => 

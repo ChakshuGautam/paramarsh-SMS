@@ -1,0 +1,23 @@
+{
+  "name": "students",
+  "createdAt": "2025-09-18T20:08:51.711Z",
+  "branchId": "test-checkpoint-branch",
+  "entities": [
+    "tenants",
+    "academicYears",
+    "subjects",
+    "classes",
+    "sections",
+    "teachers",
+    "students"
+  ],
+  "counts": {
+    "tenants": 1,
+    "academicYears": 5,
+    "subjects": 8,
+    "classes": 10,
+    "sections": 20,
+    "teachers": 30,
+    "students": 705
+  }
+}

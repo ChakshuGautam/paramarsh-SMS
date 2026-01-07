@@ -3,7 +3,7 @@
  */
 
 // Multi-tenancy
-export const DEFAULT_BRANCH_ID = 'branch1';
+export const DEFAULT_BRANCH_ID = 'dps-main';
 export const BRANCH_HEADER_KEY = 'x-branch-id';
 
 // API Configuration  

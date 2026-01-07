@@ -41,7 +41,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     
     // Get test data from seed
     const students = await prisma.student.findMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
       take: 5
     });
     
@@ -51,7 +51,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
     // Check if we have any existing attendance records
     const existingAttendance = await prisma.attendanceRecord.findMany({
-      where: { branchId: 'branch1' },
+      where: { branchId: 'dps-main' },
       take: 1
     });
     
@@ -67,8 +67,8 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
   describe('GET /api/v1/attendance-records (getList)', () => {
     it('should return paginated attendance records with React Admin format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?page=1&pageSize=10')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/attendance-records?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -79,7 +79,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       if (response.body.data.length > 0) {
         const attendanceRecord = response.body.data[0];
         expect(attendanceRecord).toHaveProperty('id');
-        expect(attendanceRecord).toHaveProperty('branchId', 'branch1');
+        expect(attendanceRecord).toHaveProperty('branchId', 'dps-main');
         expect(attendanceRecord).toHaveProperty('studentId');
         expect(attendanceRecord).toHaveProperty('date');
         expect(attendanceRecord).toHaveProperty('status');
@@ -90,57 +90,57 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should filter by status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/attendance-records?filter={"status":"PRESENT"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
       response.body.data.forEach((record: any) => {
         expect(record.status).toBe('PRESENT');
-        expect(record.branchId).toBe('branch1');
+        expect(record.branchId).toBe('dps-main');
       });
     });
 
     it('should filter by studentId', async () => {
       const response = await request(app.getHttpServer())
         .get(`/api/v1/attendance-records?filter={"studentId":"${testStudentId}"}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
       response.body.data.forEach((record: any) => {
         expect(record.studentId).toBe(testStudentId);
-        expect(record.branchId).toBe('branch1');
+        expect(record.branchId).toBe('dps-main');
       });
     });
 
     it('should filter by date range', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/attendance-records?filter={"date_gte":"2024-01-01","date_lte":"2024-01-31"}')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
       response.body.data.forEach((record: any) => {
-        expect(record.branchId).toBe('branch1');
+        expect(record.branchId).toBe('dps-main');
         expect(record.date).toBeDefined();
       });
     });
 
     it('should respect branch isolation', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?page=1&pageSize=10')
-        .set('X-Branch-Id', 'branch2')
+        .get('/api/v1/attendance-records?page=1&perPage=10')
+        .set('X-Branch-Id', 'dps-north')
         .expect(200);
 
       response.body.data.forEach((record: any) => {
-        expect(record.branchId).toBe('branch2');
+        expect(record.branchId).toBe('dps-north');
       });
     });
 
     it('should handle sorting', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?sort=date&page=1&pageSize=5')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/attendance-records?sort=date&page=1&perPage=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toBeDefined();
@@ -162,12 +162,12 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/attendance-records/${testAttendanceId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testAttendanceId);
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
       expect(response.body.data).toHaveProperty('studentId');
       expect(response.body.data).toHaveProperty('date');
       expect(response.body.data).toHaveProperty('status');
@@ -177,7 +177,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should return 404 for non-existent attendance record', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/attendance-records/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -187,10 +187,10 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
         return;
       }
 
-      // Try to access branch1 attendance record with branch2 header
+      // Try to access branch1 attendance record with dps-north header
       await request(app.getHttpServer())
         .get(`/api/v1/attendance-records/${testAttendanceId}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -199,13 +199,13 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should create a new attendance record with React Admin format', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(validAttendanceData)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
       expect(response.body.data).toHaveProperty('studentId', validAttendanceData.studentId);
       expect(response.body.data).toHaveProperty('date', validAttendanceData.date);
       expect(response.body.data).toHaveProperty('status', validAttendanceData.status);
@@ -218,7 +218,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should validate required fields', async () => {
       await request(app.getHttpServer())
         .post('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({})
         .expect(400);
     });
@@ -226,7 +226,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should validate status enum values', async () => {
       await request(app.getHttpServer())
         .post('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           ...validAttendanceData,
           status: 'INVALID_STATUS'
@@ -237,7 +237,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should require valid studentId', async () => {
       await request(app.getHttpServer())
         .post('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           ...validAttendanceData,
           studentId: 'non-existent-student'
@@ -248,7 +248,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should accept valid status values', async () => {
       const studentsResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (studentsResponse.body.data.length === 0) {
         return; // Skip if no students available
@@ -266,7 +266,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/v1/attendance-records')
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .send(record)
           .expect(201);
 
@@ -277,7 +277,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should accept valid source values', async () => {
       const studentsResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (studentsResponse.body.data.length === 0) {
         return; // Skip if no students available
@@ -295,7 +295,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
         const response = await request(app.getHttpServer())
           .post('/api/v1/attendance-records')
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .send(record)
           .expect(201);
 
@@ -309,7 +309,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       // First get an existing record
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (listResponse.body.data.length === 0) {
         return; // Skip if no records available
@@ -324,7 +324,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/attendance-records/${recordId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -338,16 +338,16 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       const nonExistentUuid = '12345678-1234-1234-1234-123456789012';
       await request(app.getHttpServer())
         .put(`/api/v1/attendance-records/${nonExistentUuid}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({ status: 'present' })
         .expect(404); // Should return 404 for non-existent record
     });
 
     it('should handle cross-tenant update attempts', async () => {
-      // Get record from test-branch
+      // Get record from dps-main
       const testBranchList = await request(app.getHttpServer())
         .get('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (testBranchList.body.data.length === 0) {
         return; // Skip if no records available
@@ -355,10 +355,10 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const testBranchId = testBranchList.body.data[0].id;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       const response = await request(app.getHttpServer())
         .put(`/api/v1/attendance-records/${testBranchId}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ status: 'absent' });
 
       // Current implementation may allow cross-tenant updates
@@ -372,7 +372,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       // First create a record to delete
       const studentsResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (studentsResponse.body.data.length === 0) {
         return; // Skip if no students available
@@ -380,7 +380,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/attendance-records')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           studentId: studentsResponse.body.data[0].id,
           date: '2024-12-25',
@@ -391,7 +391,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/attendance-records/${recordId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('success', true);
@@ -399,7 +399,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       // Verify it's deleted by trying to update it
       await request(app.getHttpServer())
         .put(`/api/v1/attendance-records/${recordId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({ status: 'absent' })
         .expect(404); // Should fail after deletion
     });
@@ -408,7 +408,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       const nonExistentUuid = '12345678-1234-1234-1234-123456789012';
       await request(app.getHttpServer())
         .delete(`/api/v1/attendance-records/${nonExistentUuid}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -417,8 +417,8 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
     it('should return multiple attendance records by IDs', async () => {
       // Get some attendance record IDs first
       const listResponse = await request(app.getHttpServer())
-        .get('/api/v1/attendance-records?page=1&pageSize=3')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/attendance-records?page=1&perPage=3')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (listResponse.body.data.length === 0) {
@@ -431,7 +431,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/attendance-records?id=${idsParam}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -439,7 +439,7 @@ describe('AttendanceRecord API (e2e) - TDD Implementation', () => {
       expect(response.body.data.length).toBeLessThanOrEqual(ids.length);
       
       response.body.data.forEach((record: any) => {
-        expect(record.branchId).toBe('branch1');
+        expect(record.branchId).toBe('dps-main');
         expect(ids).toContain(record.id);
       });
     });

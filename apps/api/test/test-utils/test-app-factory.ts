@@ -118,7 +118,7 @@ export class TestAppFactory {
   /**
    * Helper to create standard test headers
    */
-  static getTestHeaders(branchId: string = 'branch1'): Record<string, string> {
+  static getTestHeaders(branchId: string = 'dps-main'): Record<string, string> {
     return {
       'X-Branch-Id': branchId,
       'Content-Type': 'application/json',
@@ -133,15 +133,12 @@ export class TestAppFactory {
   }
 
   /**
-   * Helper to create React Admin pagination params
+   * Helper to create standard API pagination params
    */
-  static createPaginationParams(page: number = 1, perPage: number = 10): Record<string, any> {
-    const start = (page - 1) * perPage;
-    const end = start + perPage;
+  static createPaginationParams(page: number = 1, pageSize: number = 10): Record<string, any> {
     return {
-      range: JSON.stringify([start, end]),
-      sort: JSON.stringify(['id', 'ASC']),
-      filter: JSON.stringify({}),
+      page: page.toString(),
+      pageSize: pageSize.toString(),
     };
   }
 }

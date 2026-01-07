@@ -1,0 +1,17 @@
+{
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "testTimeout": 120000,
+  "maxWorkers": 1,
+  "testMatch": [
+    "**/__tests__/**/*.test.ts"
+  ],
+  "setupFilesAfterEnv": [
+    "<rootDir>/src/seed/__tests__/setup.ts"
+  ],
+  "globals": {
+    "ts-jest": {
+      "isolatedModules": true
+    }
+  }
+}

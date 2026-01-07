@@ -23,8 +23,8 @@ describe('Teachers API (e2e)', () => {
   describe('GET /api/v1/teachers', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/teachers?page=1&pageSize=5')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/teachers?page=1&perPage=5')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -40,41 +40,41 @@ describe('Teachers API (e2e)', () => {
         expect(teacher).toHaveProperty('subjects');
         expect(teacher).toHaveProperty('qualifications');
         expect(teacher).toHaveProperty('experienceYears');
-        expect(teacher).toHaveProperty('branchId', 'branch1');
+        expect(teacher).toHaveProperty('branchId', 'dps-main');
         expect(typeof teacher.experienceYears).toBe('number');
       }
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/teachers')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/teachers')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by experienceYears', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers?sort=experienceYears')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const experiences = response.body.data.map(item => item.experienceYears);
@@ -85,7 +85,7 @@ describe('Teachers API (e2e)', () => {
     it('should support descending sorting by experienceYears', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers?sort=-experienceYears')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const experiences = response.body.data.map(item => item.experienceYears);
@@ -97,7 +97,7 @@ describe('Teachers API (e2e)', () => {
       // Get all teachers and filter on client side since complex filters may not be supported
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const teachersWithSubjects = response.body.data.filter(t => t.subjects && t.subjects.length > 0);
@@ -108,7 +108,7 @@ describe('Teachers API (e2e)', () => {
       const filter = { experienceYears: { "$gte": 5, "$lte": 10 } };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/teachers?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -119,13 +119,13 @@ describe('Teachers API (e2e)', () => {
 
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
-        .get('/api/v1/teachers?page=1&pageSize=3')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/teachers?page=1&perPage=3')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
-        .get('/api/v1/teachers?page=2&pageSize=3')
-        .set('X-Branch-Id', 'branch1')
+        .get('/api/v1/teachers?page=2&perPage=3')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -142,34 +142,34 @@ describe('Teachers API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/teachers/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('staffId');
       expect(response.body.data).toHaveProperty('subjects');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return teacher with staff relationship', async () => {
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/teachers/${testId}?include=staff`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data).toHaveProperty('staff');
@@ -182,7 +182,7 @@ describe('Teachers API (e2e)', () => {
     it('should return 404 for non-existent teacher', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/teachers/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -190,15 +190,15 @@ describe('Teachers API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/teachers/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -208,14 +208,14 @@ describe('Teachers API (e2e)', () => {
       // First get a staff member ID
       const staffResponse = await request(app.getHttpServer())
         .get('/api/v1/hr/staff?filter={"designation":"Teacher"}')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       // Create new staff if none exists
       let staffId;
       if (staffResponse.body.data.length === 0) {
         const createStaffResponse = await request(app.getHttpServer())
           .post('/api/v1/hr/staff')
-          .set('X-Branch-Id', 'branch1')
+          .set('X-Branch-Id', 'dps-main')
           .send({
             firstName: 'Test',
             lastName: 'TeacherStaff',
@@ -241,7 +241,7 @@ describe('Teachers API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newTeacher)
         .expect(500); // Internal Server Error - validation or constraint issues
     });
@@ -254,7 +254,7 @@ describe('Teachers API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidTeacher)
         .expect(500); // Internal Server Error for validation issues
     });
@@ -265,7 +265,7 @@ describe('Teachers API (e2e)', () => {
       // First get an existing teacher
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const teacherId = listResponse.body.data[0]?.id;
       const staffId = listResponse.body.data[0]?.staffId;
@@ -280,7 +280,7 @@ describe('Teachers API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/teachers/${teacherId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -294,15 +294,15 @@ describe('Teachers API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/teachers/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ subjects: 'Hacked Subjects' })
         .expect(200); // Tenant isolation not strictly enforced
     });
@@ -313,7 +313,7 @@ describe('Teachers API (e2e)', () => {
       // First get an existing teacher
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const teacherId = listResponse.body.data[0]?.id;
       if (!teacherId) return;
@@ -324,7 +324,7 @@ describe('Teachers API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/teachers/${teacherId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -339,7 +339,7 @@ describe('Teachers API (e2e)', () => {
       // First create a teacher to delete
       const staffResponse = await request(app.getHttpServer())
         .post('/api/v1/hr/staff')  // Correct endpoint
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           firstName: 'Delete',
           lastName: 'TeacherStaff',
@@ -359,7 +359,7 @@ describe('Teachers API (e2e)', () => {
 
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           staffId: staffResponse.body.data.id,
           subjects: 'Temporary Subject',
@@ -376,7 +376,7 @@ describe('Teachers API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/teachers/${teacherId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -385,7 +385,7 @@ describe('Teachers API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/teachers/${teacherId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -395,7 +395,7 @@ describe('Teachers API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -405,7 +405,7 @@ describe('Teachers API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/teachers?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -422,7 +422,7 @@ describe('Teachers API (e2e)', () => {
     it('should find teachers with different subject specializations', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have teachers with valid subject data
@@ -437,7 +437,7 @@ describe('Teachers API (e2e)', () => {
     it('should find teachers with B.Ed qualifications', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have teachers with valid qualification data
@@ -454,7 +454,7 @@ describe('Teachers API (e2e)', () => {
     it('should find teachers with varying experience levels', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have teachers with valid experience data
@@ -472,7 +472,7 @@ describe('Teachers API (e2e)', () => {
     it('should find nursery teachers with appropriate subjects', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers?include=staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const nurseryTeachers = response.body.data.filter(t => 
@@ -490,7 +490,7 @@ describe('Teachers API (e2e)', () => {
     it('should find senior secondary teachers with advanced qualifications', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers?include=staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const seniorTeachers = response.body.data.filter(t => 
@@ -504,7 +504,7 @@ describe('Teachers API (e2e)', () => {
     it('should find PE teachers with sports subjects', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers?include=staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const peTeachers = response.body.data.filter(t => 
@@ -518,7 +518,7 @@ describe('Teachers API (e2e)', () => {
     it('should find teachers with appropriate experience for their level', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers?include=staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Check nursery teachers have 2-8 years experience
@@ -536,7 +536,7 @@ describe('Teachers API (e2e)', () => {
     it('should find subject specialist teachers', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/teachers')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const teachersWithSubjects = response.body.data.filter(t => t.subjects && t.subjects.length > 0);

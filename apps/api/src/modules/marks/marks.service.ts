@@ -47,21 +47,26 @@ export class MarksService {
     where.branchId = branchId;
     
     // Sorting
-    let orderBy: any = [{ createdAt: 'desc' }];
+    let orderBy: any = [{ createdAt: 'desc' }, { id: 'asc' }]; // Add id as secondary sort for deterministic pagination
     if (params.sort) {
       const sortField = params.sort.startsWith('-') ? params.sort.slice(1) : params.sort;
       const sortOrder = params.sort.startsWith('-') ? 'desc' : 'asc';
-      
+
       // Handle special relation sorting
       if (sortField === 'student') {
-        orderBy = [{ student: { firstName: sortOrder } }];
+        // Sort by full name (firstName then lastName) for consistent ordering
+        orderBy = [
+          { student: { firstName: sortOrder } },
+          { student: { lastName: sortOrder } },
+          { id: 'asc' } // Add id as tiebreaker
+        ];
       } else if (sortField === 'subject') {
-        orderBy = [{ subject: { name: sortOrder } }];
+        orderBy = [{ subject: { name: sortOrder } }, { id: 'asc' }];
       } else if (sortField === 'exam') {
-        orderBy = [{ exam: { name: sortOrder } }];
+        orderBy = [{ exam: { name: sortOrder } }, { id: 'asc' }];
       } else {
-        // Direct field sorting
-        orderBy = [{ [sortField]: sortOrder }];
+        // Direct field sorting with id as tiebreaker
+        orderBy = [{ [sortField]: sortOrder }, { id: 'asc' }];
       }
     }
 

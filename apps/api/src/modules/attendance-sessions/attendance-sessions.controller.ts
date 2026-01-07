@@ -48,7 +48,12 @@ export class AttendanceSessionsController {
     if (!teacherId) {
       return { data: [], message: 'Teacher ID is required' };
     }
-    return this.service.getTodaysSessions(teacherId);
+    const sessions = await this.service.getTodaysSessions(teacherId);
+    // Ensure React Admin format: {data: [...], total: number}
+    if (Array.isArray(sessions)) {
+      return { data: sessions, total: sessions.length };
+    }
+    return sessions; // Already in correct format
   }
 
   @Get()

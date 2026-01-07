@@ -44,7 +44,7 @@ describe('Subjects API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -60,42 +60,42 @@ describe('Subjects API (e2e)', () => {
         expect(subject).toHaveProperty('name');
         expect(subject).toHaveProperty('credits');
         expect(subject).toHaveProperty('isElective');
-        expect(subject).toHaveProperty('branchId', 'branch1');
+        expect(subject).toHaveProperty('branchId', 'dps-main');
         expect(typeof subject.credits).toBe('number');
         expect(typeof subject.isElective).toBe('boolean');
       }
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/subjects')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/subjects')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by name', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects?sort=name')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.name);
@@ -106,7 +106,7 @@ describe('Subjects API (e2e)', () => {
     it('should support descending sorting by credits', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects?sort=-credits')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const credits = response.body.data.map(item => item.credits);
@@ -118,7 +118,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { isElective: false };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -130,7 +130,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { credits: 4 };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -142,7 +142,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { code: 'MATH' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -153,12 +153,12 @@ describe('Subjects API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/subjects?page=1&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/subjects?page=2&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -175,27 +175,27 @@ describe('Subjects API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('code');
       expect(response.body.data).toHaveProperty('name');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return 404 for non-existent subject', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/subjects/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -203,15 +203,15 @@ describe('Subjects API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/subjects/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -228,14 +228,14 @@ describe('Subjects API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newSubject)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toMatchObject(newSubject);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -246,7 +246,7 @@ describe('Subjects API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidSubject)
         .expect(400);
     });
@@ -262,7 +262,7 @@ describe('Subjects API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicateSubject)
         .expect(409);
     });
@@ -274,7 +274,7 @@ describe('Subjects API (e2e)', () => {
       const timestamp = Date.now();
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           code: `UPD${timestamp}`,
           name: 'Original Subject',
@@ -293,7 +293,7 @@ describe('Subjects API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/subjects/${subjectId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -306,15 +306,15 @@ describe('Subjects API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/subjects/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ name: 'Hacked Subject' })
         .expect(404);
     });
@@ -325,7 +325,7 @@ describe('Subjects API (e2e)', () => {
       // First get an existing subject
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const subjectId = listResponse.body.data[0]?.id;
       if (!subjectId) return;
@@ -336,7 +336,7 @@ describe('Subjects API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/subjects/${subjectId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -352,7 +352,7 @@ describe('Subjects API (e2e)', () => {
       const timestamp = Date.now();
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           code: `DEL${timestamp}`,
           name: 'Subject to Delete',
@@ -364,7 +364,7 @@ describe('Subjects API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/subjects/${subjectId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -373,7 +373,7 @@ describe('Subjects API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/subjects/${subjectId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -383,7 +383,7 @@ describe('Subjects API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -393,7 +393,7 @@ describe('Subjects API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -410,7 +410,7 @@ describe('Subjects API (e2e)', () => {
     it('should find core subjects from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const subjectCodes = response.body.data.map(s => s.code);
@@ -422,7 +422,7 @@ describe('Subjects API (e2e)', () => {
     it('should find subjects with correct names from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const subjectNames = response.body.data.map(s => s.name);
@@ -436,7 +436,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { isElective: false };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const mathSubject = response.body.data.find(s => s.code === 'MATH');
@@ -456,7 +456,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { isElective: true };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const electiveCodes = response.body.data.map(s => s.code);
@@ -469,7 +469,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { credits: 4 };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const highCreditSubjects = response.body.data.map(s => s.code);
@@ -483,7 +483,7 @@ describe('Subjects API (e2e)', () => {
     it('should find senior secondary subjects from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const subjectCodes = response.body.data.map(s => s.code);
@@ -496,7 +496,7 @@ describe('Subjects API (e2e)', () => {
       const filter = { code: 'PE' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/subjects?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -510,7 +510,7 @@ describe('Subjects API (e2e)', () => {
     it('should have appropriate credit distribution', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const creditDistribution = {};
@@ -528,7 +528,7 @@ describe('Subjects API (e2e)', () => {
     it('should find geography and history subjects', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/subjects')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const subjectCodes = response.body.data.map(s => s.code);

@@ -24,7 +24,7 @@ describe('Staff API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -41,41 +41,41 @@ describe('Staff API (e2e)', () => {
         expect(staff).toHaveProperty('email');
         expect(staff).toHaveProperty('designation');
         expect(staff).toHaveProperty('department');
-        expect(staff).toHaveProperty('branchId', 'branch1');
+        expect(staff).toHaveProperty('branchId', 'dps-main');
         expect(staff.email).toMatch(/.*@sunrise\.edu$/);
       }
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/hr/staff')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/hr/staff')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
     it('should support ascending sorting by firstName', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff?sort=firstName')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.firstName);
@@ -86,7 +86,7 @@ describe('Staff API (e2e)', () => {
     it('should support descending sorting by firstName', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff?sort=-firstName')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const names = response.body.data.map(item => item.firstName);
@@ -98,7 +98,7 @@ describe('Staff API (e2e)', () => {
       const filter = { designation: 'Teacher' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -110,7 +110,7 @@ describe('Staff API (e2e)', () => {
       const filter = { department: 'Administration' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -122,7 +122,7 @@ describe('Staff API (e2e)', () => {
       const filter = { status: 'active' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -133,12 +133,12 @@ describe('Staff API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/hr/staff?page=1&perPage=2')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/hr/staff?page=2&perPage=2')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -155,27 +155,27 @@ describe('Staff API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('firstName');
       expect(response.body.data).toHaveProperty('email');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return 404 for non-existent staff member', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/hr/staff/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
@@ -183,15 +183,15 @@ describe('Staff API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from branch2
+      // Try to access from dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/hr/staff/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -212,14 +212,14 @@ describe('Staff API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newStaff)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toMatchObject(newStaff);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -230,7 +230,7 @@ describe('Staff API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidStaff);
         
       // Expect validation error (422, 400, or 500 depending on implementation)
@@ -243,7 +243,7 @@ describe('Staff API (e2e)', () => {
       // Get existing staff email
       const existingResponse = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (existingResponse.body.data.length === 0) return;
       
@@ -264,7 +264,7 @@ describe('Staff API (e2e)', () => {
       // Should succeed since email uniqueness is not enforced
       await request(app.getHttpServer())
         .post('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(duplicateStaff)
         .expect(201);
     });
@@ -275,7 +275,7 @@ describe('Staff API (e2e)', () => {
       // First create a staff member to update
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           firstName: 'Original',
           lastName: 'Staff',
@@ -304,7 +304,7 @@ describe('Staff API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put(`/api/v1/hr/staff/${staffId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -317,15 +317,15 @@ describe('Staff API (e2e)', () => {
       // Get item from branch1
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from branch2
+      // Try to update from dps-north
       await request(app.getHttpServer())
         .put(`/api/v1/hr/staff/${branch1Id}`)
-        .set('X-Branch-Id', 'branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ firstName: 'Hacked' })
         .expect(404);
     });
@@ -336,7 +336,7 @@ describe('Staff API (e2e)', () => {
       // First get an existing staff member
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const staffId = listResponse.body.data[0]?.id;
       if (!staffId) return;
@@ -347,7 +347,7 @@ describe('Staff API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/hr/staff/${staffId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(patchData)
         .expect(200);
 
@@ -362,7 +362,7 @@ describe('Staff API (e2e)', () => {
       // First create a staff member to delete
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           firstName: 'To Delete',
           lastName: 'Staff',
@@ -379,7 +379,7 @@ describe('Staff API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/hr/staff/${staffId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -388,7 +388,7 @@ describe('Staff API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/hr/staff/${staffId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -398,7 +398,7 @@ describe('Staff API (e2e)', () => {
       // Get some IDs
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const ids = listResponse.body.data
         .slice(0, 3)
@@ -408,7 +408,7 @@ describe('Staff API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?ids=${ids.join(',')}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -425,7 +425,7 @@ describe('Staff API (e2e)', () => {
     it('should find administrative staff from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Look for common designations that should exist
@@ -442,7 +442,7 @@ describe('Staff API (e2e)', () => {
       const filter = { designation: 'Teacher' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const departments = response.body.data.map(s => s.department);
@@ -454,7 +454,7 @@ describe('Staff API (e2e)', () => {
     it('should find staff with sunrise.edu email domain', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Filter staff with non-null emails and check domain
@@ -470,7 +470,7 @@ describe('Staff API (e2e)', () => {
       const filter = { firstName: 'John', lastName: 'Smith' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -484,7 +484,7 @@ describe('Staff API (e2e)', () => {
     it('should find teachers at different levels', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const departments = response.body.data.map(s => s.department);
@@ -499,7 +499,7 @@ describe('Staff API (e2e)', () => {
       const filter = { employmentType: 'Full-time' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body.data.length).toBeGreaterThan(0);
@@ -512,7 +512,7 @@ describe('Staff API (e2e)', () => {
       const filter = { employmentType: 'Part-time' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/hr/staff?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Part-time staff may or may not exist, just test the filter works
@@ -528,7 +528,7 @@ describe('Staff API (e2e)', () => {
     it('should find Indian staff names from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/hr/staff')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Test that we have staff data and reasonable name patterns

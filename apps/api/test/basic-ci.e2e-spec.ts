@@ -98,13 +98,13 @@ describe('Basic CI Tests (e2e)', () => {
 
     it('should handle multi-tenant structure', () => {
       const tenant = {
-        branchId: 'branch1',
+        branchId: 'dps-main',
         name: 'Main Campus',
         location: 'Mumbai',
         established: '2020-04-01'
       };
       
-      expect(tenant.branchId).toBe('branch1');
+      expect(tenant.branchId).toBe('dps-main');
       expect(tenant.name).toBe('Main Campus');
       expect(tenant.location).toBe('Mumbai');
     });
@@ -162,14 +162,14 @@ describe('Basic CI Tests (e2e)', () => {
         classId: 1,
         sectionId: 1,
         status: 'active',
-        branchId: 'branch1'
+        branchId: 'dps-main'
       };
 
       expect(studentData.firstName).toBeTruthy();
       expect(studentData.lastName).toBeTruthy();
       expect(studentData.admissionNo).toMatch(/^ADM\d{7}$/);
       expect(studentData.status).toBe('active');
-      expect(studentData.branchId).toBe('branch1');
+      expect(studentData.branchId).toBe('dps-main');
     });
 
     it('should validate teacher data structure', () => {
@@ -180,7 +180,7 @@ describe('Basic CI Tests (e2e)', () => {
         phoneNumber: '+91-9876543210',
         employeeId: 'EMP001',
         status: 'active',
-        branchId: 'branch1'
+        branchId: 'dps-main'
       };
 
       expect(teacherData.firstName).toBeTruthy();
@@ -194,13 +194,13 @@ describe('Basic CI Tests (e2e)', () => {
         name: 'Class 5',
         gradeLevel: 5,
         status: 'active',
-        branchId: 'branch1'
+        branchId: 'dps-main'
       };
 
       expect(classData.name).toBe('Class 5');
       expect(classData.gradeLevel).toBe(5);
       expect(classData.status).toBe('active');
-      expect(classData.branchId).toBe('branch1');
+      expect(classData.branchId).toBe('dps-main');
     });
   });
 });

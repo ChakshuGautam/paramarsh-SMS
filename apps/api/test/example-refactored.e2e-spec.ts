@@ -1,4 +1,4 @@
-import * as request from 'supertest';
+import request from 'supertest';
 import { setupTestApp, TestAppFactory } from './test-utils/test-app-factory';
 import { DEFAULT_BRANCH_ID } from '../src/common/constants';
 
@@ -21,7 +21,7 @@ describe('Example Refactored Test (E2E)', () => {
     });
 
     it('should filter by branch', () => {
-      const customBranch = 'branch2';
+      const customBranch = 'dps-north';
       return request(getHttpServer())
         .get('/api/v1/students')
         .set(TestAppFactory.getTestHeaders(customBranch))

@@ -6,7 +6,7 @@ import { AppModule } from './../src/app.module';
 
 describe('Comprehensive Seed Data Validation (e2e)', () => {
   let app: INestApplication;
-  const branchId = 'branch1'; // Use actual branch from seed
+  const branchId = 'dps-main'; // Use actual branch from seed
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -29,7 +29,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/students')
         .set('X-Branch-Id', branchId)
-        .query({ pageSize: 1000 }) // Get all students for analysis
+        .query({ perPage: 1000 }) // Get all students for analysis
         .expect(200);
 
       const students = response.body.data;
@@ -62,7 +62,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       const studentsResponse = await request(app.getHttpServer())
         .get('/api/v1/students')
         .set('X-Branch-Id', branchId)
-        .query({ pageSize: 1000, status: 'graduated' })
+        .query({ perPage: 1000, status: 'graduated' })
         .expect(200);
 
       const graduatedStudents = studentsResponse.body.data;
@@ -72,7 +72,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       const classesResponse = await request(app.getHttpServer())
         .get('/api/v1/classes')
         .set('X-Branch-Id', branchId)
-        .query({ pageSize: 100 })
+        .query({ perPage: 100 })
         .expect(200);
       
       const classes = classesResponse.body.data;
@@ -167,7 +167,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       
       // API validation - relationship integrity
       const response = await request(app.getHttpServer())
-        .get('/api/v1/classes?pageSize=200')
+        .get('/api/v1/classes?perPage=200')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
@@ -220,7 +220,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
     
     it('should have at least 20 sections', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/sections?pageSize=200')
+        .get('/api/v1/sections?perPage=200')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
@@ -318,7 +318,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       
       // Should have variety of designations
       const designations = staff.map(s => s.designation).filter(Boolean);
-      const uniqueDesignations = [...new Set(designations)];
+      const uniqueDesignations = Array.from(new Set(designations));
       expect(uniqueDesignations.length).toBeGreaterThanOrEqual(5); // Principal, Teachers, Admin, etc.
       
       // Should include key positions (adjust based on actual seed data)
@@ -358,7 +358,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       
       // Test timetable grid functionality
       const sectionsResponse = await request(app.getHttpServer())
-        .get('/api/v1/sections?pageSize=200')
+        .get('/api/v1/sections?perPage=200')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
@@ -473,12 +473,12 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
         .expect(200);
 
       const classResponse = await request(app.getHttpServer())
-        .get('/api/v1/classes?pageSize=200')
+        .get('/api/v1/classes?perPage=200')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
       const sectionsResponse = await request(app.getHttpServer())
-        .get('/api/v1/sections?pageSize=200')
+        .get('/api/v1/sections?perPage=200')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
@@ -571,7 +571,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
     it('should have authentic Indian names and contexts', async () => {
       // Students should have Indian names
       const studentsResponse = await request(app.getHttpServer())
-        .get('/api/v1/students?pageSize=50')
+        .get('/api/v1/students?perPage=50')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
@@ -638,7 +638,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
 
     it('should handle pagination properly', async () => {
       const response1 = await request(app.getHttpServer())
-        .get('/api/v1/students?pageSize=25')
+        .get('/api/v1/students?perPage=25')
         .set('X-Branch-Id', branchId)
         .expect(200);
 
@@ -649,7 +649,7 @@ describe('Comprehensive Seed Data Validation (e2e)', () => {
       
       // Test pagination with page 2
       const response2 = await request(app.getHttpServer())
-        .get('/api/v1/students?pageSize=25&page=2')
+        .get('/api/v1/students?perPage=25&page=2')
         .set('X-Branch-Id', branchId)
         .expect(200);
 

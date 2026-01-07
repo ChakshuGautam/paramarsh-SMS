@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { verifyAndSummarize } from './verify-and-summarize';
 
 const prisma = new PrismaClient();
 
@@ -2606,14 +2607,10 @@ async function main() {
   console.log('✅ Branch-specific academic years and calendars');
 
   // ========== MANDATORY COMPREHENSIVE VALIDATION ==========
-  console.log('\n' + '='.repeat(60));
-  console.log('🔍 RUNNING MANDATORY POST-SEED VALIDATION');
-  console.log('='.repeat(60));
+  const validationResult = await verifyAndSummarize(prisma);
   
-  const validationPassed = await runComprehensiveValidation();
-  
-  if (!validationPassed) {
-    console.error('\n❌ SEED VALIDATION FAILED - CHECK REPORTS FOR DETAILS');
+  if (!validationResult.success) {
+    console.error('\n❌ SEED VALIDATION FAILED - CHECK WARNINGS ABOVE');
     process.exit(1);
   }
 

@@ -1,0 +1,11 @@
+{
+  "name": "tenants",
+  "createdAt": "2025-09-18T20:39:27.069Z",
+  "branchId": "test-checkpoint-branch",
+  "entities": [
+    "tenants"
+  ],
+  "counts": {
+    "tenants": 1
+  }
+}

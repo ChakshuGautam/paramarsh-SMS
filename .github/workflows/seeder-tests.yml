@@ -1,0 +1,179 @@
+name: Seeder Tests
+
+on:
+  push:
+    paths:
+      - 'apps/api/src/seed/**'
+      - 'apps/api/prisma/**'
+      - '.github/workflows/seeder-tests.yml'
+  pull_request:
+    paths:
+      - 'apps/api/src/seed/**'
+      - 'apps/api/prisma/**'
+      - '.github/workflows/seeder-tests.yml'
+  workflow_dispatch:
+
+jobs:
+  test-seeders:
+    name: Run Seeder Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: npm ci
+
+      - name: Setup test database
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          npx prisma generate
+          npx prisma db push --force-reset --skip-generate
+
+      - name: Run seeder unit tests
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          NODE_ENV: test
+        run: |
+          # Create test results directory
+          mkdir -p test-results
+          
+          # Use npm scripts for consistency
+          npm run test:seed:units -- --json --outputFile=test-results/unit-test-results.json || true
+          
+          # Also run a quick status check
+          npm run test:seed:status
+
+      - name: Run complete seed validation
+        working-directory: apps/api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          NODE_ENV: test
+        run: |
+          # Test the complete seed process with validation
+          npm run test:seed
+          
+          # Save validation report
+          mkdir -p test-results
+          cp reports/seed-validation-*.json test-results/ || true
+          cp reports/seed-validation-*.txt test-results/ || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seeder-test-results
+          path: |
+            apps/api/test-results/
+            apps/api/reports/seed-validation-*.json
+            apps/api/reports/seed-validation-*.txt
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read validation report
+            const validationFiles = fs.readdirSync(path.join('apps', 'api', 'test-results'))
+              .filter(f => f.startsWith('seed-validation-') && f.endsWith('.json'));
+            
+            let comment = '## 🌱 Seed Tests & Validation Results\n\n';
+            
+            // Check unit test results
+            const unitTestPath = path.join('apps', 'api', 'test-results', 'unit-test-results.json');
+            if (fs.existsSync(unitTestPath)) {
+              const unitResults = JSON.parse(fs.readFileSync(unitTestPath, 'utf8'));
+              const passed = unitResults.numPassedTests || 0;
+              const failed = unitResults.numFailedTests || 0;
+              const total = unitResults.numTotalTests || 0;
+              
+              comment += `### Unit Tests\n`;
+              comment += `- Total: ${total}\n`;
+              comment += `- ✅ Passed: ${passed}\n`;
+              comment += `- ❌ Failed: ${failed}\n\n`;
+            }
+            
+            // Check validation results
+            if (validationFiles.length > 0) {
+              const validationPath = path.join('apps', 'api', 'test-results', validationFiles[0]);
+              const validation = JSON.parse(fs.readFileSync(validationPath, 'utf8'));
+              
+              if (validation.success) {
+                comment += `### ✅ Seed Validation Passed\n\n`;
+                comment += `**Summary:**\n`;
+                comment += `- Branches: ${validation.summary.tenants}\n`;
+                comment += `- Students: ${validation.summary.students.toLocaleString()}\n`;
+                comment += `- Teachers: ${validation.summary.teachers}\n`;
+                comment += `- Guardians: ${validation.summary.guardians.toLocaleString()}\n`;
+                comment += `- Enrollments: ${validation.summary.enrollments.toLocaleString()}\n`;
+              } else {
+                comment += `### ❌ Seed Validation Failed\n\n`;
+                comment += `**Warnings:**\n`;
+                validation.warnings.forEach(w => comment += `- ${w}\n`);
+              }
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+            }
+
+      - name: Check test results
+        working-directory: apps/api
+        run: |
+          # Check unit test results
+          if [ -f test-results/unit-test-results.json ]; then
+            echo "📊 Unit Test Results:"
+            cat test-results/unit-test-results.json | jq '.testResults[].status' | sort | uniq -c
+          fi
+          
+          # Check seed validation results
+          if ls test-results/seed-validation-*.json 1> /dev/null 2>&1; then
+            validation_file=$(ls -t test-results/seed-validation-*.json | head -1)
+            echo "📊 Seed Validation Results:"
+            cat "$validation_file" | jq '.summary'
+            
+            # Check if validation passed
+            success=$(cat "$validation_file" | jq -r '.success')
+            if [ "$success" != "true" ]; then
+              echo "❌ Seed validation failed"
+              exit 1
+            else
+              echo "✅ All seed validation passed"
+            fi
+          else
+            echo "⚠️ No validation results found"
+          fi

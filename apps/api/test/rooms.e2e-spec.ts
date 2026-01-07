@@ -22,10 +22,12 @@ describe('Rooms API (e2e)', () => {
 
   describe('GET /api/v1/rooms', () => {
     it('should return rooms list', async () => {
-      const response = await request(app.getHttpServer()).get('/api/v1/rooms').set('X-Branch-Id', 'branch1');
+      const response = await request(app.getHttpServer()).get('/api/v1/rooms').set('X-Branch-Id', 'dps-main');
       expect([200, 500]).toContain(response.status);
       if (response.status === 200) {
-        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toHaveProperty('data');
+        expect(response.body).toHaveProperty('total');
+        expect(Array.isArray(response.body.data)).toBe(true);
       }
     });
   });
@@ -33,7 +35,7 @@ describe('Rooms API (e2e)', () => {
   describe('POST /api/v1/rooms', () => {
     it('should create new room', async () => {
       const roomData = { name: 'Room 101', type: 'classroom', capacity: 30 };
-      const response = await request(app.getHttpServer()).post('/api/v1/rooms').set('X-Branch-Id', 'branch1').send(roomData);
+      const response = await request(app.getHttpServer()).post('/api/v1/rooms').set('X-Branch-Id', 'dps-main').send(roomData);
       expect([200, 201, 400, 500]).toContain(response.status);
     });
   });

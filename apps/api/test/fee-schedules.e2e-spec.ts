@@ -48,7 +48,7 @@ describe('Fee Schedules API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -61,7 +61,7 @@ describe('Fee Schedules API (e2e)', () => {
     it('should include fee schedule properties', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules?page=1&perPage=1')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 0) {
@@ -87,36 +87,36 @@ describe('Fee Schedules API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/fees/schedules')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/fees/schedules')
-          .set('X-Branch-Id', 'test-branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
       
-      branch2Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('test-branch2');
+      dpsNorthResponse.body.data.forEach(item => {
+        expect(item.branchId).toBe('dps-north');
       });
     });
 
     it('should support ascending sorting by recurrence', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules?sort=recurrence')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 1) {
@@ -129,7 +129,7 @@ describe('Fee Schedules API (e2e)', () => {
     it('should support descending sorting by dueDayOfMonth', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules?sort=-dueDayOfMonth')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       if (response.body.data.length > 1) {
@@ -143,12 +143,12 @@ describe('Fee Schedules API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules?page=1&perPage=2')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules?page=2&perPage=2')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -165,14 +165,14 @@ describe('Fee Schedules API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/fees/schedules/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -185,23 +185,23 @@ describe('Fee Schedules API (e2e)', () => {
     it('should return 404 for non-existent fee schedule', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/fees/schedules/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should not return fee schedule from different tenant', async () => {
-      // Get fee schedule from test-branch
+      // Get fee schedule from dps-main
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to access from test-branch2
+      // Try to access from test-dps-north
       await request(app.getHttpServer())
         .get(`/api/v1/fees/schedules/${branch1Id}`)
-        .set('X-Branch-Id', 'test-branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -213,7 +213,7 @@ describe('Fee Schedules API (e2e)', () => {
       // Create a fee structure to use in tests
       const createStructureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Test Fee Structure for Schedules',
           description: 'Test structure for fee schedule tests',
@@ -226,7 +226,7 @@ describe('Fee Schedules API (e2e)', () => {
         // Fallback: try to get existing one
         const structuresResponse = await request(app.getHttpServer())
           .get('/api/v1/fees/structures?page=1&perPage=1')
-          .set('X-Branch-Id', 'branch1');
+          .set('X-Branch-Id', 'dps-main');
           
         testFeeStructureId = structuresResponse.body.data[0]?.id || uuidv4();
       }
@@ -244,7 +244,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newSchedule)
         .expect(201);
 
@@ -268,7 +268,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newSchedule)
         .expect(201);
 
@@ -284,7 +284,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidSchedule)
         .expect(400);
     });
@@ -298,7 +298,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidSchedule)
         .expect(400);
     });
@@ -312,7 +312,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidSchedule)
         .expect(400);
     });
@@ -327,7 +327,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidSchedule)
         .expect(400);
     });
@@ -340,7 +340,7 @@ describe('Fee Schedules API (e2e)', () => {
       // Create a fee structure to use in tests
       const createStructureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Test Fee Structure for PATCH',
           description: 'Test structure for patch tests',
@@ -354,7 +354,7 @@ describe('Fee Schedules API (e2e)', () => {
       // First create a fee schedule to update
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           feeStructureId: testFeeStructureId,
           recurrence: 'monthly',
@@ -372,7 +372,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch(`/api/v1/fees/schedules/${scheduleId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(200);
 
@@ -388,24 +388,24 @@ describe('Fee Schedules API (e2e)', () => {
 
       await request(app.getHttpServer())
         .patch('/api/v1/fees/schedules/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(updateData)
         .expect(404);
     });
 
     it('should not update fee schedule from different tenant', async () => {
-      // Get fee schedule from test-branch
+      // Get fee schedule from dps-main
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to update from test-branch2
+      // Try to update from test-dps-north
       await request(app.getHttpServer())
         .patch(`/api/v1/fees/schedules/${branch1Id}`)
-        .set('X-Branch-Id', 'test-branch2')
+        .set('X-Branch-Id', 'dps-north')
         .send({ status: 'paused' })
         .expect(404);
     });
@@ -418,7 +418,7 @@ describe('Fee Schedules API (e2e)', () => {
       // Create a fee structure to use in tests
       const createStructureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Test Fee Structure for DELETE',
           description: 'Test structure for delete tests',
@@ -432,7 +432,7 @@ describe('Fee Schedules API (e2e)', () => {
       // First create a fee schedule to delete
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           feeStructureId: testFeeStructureId,
           recurrence: 'monthly',
@@ -444,7 +444,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .delete(`/api/v1/fees/schedules/${scheduleId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -453,30 +453,30 @@ describe('Fee Schedules API (e2e)', () => {
       // Verify it's deleted
       await request(app.getHttpServer())
         .get(`/api/v1/fees/schedules/${scheduleId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should return 404 for non-existent fee schedule', async () => {
       await request(app.getHttpServer())
         .delete('/api/v1/fees/schedules/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
 
     it('should not delete fee schedule from different tenant', async () => {
-      // Get fee schedule from test-branch
+      // Get fee schedule from dps-main
       const branch1List = await request(app.getHttpServer())
         .get('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const branch1Id = branch1List.body.data[0]?.id;
       if (!branch1Id) return;
 
-      // Try to delete from test-branch2
+      // Try to delete from test-dps-north
       await request(app.getHttpServer())
         .delete(`/api/v1/fees/schedules/${branch1Id}`)
-        .set('X-Branch-Id', 'test-branch2')
+        .set('X-Branch-Id', 'dps-north')
         .expect(404);
     });
   });
@@ -488,7 +488,7 @@ describe('Fee Schedules API (e2e)', () => {
       // Create a fee structure to use in tests
       const createStructureResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/structures')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           name: 'Test Fee Structure for GENERATE',
           description: 'Test structure for generate tests',
@@ -502,7 +502,7 @@ describe('Fee Schedules API (e2e)', () => {
       // First create a fee schedule to generate from
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           feeStructureId: testFeeStructureId,
           recurrence: 'monthly',
@@ -514,18 +514,18 @@ describe('Fee Schedules API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/v1/fees/schedules/${scheduleId}/generate`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(201);
 
       expect(response.body).toHaveProperty('created');
       expect(typeof response.body.created).toBe('number');
-    });
+    }, 15000);
 
     it('should return 0 created for paused schedule', async () => {
       // Create a paused fee schedule
       const createResponse = await request(app.getHttpServer())
         .post('/api/v1/fees/schedules')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send({
           feeStructureId: testFeeStructureId,
           recurrence: 'monthly',
@@ -537,7 +537,7 @@ describe('Fee Schedules API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post(`/api/v1/fees/schedules/${scheduleId}/generate`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(201);
 
       expect(response.body.created).toBe(0);

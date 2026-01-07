@@ -42,7 +42,7 @@ describe('Preferences API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .put('/api/v1/comms/preferences')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(preferenceData);
 
       expect([200, 201, 400, 500]).toContain(response.status);
@@ -60,7 +60,7 @@ describe('Preferences API (e2e)', () => {
     it('should return preferences list', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/preferences')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 500]).toContain(response.status);
       
@@ -72,7 +72,7 @@ describe('Preferences API (e2e)', () => {
     it('should support filtering', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/preferences?ownerType=student&channel=sms')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 500]).toContain(response.status);
     });
@@ -82,7 +82,7 @@ describe('Preferences API (e2e)', () => {
     it('should return preferences by owner', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/preferences/student/test-student-id')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 404, 500]).toContain(response.status);
     });
@@ -92,7 +92,7 @@ describe('Preferences API (e2e)', () => {
     it('should check consent status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/preferences/student/test-student-id/sms/consent')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 404, 500]).toContain(response.status);
       
@@ -107,7 +107,7 @@ describe('Preferences API (e2e)', () => {
     it('should check quiet hours status', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/preferences/student/test-student-id/sms/quiet-hours')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 404, 500]).toContain(response.status);
       
@@ -122,7 +122,7 @@ describe('Preferences API (e2e)', () => {
     it('should delete preference', async () => {
       const response = await request(app.getHttpServer())
         .delete('/api/v1/comms/preferences/student/test-student-id/sms')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
 
       expect([200, 404, 500]).toContain(response.status);
     });
@@ -137,7 +137,7 @@ describe('Preferences API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/preferences/student/test-student-id/bulk-consent')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(consentData);
 
       expect([200, 201, 404, 500]).toContain(response.status);

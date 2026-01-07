@@ -44,7 +44,7 @@ describe('Tickets API (e2e)', () => {
     it('should return paginated list with correct format', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets?page=1&perPage=5')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
@@ -62,7 +62,7 @@ describe('Tickets API (e2e)', () => {
         expect(ticket).toHaveProperty('priority');
         expect(ticket).toHaveProperty('status');
         expect(ticket).toHaveProperty('subject');
-        expect(ticket).toHaveProperty('branchId', 'branch1');
+        expect(ticket).toHaveProperty('branchId', 'dps-main');
         expect(['academic', 'fees', 'technical', 'general', 'transport', 'discipline']).toContain(ticket.category);
         expect(['low', 'normal', 'high']).toContain(ticket.priority);
         expect(['open', 'in_progress', 'resolved', 'closed']).toContain(ticket.status);
@@ -70,28 +70,28 @@ describe('Tickets API (e2e)', () => {
     });
 
     it('should isolate data between tenants', async () => {
-      const [branch1Response, branch2Response] = await Promise.all([
+      const [branch1Response, dpsNorthResponse] = await Promise.all([
         request(app.getHttpServer())
           .get('/api/v1/comms/tickets')
-          .set('X-Branch-Id', 'branch1'),
+          .set('X-Branch-Id', 'dps-main'),
         request(app.getHttpServer())
           .get('/api/v1/comms/tickets')
-          .set('X-Branch-Id', 'branch2')
+          .set('X-Branch-Id', 'dps-north')
       ]);
 
       expect(branch1Response.status).toBe(200);
-      expect(branch2Response.status).toBe(200);
+      expect(dpsNorthResponse.status).toBe(200);
 
       // Verify isolation
       const branch1Ids = branch1Response.body.data.map(item => item.id);
-      const branch2Ids = branch2Response.body.data.map(item => item.id);
-      const intersection = branch1Ids.filter(id => branch2Ids.includes(id));
+      const dpsNorthIds = dpsNorthResponse.body.data.map(item => item.id);
+      const intersection = branch1Ids.filter(id => dpsNorthIds.includes(id));
       
       expect(intersection.length).toBe(0);
       
       // Verify branchId
       branch1Response.body.data.forEach(item => {
-        expect(item.branchId).toBe('branch1');
+        expect(item.branchId).toBe('dps-main');
       });
     });
 
@@ -99,7 +99,7 @@ describe('Tickets API (e2e)', () => {
       const filter = { status: 'open' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/tickets?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -111,7 +111,7 @@ describe('Tickets API (e2e)', () => {
       const filter = { category: 'technical' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/tickets?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -123,7 +123,7 @@ describe('Tickets API (e2e)', () => {
       const filter = { priority: 'high' };
       const response = await request(app.getHttpServer())
         .get(`/api/v1/tickets?filter=${encodeURIComponent(JSON.stringify(filter))}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(item => {
@@ -134,12 +134,12 @@ describe('Tickets API (e2e)', () => {
     it('should handle pagination correctly', async () => {
       const page1 = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets?page=1&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const page2 = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets?page=2&perPage=3')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       // Verify no overlap
@@ -156,27 +156,27 @@ describe('Tickets API (e2e)', () => {
       // First get list to find an ID
       const listResponse = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       const testId = listResponse.body.data[0]?.id;
       if (!testId) return;
 
       const response = await request(app.getHttpServer())
         .get(`/api/v1/tickets/${testId}`)
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id', testId);
       expect(response.body.data).toHaveProperty('subject');
       expect(response.body.data).toHaveProperty('status');
-      expect(response.body.data).toHaveProperty('branchId', 'branch1');
+      expect(response.body.data).toHaveProperty('branchId', 'dps-main');
     });
 
     it('should return 404 for non-existent ticket', async () => {
       await request(app.getHttpServer())
         .get('/api/v1/comms/tickets/non-existent-id')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(404);
     });
   });
@@ -186,7 +186,7 @@ describe('Tickets API (e2e)', () => {
       // Get a guardian ID for the owner
       const guardianResponse = await request(app.getHttpServer())
         .get('/api/v1/guardians')
-        .set('X-Branch-Id', 'branch1');
+        .set('X-Branch-Id', 'dps-main');
       
       if (guardianResponse.body.data.length === 0) {
         return; // Skip if no guardians
@@ -204,14 +204,14 @@ describe('Tickets API (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .post('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(newTicket)
         .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('id');
       expect(response.body.data).toMatchObject(newTicket);
-      expect(response.body.data.branchId).toBe('branch1');
+      expect(response.body.data.branchId).toBe('dps-main');
     });
 
     it('should validate required fields', async () => {
@@ -222,7 +222,7 @@ describe('Tickets API (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .send(invalidTicket)
         .expect(400);
     });
@@ -232,7 +232,7 @@ describe('Tickets API (e2e)', () => {
     it('should find tickets with realistic subjects from seed data', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const subjects = response.body.data.map(t => t.subject);
@@ -253,7 +253,7 @@ describe('Tickets API (e2e)', () => {
     it('should find tickets in different categories', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const categories = response.body.data.map(t => t.category);
@@ -265,7 +265,7 @@ describe('Tickets API (e2e)', () => {
     it('should find tickets with different statuses', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const statuses = response.body.data.map(t => t.status);
@@ -277,7 +277,7 @@ describe('Tickets API (e2e)', () => {
     it('should find tickets with guardian owners', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       const guardiansAsOwners = response.body.data.filter(t => t.ownerType === 'guardian');
@@ -287,7 +287,7 @@ describe('Tickets API (e2e)', () => {
     it('should have tickets with SLA due dates', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/comms/tickets')
-        .set('X-Branch-Id', 'branch1')
+        .set('X-Branch-Id', 'dps-main')
         .expect(200);
 
       response.body.data.forEach(ticket => {
